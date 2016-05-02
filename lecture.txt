@@ -1,0 +1,86 @@
+Green(cooperative) threads:
+    erlang
+    C - setjmp/longjmp http://www.1024cores.net/home/lock-free-algorithms/tricks/fibers
+    POSIX makecontext()/swapcontext()
+    Windows fibers - https://msdn.microsoft.com/en-us/library/ms682661%28v=vs.85%29.aspx
+    Boost.Context/Boost.Coroutine
+    Scala/Java + akka
+    golang
+    stackless/gevent/eventlet
+    asyncio
+
+AsyncIO explained:
+    !!! - https://pymotw.com/3/asyncio/index.html
+    https://www.python.org/dev/peps/pep-3156/
+    http://www.snarky.ca/how-the-heck-does-async-await-work-in-python-3-5
+    http://aosabook.org/en/500L/a-web-crawler-with-asyncio-coroutines.html
+    http://sahandsaba.com/understanding-asyncio-node-js-python-3-4.html
+    http://asyncio.org/#talks
+    http://asyncio.org/#blogs
+
+    asyncio + SA - http://asvetlov.blogspot.com/2014/05/aiopgsa.html
+    introduction to async programming http://cs.brown.edu/courses/cs168/f12/handouts/async.pdf
+
+Links:
+    gevent http://sdiehl.github.io/gevent-tutorial/
+    написание asyncio вручную - https://www.youtube.com/watch?v=MCs5OvhV9S4
+    GIL приоритизирует CPU-bounded потоки вместо IO-bounded 12:00-https://www.youtube.com/watch?v=MCs5OvhV9S4
+    Problems with threads - http://www.eecs.berkeley.edu/Pubs/TechRpts/2006/EECS-2006-1.pdf
+    Parallelization concepts large review - https://oparu.uni-ulm.de/xmlui/handle/123456789/2450
+
+Posts:
+    http://techspot.zzzeek.org/2015/02/15/asynchronous-python-and-databases/
+    10+k threads http://stackoverflow.com/questions/17593699/tcp-ip-solving-the-c10k-with-the-thread-per-client-approach
+    C10M https://www.youtube.com/watch?v=73XNtI0w7jA#!
+
+Пацаны тестят:
+    http://www.obeythetestinggoat.com/testing-async-asyncio-and-performance.html
+    http://blog.gmludo.eu/2015/02/macro-benchmark-with-django-flask-and-asyncio.html
+    ?? http://klen.github.io/py-frameworks-bench/
+
+асинхронно/синхронная обработка
+
+Глупости:
+    As we know, threads are a bad idea, (for most purposes). Threads make local reasoning
+    difficult, and local reasoning is perhaps the most important thing in software development.
+
+Альтернативы:
+    https://github.com/dabeaz/curio
+
+Что рассказать:
+    Введение - C10k, 
+    невозможно скрыть асинхронную операцию - не будет ORM, ...
+    нет контроля/управления жизненным циклом гринлетов
+    yield не маштабируется - чем больше степень вложенности вызовов, тем дороже yield
+
+    вариант массивной параллельности плохо работает с лимитами
+    Асинхронное программирование - зачем, откуда, как соотносится с синхронным
+    Простейшая модель - реактор + cb
+    Синтаксический сахар как способ перейти от кучи 
+
+    http://www.onebigfluke.com/2015/02/asyncio-is-for-composition.html
+    asyncio для массового параллелизма отдельного запроса
+    аналогия с threadpool/future
+    хороший пример - openstack API
+
+Финальный ссылки:
+    http://techspot.zzzeek.org/2015/02/15/asynchronous-python-and-databases/
+
+Вопросы:
+    откуда в asyncio трейсе mmap
+    как меняется ctxswitch counter при пине потоков
+    как меняется количество системных вызовов/время исполнения по мере увеличения параллельности
+    немного отладить тест, что бы все потоки работали параллельно
+    поддерживают ли twisted/tornado/etc asyncio?
+    Проредить ссылки, выдать базовый набор
+    Что там происходит на 5k потоков
+
+def test_yield(level):
+    if level > 0:
+        yield from test_yield(level - 1)
+    else:
+        yield 0
+        yield 1
+        yield 2
+        yield 3
+        yield 4
