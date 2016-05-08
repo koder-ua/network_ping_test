@@ -21,9 +21,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-const int message_len = 1024;
-const char message[message_len] = {'X'};
-
 bool connect_all(int sock_count,
                  std::vector<int> & sockets,
                  const char * ip,
@@ -72,9 +69,9 @@ bool connect_all(int sock_count,
     return true;
 }
 
-bool process_message(int sockfd) {
-    std::array<char, message_len> buffer;
-    int bc = recv(sockfd, buffer.begin(), buffer.size(), 0);
+bool process_message(int sockfd, const char * message, int message_len) {
+    char buffer[message_len];
+    int bc = recv(sockfd, buffer, message_len, 0);
     if (0 > bc) {
         std::perror("recv(sockfd, buffer.begin(), buffer.size(), 0)");
         return false;   
@@ -213,7 +210,7 @@ public:
     }
 };
 
-const unsigned long NS_TO_S = 1000000000;
+const unsigned long NS_TO_S = 1000 * 1000 * 1000;
 unsigned long time_ns()
 {
     struct timespec spec;
@@ -226,7 +223,9 @@ void th_func(int sockfd,
              std::atomic_ulong * msg_processed_a,
              std::atomic_ulong * started,
              std::atomic_ulong * finished,
-             std::atomic_bool  * run_lola_run) {
+             std::atomic_bool  * run_lola_run,
+             const char * message,
+             int msize) {
 
     unsigned long counter = 0;
     (*started) += 1;
@@ -234,7 +233,7 @@ void th_func(int sockfd,
     while(not run_lola_run->load())
         usleep(1000000);
 
-    while(process_message(sockfd))
+    while(process_message(sockfd, message, msize))
         ++counter;
 
     (*msg_processed_a) += counter;
@@ -255,11 +254,14 @@ public:
 extern "C"
 int run_test_th(const char * ip, const int port,
                 const int th_count, int * msg_processed,
-                void (*preparation_done)(), void (*test_done)()) {
+                void (*preparation_done)(), void (*test_done)(),
+                int msize) {
     std::atomic_ulong counter{0};
     std::atomic_ulong started{0};
     std::atomic_ulong finished{0};
     std::atomic_bool run_lola_run{false};
+    char message[msize];
+    std::memset(message, 'X', msize);
 
     SocksList sockets;
     std::thread threads[th_count];
@@ -273,7 +275,9 @@ int run_test_th(const char * ip, const int port,
                                    &counter,
                                    &started,
                                    &finished,
-                                   &run_lola_run);
+                                   &run_lola_run,
+                                   &message[0],
+                                   msize);
 
     int policy;
     struct sched_param param;
@@ -310,9 +314,12 @@ int run_test_th(const char * ip, const int port,
 
 int run_test(RSelector & selector,
              const char * ip, const int port, const int th_count, int * msg_processed,
-             void (*preparation_done)(), void (*test_done)()) {
+             void (*preparation_done)(), void (*test_done)(),
+             int msize) {
     int counter = 0;
     int fd_left = th_count;
+    char message[msize];
+    std::memset(message, 'X', msize);
     SocksList sockets;
 
     if (not connect_all(th_count, sockets.sockets, ip, port, true))
@@ -341,7 +348,7 @@ int run_test(RSelector & selector,
                 std::cerr << " val " << events << "\n";
                 close_sock = true;
             } else if (events & POLLIN) {
-                close_sock = not process_message(sockfd);
+                close_sock = not process_message(sockfd, message, msize);
                 if (not close_sock)
                     counter += 1;
             } else if (0 != events) {
@@ -368,19 +375,20 @@ int run_test(RSelector & selector,
 
 extern "C"
 int run_test_epoll(const char * ip, const int port, const int th_count, int * msg_processed,
-                   void (*preparation_done)(), void (*test_done)()) {
+                   void (*preparation_done)(), void (*test_done)(),
+                   int msize) {
     EPollRSelector eps(th_count);
-    if (not eps.ok()) {
+    if (not eps.ok())
         return 1;
-    }
-    return run_test(eps, ip, port, th_count, msg_processed, preparation_done, test_done);
+    return run_test(eps, ip, port, th_count, msg_processed, preparation_done, test_done, msize);
 }
 
 extern "C"
 int run_test_poll(const char * ip, const int port, const int th_count, int * msg_processed,
-                  void (*preparation_done)(), void (*test_done)()) {
+                  void (*preparation_done)(), void (*test_done)(),
+                  int msize) {
     PollRSelector eps(th_count);
-    return run_test(eps, ip, port, th_count, msg_processed, preparation_done, test_done);
+    return run_test(eps, ip, port, th_count, msg_processed, preparation_done, test_done, msize);
 }
 
 #if !defined(BUILDSHARED)
@@ -403,7 +411,7 @@ int main(int argc, const char ** argv) {
 
     // int err = run_test_poll(ip, port, th_count, &msg_count, nullptr, nullptr);
     // int err = run_test_epoll(ip, port, th_count, &msg_count, nullptr, nullptr);
-    int err = run_test_th(ip, port, th_count, &msg_count, nullptr, nullptr);
+    int err = run_test_th(ip, port, th_count, &msg_count, nullptr, nullptr, 1024);
 
     std::cout << msg_count << " message cycles processed\n";
     return err;

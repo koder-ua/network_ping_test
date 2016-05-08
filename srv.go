@@ -16,10 +16,9 @@ const (
 )
 
 
-func handleRequest(conn *net.TCPConn, max_time int, timeout int) {
-    buf := make([]byte, 1024)
+func handleRequest(conn *net.TCPConn, max_time int, timeout int, msize int, message []byte) {
+    buf := make([]byte, msize)
     etime := int64(0)
-    message := []byte(strings.Repeat("X", 1024))
 
     for etime == 0 || time.Now().UnixNano() / 1000000 < etime {
         conn.Write(message)
@@ -37,7 +36,9 @@ func handleRequest(conn *net.TCPConn, max_time int, timeout int) {
     conn.Close()
 }
 
-func mainLoop(timeout int, conn_time int) {
+func mainLoop(timeout int, conn_time int, msize int) {
+    message := []byte(strings.Repeat("X", msize))
+
     addr := net.TCPAddr{net.ParseIP(CONN_HOST), CONN_PORT, ""}
     l, err := net.ListenTCP(CONN_TYPE, &addr)
     if err != nil {
@@ -53,23 +54,25 @@ func mainLoop(timeout int, conn_time int) {
         }
 
         _ = conn.SetNoDelay(true)
-        go handleRequest(conn, conn_time, timeout)
+        go handleRequest(conn, conn_time, timeout, msize, message)
     }
 }
 
 func main() {
-    if len(os.Args) != 3 {
-        fmt.Println("Usage ", os.Args[0], " SEND_TIMEOUT CONN_USE_TIME_MS")
+    if len(os.Args) != 4 {
+        fmt.Println("Usage ", os.Args[0], " SEND_TIMEOUT CONN_USE_TIME_MS RSIZE")
         os.Exit(1)
     }
     
     timeout, err1 := strconv.Atoi(os.Args[1])
     conn_time, err2 := strconv.Atoi(os.Args[2])
-    if ((err1 != nil) || (err2 != nil)) {
-        fmt.Println("Usage ", os.Args[0], " SEND_TIMEOUT CONN_USE_TIME_MS")
+    msize, err3 := strconv.Atoi(os.Args[3])
+
+    if ((err1 != nil) || (err2 != nil) || (err3 != nil)) {
+        fmt.Println("Usage ", os.Args[0], " SEND_TIMEOUT CONN_USE_TIME_MS RSIZE")
         os.Exit(1)
     }
 
-    mainLoop(timeout, conn_time)
+    mainLoop(timeout, conn_time, msize)
 }
 

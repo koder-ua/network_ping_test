@@ -14,9 +14,9 @@ from concurrent.futures import ThreadPoolExecutor, wait
 import gevent
 from gevent import socket as gevent_socket
 
-
-MESSAGE_SIZE = 1024
-MESSAGE = ('X' * MESSAGE_SIZE).encode()
+# this vars initialized in main
+MESSAGE_SIZE = None
+MESSAGE = None
 
 
 def prepare_socket(sock, set_no_block=True):
@@ -263,7 +263,7 @@ def gevent_test(addr, count, before_test, after_test):
 TIME_CB = ctypes.CFUNCTYPE(None)
 
 
-def run_c_test(fname, addr, count, before_test, after_test):
+def run_c_test(fname, addr, count, before_test, after_test, msize):
     so = ctypes.cdll.LoadLibrary("./libclient.so")
     func = getattr(so, fname)
     func.restype = ctypes.c_int
@@ -272,30 +272,32 @@ def run_c_test(fname, addr, count, before_test, after_test):
                      ctypes.c_int,
                      ctypes.POINTER(ctypes.c_int),
                      TIME_CB,
-                     TIME_CB]
+                     TIME_CB,
+                     ctypes.c_int]
     counter = ctypes.c_int()
     func(addr[0].encode(),
          addr[1],
          count,
          ctypes.byref(counter),
          TIME_CB(before_test),
-         TIME_CB(after_test))
+         TIME_CB(after_test),
+         msize)
     return counter.value
 
 
 @im_test
 def cpp_poll_test(*params):
-    return run_c_test("run_test_poll", *params)
+    return run_c_test("run_test_poll", *params, MESSAGE_SIZE)
 
 
 @im_test
 def cpp_epoll_test(*params):
-    return run_c_test("run_test_epoll", *params)
+    return run_c_test("run_test_epoll", *params, MESSAGE_SIZE)
 
 
 @im_test
 def cpp_th_test(*params):
-    return run_c_test("run_test_th", *params)
+    return run_c_test("run_test_th", *params, MESSAGE_SIZE)
 
 
 def get_run_stats(func, *params):
@@ -324,12 +326,19 @@ def main(argv):
     parser.add_argument('tests')
     parser.add_argument('--port', '-p', type=int, default=33331)
     parser.add_argument('--rounds', '-r', type=int, default=1)
+    parser.add_argument('--msize', '-s', type=int, default=1024)
     opts = parser.parse_args(argv[1:])
 
     test_names = opts.tests.split(',')
 
+    global MESSAGE_SIZE
+    MESSAGE_SIZE = opts.msize
+
+    global MESSAGE
+    MESSAGE = ('X' * MESSAGE_SIZE).encode()
+
     if test_names == ['*']:
-        run_tests = ALL_TESTS.values()
+        run_tests = list(ALL_TESTS.values())
     else:
         run_tests = []
         for test_name in test_names:
@@ -338,7 +347,8 @@ def main(argv):
                 return 1
             run_tests.append(ALL_TESTS[test_name])
 
-    templ = "      - {{func: {:<15}, utime: {:.3f}, stime: {:.3f}, ctime: {:.3f}, messages: {}}}"
+    run_tests.sort(key=lambda x: x.__name__)
+    templ = "      - {{func: {:<15}, utime: {:>6.2f}, stime: {:>6.2f}, ctime: {:>6.2f}, messages: {:>8d}}}"
 
     print("-   workers: {}\n    data:".format(opts.num_workers))
     for func in run_tests:
