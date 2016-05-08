@@ -162,6 +162,55 @@ def asyncio_test(addr, count, before_test, after_test,
 
 
 @im_test
+def asyncio_proto_test(addr, count, before_test, after_test,
+                       loop_cls=asyncio.new_event_loop):
+
+    counter = 0
+
+    class EchoProtocol(asyncio.Protocol):
+        def __init__(self):
+            self.on_done = asyncio.Future(loop=loop)
+
+        def connection_made(self, transport):
+            self.transport = transport
+
+        def connection_lost(self, exc):
+            self.transport = None
+            if not self.on_done.done():
+                self.on_done.set_result(True)
+
+        def data_received(self, data):
+            nonlocal counter
+            if len(data) != MESSAGE_SIZE:
+                self.on_done.set_exception(RuntimeError('partial message'))
+                self.transport.close()
+            else:
+                self.transport.write(data)
+                counter += 1
+
+    async def connect_all(addr, count, loop):
+        futs = []
+        for i in range(count):
+            tr, protocol = await loop.create_connection(EchoProtocol, *addr)
+            futs.append(protocol.on_done)
+            sock = tr.get_extra_info('socket')
+            prepare_socket(sock, set_no_block=False)
+        return futs
+
+    loop = loop_cls()
+    loop.set_debug(False)
+
+    futs = loop.run_until_complete(connect_all(addr, count, loop))
+
+    before_test()
+    loop.run_until_complete(asyncio.gather(*futs, loop=loop))
+    after_test()
+
+    loop.close()
+    return counter
+
+
+@im_test
 def uvloop_test(*params):
     import uvloop
     return asyncio_test(*params, uvloop.new_event_loop)
@@ -171,6 +220,12 @@ def uvloop_test(*params):
 def uvloop_sock_test(*params):
     import uvloop
     return asyncio_sock_test(*params, uvloop.new_event_loop)
+
+
+@im_test
+def uvloop_proto_test(*params):
+    import uvloop
+    return asyncio_proto_test(*params, uvloop.new_event_loop)
 
 
 @im_test
