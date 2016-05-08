@@ -15,157 +15,249 @@ import gevent
 from gevent import socket as gevent_socket
 
 
-MAX_MESSAGE_SIZE = 1024
-MESSAGE = 'Hello World!'.encode()
+MESSAGE_SIZE = 1024
+MESSAGE = ('X' * MESSAGE_SIZE).encode()
 
 
+def prepare_socket(sock, set_no_block=True):
+    if set_no_block:
+        sock.setblocking(False)
+
+    try:
+        sock.setsockopt(IPPROTO_TCP, TCP_NODELAY, 1)
+    except (OSError, NameError):
+        pass
+
+
+ALL_TESTS = {}
+
+
+def im_test(func):
+    ALL_TESTS[func.__name__.replace('_test', '')] = func
+    return func
+
+
+@im_test
 def selector_test(addr, count, before_test, after_test):
     sel = selectors.DefaultSelector()
     sockets = set()
 
-    for i in range(count):
+    for _ in range(count):
         sock = socket.socket()
         sock.connect(addr)
-        sock.setblocking(False)
         sockets.add(sock)
+        prepare_socket(sock)
         sel.register(sock, selectors.EVENT_READ, None)
 
     msg_counter = 0
     before_test()
-    while len(sockets) != 0:
-        events = sel.select()
-        for key, mask in events:
+    while sockets:
+        for key, mask in sel.select():
             try:
-                data = key.fileobj.recv(MAX_MESSAGE_SIZE)
+                data = key.fileobj.recv(MESSAGE_SIZE)
+                if data:
+                    if len(data) != MESSAGE_SIZE:
+                        raise RuntimeError("Partial message")
+                    else:
+                        msg_counter += 1
+                        key.fileobj.send(MESSAGE)
             except ConnectionResetError:
-                done = True
-            else:
-                if len(data) == 0:
-                    done = True
-                else:
-                    msg_counter += 1
-                    key.fileobj.send(MESSAGE)
-                    done = False
+                data = b""
 
-            if done:
+            if not data:
                 sockets.remove(key.fileobj)
                 sel.unregister(key.fileobj)
+                key.fileobj.close()
     after_test()
+
     return msg_counter
 
 
-def asyncio_test(addr, count, before_test, after_test):
-    q = []
-    async def connect_all(addr, count, loop):
-        socks = []
-        for i in range(count):
-            socks.append(await asyncio.open_connection(*addr, loop=loop))
-        return socks
+@im_test
+def asyncio_sock_test(addr, count, before_test, after_test,
+                      loop_cls=asyncio.new_event_loop):
 
-    async def tcp_echo_client(reader, writer):
-        counter = 0
-        data = " "
-        while len(data) != 0:
-            try:
-                data = await reader.read(MAX_MESSAGE_SIZE)
-                if len(data) != 0:
-                    counter += 1
-                writer.write(MESSAGE)
-            except ConnectionResetError:
-                break
+    counter = 0
+    async def client(loop, sock):
+        nonlocal counter
+        try:
+            while True:
+                data = await loop.sock_recv(sock, MESSAGE_SIZE)
+                if not data:
+                    break
+                elif len(data) != MESSAGE_SIZE:
+                    raise RuntimeError("Partial message")
+                counter += 1
+                await loop.sock_sendall(sock, MESSAGE)
+        except ConnectionResetError:
+            pass
+        finally:
+            sock.close()
 
-        writer.close()
-        q.append(counter)
+    socks = []
+    for _ in range(count):
+        sock = socket.socket()
+        sock.connect(addr)
+        prepare_socket(sock)
+        socks.append(sock)
 
-    loop = asyncio.new_event_loop()
-    connect_task = loop.create_task(connect_all(addr, count, loop))
-    loop.run_until_complete(connect_task)
+    loop = loop_cls()
+    loop.set_debug(False)
+    tasks = [loop.create_task(client(loop, sock)) for sock in socks]
 
     before_test()
-    tasks = []
-    for rw in connect_task.result():
-        tasks.append(
-            loop.create_task(tcp_echo_client(*rw)))
     loop.run_until_complete(asyncio.gather(*tasks))
     after_test()
 
     loop.close()
-    return sum(q)
-
-
-def thread_test(addr, count, before_test, after_test):
-    q = queue.Queue()
-
-    socks = []
-    for i in range(count):
-        sock = socket.socket()
-        sock.connect(addr)
-        socks.append(sock)
-
-    def tcp_echo_client(sock, q):
-        counter = 0
-        data = " "
-        while len(data) != 0:
-            try:
-                data = sock.recv(MAX_MESSAGE_SIZE)
-                if len(data) != 0:
-                    sock.send(MESSAGE)
-                    counter += 1
-            except ConnectionResetError:
-                break
-        sock.close()
-        q.put(counter)
-
-    tasks = []
-    executor = ThreadPoolExecutor(max_workers=count)
-
-    before_test()
-    for sock in socks:
-        tasks.append(executor.submit(tcp_echo_client, sock, q))
-    wait(tasks)
-    after_test()
-    executor.shutdown()
-
-    counter = 0
-    while not q.empty():
-        counter += q.get()
     return counter
 
 
-def gevent_test(addr, count, before_test, after_test):
-    q = []
+@im_test
+def asyncio_test(addr, count, before_test, after_test,
+                 loop_cls=asyncio.new_event_loop):
+    async def connect_all(addr, count, loop):
+        conns = []
+        for i in range(count):
+            r, w = await asyncio.open_connection(*addr, loop=loop)
+            conns.append((r, w))
+            wsock = w.get_extra_info('socket')
+            prepare_socket(wsock, set_no_block=False)
+        return conns
 
-    socks = []
+    loop = loop_cls()
+    loop.set_debug(False)
+
+    connect_task = loop.create_task(connect_all(addr, count, loop))
+    loop.run_until_complete(connect_task)
+
+    counter = 0
+    async def tcp_echo_client(reader, writer):
+        nonlocal counter
+        try:
+            while True:
+                data = await reader.read(MESSAGE_SIZE)
+                if not data:
+                    break
+                elif len(data) != MESSAGE_SIZE:
+                    raise RuntimeError("Partial message")
+                counter += 1
+                writer.write(MESSAGE)
+        except ConnectionResetError:
+            pass
+        finally:
+            writer.close()
+
+    tasks = []
+    for r, w in connect_task.result():
+        tasks.append(
+            loop.create_task(tcp_echo_client(r, w)))
+
+    before_test()
+    loop.run_until_complete(asyncio.gather(*tasks))
+    after_test()
+
+    loop.close()
+    return counter
+
+
+@im_test
+def uvloop_test(*params):
+    import uvloop
+    return asyncio_test(*params, uvloop.new_event_loop)
+
+
+@im_test
+def uvloop_sock_test(*params):
+    import uvloop
+    return asyncio_sock_test(*params, uvloop.new_event_loop)
+
+
+@im_test
+def thread_test(addr, count, before_test, after_test):
+    started_count = 0
+    msg_count = 0
+    ready = False
+
+    def tcp_echo_client(sock):
+        nonlocal msg_count
+        nonlocal started_count
+
+        started_count += 1
+        while not ready:
+            time.sleep(0.1)
+
+        try:
+            while True:
+                data = sock.recv(MESSAGE_SIZE)
+                if not data:
+                    break
+                elif len(data) != MESSAGE_SIZE:
+                    raise RuntimeError("Partial message")
+                sock.send(MESSAGE)
+                msg_count += 1
+        except ConnectionResetError:
+            pass
+        finally:
+            sock.close()
+
+    threads = []
+    for i in range(count):
+        sock = socket.socket()
+        sock.connect(addr)
+        prepare_socket(sock, set_no_block=False)
+        th = threading.Thread(target=tcp_echo_client,
+                              args=(sock,))
+        threads.append(th)
+        th.daemon = True
+        th.start()
+
+    while started_count != count:
+        time.sleep(1)
+
+    before_test()
+    ready = True
+
+    for th in threads:
+        th.join()
+
+    after_test()
+
+    return msg_count
+
+
+@im_test
+def gevent_test(addr, count, before_test, after_test):
+    counter = 0
+
+    def tcp_echo_client(sock):
+        nonlocal counter
+        try:
+            while True:
+                data = sock.recv(MESSAGE_SIZE)
+                if not data:
+                    break
+                elif len(data) != MESSAGE_SIZE:
+                    raise RuntimeError("Partial message")
+                sock.send(MESSAGE)
+                counter += 1
+        except ConnectionResetError:
+            pass
+        finally:
+            sock.close()
+
+    gl = []
     for _ in range(count):
         sock = gevent_socket.socket()
         sock.connect(addr)
-        socks.append(sock)
-
-    def tcp_echo_client(sock, q):
-        counter = 0
-        data = " "
-        while len(data) != 0:
-            try:
-                data = sock.recv(MAX_MESSAGE_SIZE)
-                if len(data) != 0:
-                    sock.send(MESSAGE)
-                    counter += 1
-            except ConnectionResetError:
-                break
-        sock.close()
-        q.append(counter)
-        return sum(q)
+        prepare_socket(sock, set_no_block=False)
+        gl.append(gevent.spawn(tcp_echo_client, sock))
 
     before_test()
-    gl = [gevent.spawn(tcp_echo_client, sock, q) for sock in socks]
     gevent.joinall(gl)
     after_test()
 
-    return sum(q)
-
-
-def cpp_th_test(addr, count, before_test, after_test):
-    pass
+    return counter
 
 
 TIME_CB = ctypes.CFUNCTYPE(None)
@@ -191,14 +283,17 @@ def run_c_test(fname, addr, count, before_test, after_test):
     return counter.value
 
 
+@im_test
 def cpp_poll_test(*params):
     return run_c_test("run_test_poll", *params)
 
 
+@im_test
 def cpp_epoll_test(*params):
     return run_c_test("run_test_epoll", *params)
 
 
+@im_test
 def cpp_th_test(*params):
     return run_c_test("run_test_th", *params)
 
@@ -218,6 +313,10 @@ def get_run_stats(func, *params):
 
 
 def main(argv):
+    if argv[1] == '--list':
+        print(",".join(ALL_TESTS.keys()))
+        return 0
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument('server_ip')
@@ -228,13 +327,16 @@ def main(argv):
     opts = parser.parse_args(argv[1:])
 
     test_names = opts.tests.split(',')
-    all_tests = (thread_test, asyncio_test, selector_test, gevent_test,
-                 cpp_poll_test, cpp_epoll_test, cpp_th_test)
-    run_tests = []
 
-    for test in all_tests:
-        if test.__name__.replace('_test', '') in test_names or opts.tests == '*':
-            run_tests.append(test)
+    if test_names == ['*']:
+        run_tests = ALL_TESTS.values()
+    else:
+        run_tests = []
+        for test_name in test_names:
+            if test_name not in ALL_TESTS:
+                print("Can't found test {!r}.".format(test_name))
+                return 1
+            run_tests.append(ALL_TESTS[test_name])
 
     templ = "      - {{func: {:<15}, utime: {:.3f}, stime: {:.3f}, ctime: {:.3f}, messages: {}}}"
 
@@ -243,7 +345,9 @@ def main(argv):
         for i in range(opts.rounds):
             utime, stime, ctime, msg_precessed = get_run_stats(func, (opts.server_ip, opts.port),
                                                                opts.num_workers)
-            print(templ.format(func.__name__, utime, stime, ctime, msg_precessed))
+            print(templ.format(func.__name__.replace("_test", ''), utime, stime, ctime, msg_precessed))
+    return 0
+
 
 if __name__ == "__main__":
     exit(main(sys.argv))

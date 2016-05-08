@@ -1,176 +1,258 @@
-workers: 50
-data:
-    - {func: thread_test    , utime: 0.400, stime: 1.270, ctime: 0.610}
-    - {func: thread_test    , utime: 0.370, stime: 1.310, ctime: 0.610}
-    - {func: thread_test    , utime: 0.330, stime: 1.330, ctime: 0.610}
-    - {func: thread_test    , utime: 0.410, stime: 1.270, ctime: 0.610}
-    - {func: thread_test    , utime: 0.420, stime: 1.240, ctime: 0.620}
-    - {func: thread_test    , utime: 0.420, stime: 1.250, ctime: 0.600}
-    - {func: thread_test    , utime: 0.420, stime: 1.250, ctime: 0.620}
-    - {func: thread2_test   , utime: 0.340, stime: 1.320, ctime: 0.600}
-    - {func: thread2_test   , utime: 0.340, stime: 1.320, ctime: 0.610}
-    - {func: thread2_test   , utime: 0.380, stime: 1.280, ctime: 0.600}
-    - {func: thread2_test   , utime: 0.360, stime: 1.310, ctime: 0.610}
-    - {func: thread2_test   , utime: 0.410, stime: 1.250, ctime: 0.610}
-    - {func: thread2_test   , utime: 0.400, stime: 1.260, ctime: 0.610}
-    - {func: thread2_test   , utime: 0.360, stime: 1.300, ctime: 0.600}
-    - {func: asyncio_test   , utime: 1.740, stime: 0.460, ctime: 2.200}
-    - {func: asyncio_test   , utime: 1.870, stime: 0.310, ctime: 2.180}
-    - {func: asyncio_test   , utime: 1.740, stime: 0.430, ctime: 2.180}
-    - {func: asyncio_test   , utime: 1.740, stime: 0.440, ctime: 2.180}
-    - {func: asyncio_test   , utime: 1.800, stime: 0.410, ctime: 2.210}
-    - {func: asyncio_test   , utime: 1.880, stime: 0.570, ctime: 2.450}
-    - {func: asyncio_test   , utime: 1.780, stime: 0.570, ctime: 2.340}
-    - {func: selector_test  , utime: 0.160, stime: 0.250, ctime: 0.420}
-    - {func: selector_test  , utime: 0.180, stime: 0.310, ctime: 0.490}
-    - {func: selector_test  , utime: 0.130, stime: 0.270, ctime: 0.390}
-    - {func: selector_test  , utime: 0.140, stime: 0.240, ctime: 0.390}
-    - {func: selector_test  , utime: 0.150, stime: 0.260, ctime: 0.400}
-    - {func: selector_test  , utime: 0.150, stime: 0.240, ctime: 0.390}
-    - {func: selector_test  , utime: 0.140, stime: 0.280, ctime: 0.420}
-    - {func: cpp_test       , utime: 0.000, stime: 0.310, ctime: 0.310}
-    - {func: cpp_test       , utime: 0.000, stime: 0.330, ctime: 0.340}
-    - {func: cpp_test       , utime: 0.000, stime: 0.320, ctime: 0.310}
-    - {func: cpp_test       , utime: 0.000, stime: 0.240, ctime: 0.240}
-    - {func: cpp_test       , utime: 0.000, stime: 0.240, ctime: 0.240}
-    - {func: cpp_test       , utime: 0.000, stime: 0.240, ctime: 0.240}
-    - {func: cpp_test       , utime: 0.000, stime: 0.310, ctime: 0.300}
-    - {func: gevent_test    , utime: 0.810, stime: 0.390, ctime: 1.230}
-    - {func: gevent_test    , utime: 0.710, stime: 0.290, ctime: 1.000}
-    - {func: gevent_test    , utime: 0.680, stime: 0.340, ctime: 1.030}
-    - {func: gevent_test    , utime: 0.940, stime: 0.390, ctime: 1.320}
-    - {func: gevent_test    , utime: 1.070, stime: 0.400, ctime: 1.480}
-    - {func: gevent_test    , utime: 1.120, stime: 0.410, ctime: 1.520}
-    - {func: gevent_test    , utime: 0.800, stime: 0.350, ctime: 1.140}
-workers: 100
-data:
-    - {func: thread_test    , utime: 0.800, stime: 2.530, ctime: 1.220}
-    - {func: thread_test    , utime: 0.840, stime: 2.480, ctime: 1.220}
-    - {func: thread_test    , utime: 0.770, stime: 2.550, ctime: 1.230}
-    - {func: thread_test    , utime: 0.790, stime: 2.540, ctime: 1.230}
-    - {func: thread_test    , utime: 0.830, stime: 2.480, ctime: 1.220}
-    - {func: thread_test    , utime: 0.730, stime: 2.590, ctime: 1.230}
-    - {func: thread_test    , utime: 0.810, stime: 2.510, ctime: 1.230}
-    - {func: thread2_test   , utime: 0.820, stime: 2.480, ctime: 1.220}
-    - {func: thread2_test   , utime: 0.770, stime: 2.540, ctime: 1.220}
-    - {func: thread2_test   , utime: 0.780, stime: 2.530, ctime: 1.210}
-    - {func: thread2_test   , utime: 0.680, stime: 2.610, ctime: 1.220}
-    - {func: thread2_test   , utime: 0.760, stime: 2.540, ctime: 1.210}
-    - {func: thread2_test   , utime: 0.750, stime: 2.550, ctime: 1.220}
-    - {func: thread2_test   , utime: 0.730, stime: 2.580, ctime: 1.220}
-    - {func: asyncio_test   , utime: 3.360, stime: 0.730, ctime: 4.090}
-    - {func: asyncio_test   , utime: 3.340, stime: 0.840, ctime: 4.190}
-    - {func: asyncio_test   , utime: 3.460, stime: 0.860, ctime: 4.310}
-    - {func: asyncio_test   , utime: 3.300, stime: 0.840, ctime: 4.140}
-    - {func: asyncio_test   , utime: 3.200, stime: 0.920, ctime: 4.130}
-    - {func: asyncio_test   , utime: 3.240, stime: 0.890, ctime: 4.120}
-    - {func: asyncio_test   , utime: 3.210, stime: 0.920, ctime: 4.140}
-    - {func: selector_test  , utime: 0.280, stime: 0.470, ctime: 0.740}
-    - {func: selector_test  , utime: 0.350, stime: 0.660, ctime: 1.020}
-    - {func: selector_test  , utime: 0.270, stime: 0.460, ctime: 0.740}
-    - {func: selector_test  , utime: 0.270, stime: 0.470, ctime: 0.730}
-    - {func: selector_test  , utime: 0.310, stime: 0.430, ctime: 0.740}
-    - {func: selector_test  , utime: 0.300, stime: 0.440, ctime: 0.740}
-    - {func: selector_test  , utime: 0.300, stime: 0.450, ctime: 0.750}
-    - {func: cpp_test       , utime: 0.000, stime: 0.430, ctime: 0.440}
-    - {func: cpp_test       , utime: 0.000, stime: 0.450, ctime: 0.440}
-    - {func: cpp_test       , utime: 0.000, stime: 0.430, ctime: 0.440}
-    - {func: cpp_test       , utime: 0.000, stime: 0.440, ctime: 0.440}
-    - {func: cpp_test       , utime: 0.010, stime: 0.440, ctime: 0.450}
-    - {func: cpp_test       , utime: 0.010, stime: 0.430, ctime: 0.440}
-    - {func: cpp_test       , utime: 0.000, stime: 0.480, ctime: 0.480}
-    - {func: gevent_test    , utime: 1.240, stime: 0.630, ctime: 1.870}
-    - {func: gevent_test    , utime: 1.230, stime: 0.620, ctime: 1.860}
-    - {func: gevent_test    , utime: 1.260, stime: 0.590, ctime: 1.850}
-    - {func: gevent_test    , utime: 1.590, stime: 0.710, ctime: 2.300}
-    - {func: gevent_test    , utime: 1.890, stime: 0.690, ctime: 2.580}
-    - {func: gevent_test    , utime: 1.400, stime: 0.770, ctime: 2.170}
-    - {func: gevent_test    , utime: 1.360, stime: 0.640, ctime: 1.990}
-workers: 200
-data:
-    - {func: thread_test    , utime: 1.500, stime: 5.250, ctime: 2.480}
-    - {func: thread_test    , utime: 1.620, stime: 5.160, ctime: 2.490}
-    - {func: thread_test    , utime: 1.640, stime: 5.110, ctime: 2.480}
-    - {func: thread_test    , utime: 1.680, stime: 5.080, ctime: 2.490}
-    - {func: thread_test    , utime: 1.590, stime: 5.140, ctime: 2.480}
-    - {func: thread_test    , utime: 1.530, stime: 5.210, ctime: 2.480}
-    - {func: thread_test    , utime: 1.560, stime: 5.160, ctime: 2.480}
-    - {func: thread2_test   , utime: 1.570, stime: 5.160, ctime: 2.460}
-    - {func: thread2_test   , utime: 1.520, stime: 5.180, ctime: 2.460}
-    - {func: thread2_test   , utime: 1.610, stime: 5.110, ctime: 2.460}
-    - {func: thread2_test   , utime: 1.620, stime: 5.100, ctime: 2.460}
-    - {func: thread2_test   , utime: 1.610, stime: 5.100, ctime: 2.460}
-    - {func: thread2_test   , utime: 1.600, stime: 5.110, ctime: 2.460}
-    - {func: thread2_test   , utime: 1.560, stime: 5.150, ctime: 2.460}
-    - {func: asyncio_test   , utime: 7.260, stime: 1.460, ctime: 8.710}
-    - {func: asyncio_test   , utime: 6.800, stime: 1.720, ctime: 8.530}
-    - {func: asyncio_test   , utime: 6.750, stime: 1.910, ctime: 8.660}
-    - {func: asyncio_test   , utime: 6.670, stime: 1.890, ctime: 8.550}
-    - {func: asyncio_test   , utime: 8.180, stime: 2.010, ctime: 10.190}
-    - {func: asyncio_test   , utime: 6.520, stime: 1.990, ctime: 8.510}
-    - {func: asyncio_test   , utime: 7.860, stime: 2.500, ctime: 10.370}
-    - {func: selector_test  , utime: 0.620, stime: 1.210, ctime: 1.830}
-    - {func: selector_test  , utime: 0.500, stime: 0.980, ctime: 1.490}
-    - {func: selector_test  , utime: 0.620, stime: 0.860, ctime: 1.480}
-    - {func: selector_test  , utime: 0.490, stime: 0.990, ctime: 1.470}
-    - {func: selector_test  , utime: 0.450, stime: 1.010, ctime: 1.470}
-    - {func: selector_test  , utime: 0.470, stime: 1.020, ctime: 1.490}
-    - {func: selector_test  , utime: 0.540, stime: 0.930, ctime: 1.470}
-    - {func: cpp_test       , utime: 0.020, stime: 0.880, ctime: 0.900}
-    - {func: cpp_test       , utime: 0.000, stime: 0.910, ctime: 0.920}
-    - {func: cpp_test       , utime: 0.010, stime: 1.100, ctime: 1.080}
-    - {func: cpp_test       , utime: 0.000, stime: 1.230, ctime: 1.240}
-    - {func: cpp_test       , utime: 0.000, stime: 0.900, ctime: 0.910}
-    - {func: cpp_test       , utime: 0.000, stime: 0.900, ctime: 0.910}
-    - {func: cpp_test       , utime: 0.000, stime: 0.910, ctime: 0.900}
-    - {func: gevent_test    , utime: 3.430, stime: 1.480, ctime: 4.920}
-    - {func: gevent_test    , utime: 2.600, stime: 1.310, ctime: 3.910}
-    - {func: gevent_test    , utime: 2.860, stime: 1.300, ctime: 4.170}
-    - {func: gevent_test    , utime: 2.930, stime: 1.210, ctime: 4.130}
-    - {func: gevent_test    , utime: 2.750, stime: 1.410, ctime: 4.150}
-    - {func: gevent_test    , utime: 2.640, stime: 1.250, ctime: 3.900}
-    - {func: gevent_test    , utime: 2.950, stime: 1.410, ctime: 4.360}
-workers: 300
-data:
-    - {func: thread_test    , utime: 2.320, stime: 8.020, ctime: 3.800}
-    - {func: thread_test    , utime: 2.580, stime: 7.800, ctime: 3.810}
-    - {func: thread_test    , utime: 2.650, stime: 7.650, ctime: 3.790}
-    - {func: thread_test    , utime: 2.430, stime: 7.900, ctime: 3.800}
-    - {func: thread_test    , utime: 2.450, stime: 7.880, ctime: 3.800}
-    - {func: thread_test    , utime: 2.540, stime: 7.800, ctime: 3.810}
-    - {func: thread_test    , utime: 2.450, stime: 7.890, ctime: 3.810}
-    - {func: thread2_test   , utime: 2.370, stime: 7.880, ctime: 3.750}
-    - {func: thread2_test   , utime: 2.320, stime: 7.940, ctime: 3.750}
-    - {func: thread2_test   , utime: 2.360, stime: 7.890, ctime: 3.760}
-    - {func: thread2_test   , utime: 2.450, stime: 7.820, ctime: 3.750}
-    - {func: thread2_test   , utime: 2.440, stime: 7.810, ctime: 3.760}
-    - {func: thread2_test   , utime: 2.490, stime: 7.780, ctime: 3.750}
-    - {func: thread2_test   , utime: 2.300, stime: 7.950, ctime: 3.740}
-    - {func: asyncio_test   , utime: 10.150, stime: 2.380, ctime: 12.550}
-    - {func: asyncio_test   , utime: 9.880, stime: 2.620, ctime: 12.500}
-    - {func: asyncio_test   , utime: 10.170, stime: 2.520, ctime: 12.680}
-    - {func: asyncio_test   , utime: 10.320, stime: 2.890, ctime: 13.220}
-    - {func: asyncio_test   , utime: 9.960, stime: 2.900, ctime: 12.870}
-    - {func: asyncio_test   , utime: 9.840, stime: 3.010, ctime: 12.840}
-    - {func: asyncio_test   , utime: 9.590, stime: 3.010, ctime: 12.610}
-    - {func: selector_test  , utime: 0.830, stime: 1.400, ctime: 2.240}
-    - {func: selector_test  , utime: 0.870, stime: 1.360, ctime: 2.240}
-    - {func: selector_test  , utime: 0.820, stime: 1.430, ctime: 2.240}
-    - {func: selector_test  , utime: 0.790, stime: 1.440, ctime: 2.240}
-    - {func: selector_test  , utime: 0.850, stime: 1.390, ctime: 2.230}
-    - {func: selector_test  , utime: 0.890, stime: 1.410, ctime: 2.310}
-    - {func: selector_test  , utime: 0.720, stime: 1.510, ctime: 2.240}
-    - {func: cpp_test       , utime: 0.000, stime: 1.350, ctime: 1.340}
-    - {func: cpp_test       , utime: 0.000, stime: 1.360, ctime: 1.330}
-    - {func: cpp_test       , utime: 0.000, stime: 1.330, ctime: 1.330}
-    - {func: cpp_test       , utime: 0.000, stime: 1.350, ctime: 1.330}
-    - {func: cpp_test       , utime: 0.000, stime: 1.330, ctime: 1.330}
-    - {func: cpp_test       , utime: 0.000, stime: 1.320, ctime: 1.320}
-    - {func: cpp_test       , utime: 0.000, stime: 1.320, ctime: 1.340}
-    - {func: gevent_test    , utime: 4.190, stime: 1.840, ctime: 6.080}
-    - {func: gevent_test    , utime: 3.930, stime: 2.120, ctime: 6.040}
-    - {func: gevent_test    , utime: 4.180, stime: 2.020, ctime: 6.200}
-    - {func: gevent_test    , utime: 5.960, stime: 2.400, ctime: 8.380}
-    - {func: gevent_test    , utime: 5.950, stime: 2.590, ctime: 8.520}
-    - {func: gevent_test    , utime: 4.140, stime: 1.900, ctime: 6.040}
-    - {func: gevent_test    , utime: 4.360, stime: 1.940, ctime: 6.300}
+taskset -c 0,2,4 ./srv 0 1000
+-   workers: 50
+    data:
+      - {func: thread_test    , utime: 0.070, stime: 0.330, ctime: 0.410, messages: 50000}
+      - {func: thread_test    , utime: 0.180, stime: 0.340, ctime: 0.530, messages: 50000}
+      - {func: thread_test    , utime: 0.090, stime: 0.320, ctime: 0.420, messages: 50000}
+      - {func: thread_test    , utime: 0.160, stime: 0.400, ctime: 0.560, messages: 50000}
+      - {func: thread_test    , utime: 0.130, stime: 0.400, ctime: 0.520, messages: 50000}
+      - {func: thread_test    , utime: 0.120, stime: 0.540, ctime: 0.670, messages: 50000}
+      - {func: thread_test    , utime: 0.140, stime: 0.430, ctime: 0.570, messages: 50000}
+      - {func: asyncio_test   , utime: 1.890, stime: 0.690, ctime: 2.590, messages: 50000}
+      - {func: asyncio_test   , utime: 2.060, stime: 0.580, ctime: 2.640, messages: 50000}
+      - {func: asyncio_test   , utime: 2.000, stime: 0.650, ctime: 2.660, messages: 50000}
+      - {func: asyncio_test   , utime: 2.020, stime: 0.630, ctime: 2.640, messages: 50000}
+      - {func: asyncio_test   , utime: 1.920, stime: 0.660, ctime: 2.590, messages: 50000}
+      - {func: asyncio_test   , utime: 1.940, stime: 0.690, ctime: 2.620, messages: 50000}
+      - {func: asyncio_test   , utime: 1.980, stime: 0.620, ctime: 2.610, messages: 50000}
+      - {func: selector_test  , utime: 0.170, stime: 0.230, ctime: 0.410, messages: 50000}
+      - {func: selector_test  , utime: 0.150, stime: 0.230, ctime: 0.390, messages: 50000}
+      - {func: selector_test  , utime: 0.170, stime: 0.210, ctime: 0.380, messages: 50000}
+      - {func: selector_test  , utime: 0.190, stime: 0.220, ctime: 0.410, messages: 50000}
+      - {func: selector_test  , utime: 0.150, stime: 0.260, ctime: 0.410, messages: 50000}
+      - {func: selector_test  , utime: 0.170, stime: 0.220, ctime: 0.390, messages: 50000}
+      - {func: selector_test  , utime: 0.140, stime: 0.210, ctime: 0.350, messages: 50000}
+      - {func: gevent_test    , utime: 0.880, stime: 0.430, ctime: 1.300, messages: 50000}
+      - {func: gevent_test    , utime: 0.930, stime: 0.420, ctime: 1.350, messages: 50000}
+      - {func: gevent_test    , utime: 0.900, stime: 0.380, ctime: 1.300, messages: 50000}
+      - {func: gevent_test    , utime: 0.660, stime: 0.320, ctime: 0.970, messages: 50000}
+      - {func: gevent_test    , utime: 1.020, stime: 0.440, ctime: 1.460, messages: 50000}
+      - {func: gevent_test    , utime: 1.050, stime: 0.430, ctime: 1.490, messages: 50000}
+      - {func: gevent_test    , utime: 0.940, stime: 0.400, ctime: 1.330, messages: 50000}
+      - {func: cpp_poll_test  , utime: 0.000, stime: 0.230, ctime: 0.250, messages: 50000}
+      - {func: cpp_poll_test  , utime: 0.000, stime: 0.240, ctime: 0.240, messages: 50000}
+      - {func: cpp_poll_test  , utime: 0.010, stime: 0.230, ctime: 0.240, messages: 50000}
+      - {func: cpp_poll_test  , utime: 0.000, stime: 0.240, ctime: 0.240, messages: 50000}
+      - {func: cpp_poll_test  , utime: 0.000, stime: 0.250, ctime: 0.260, messages: 50000}
+      - {func: cpp_poll_test  , utime: 0.020, stime: 0.240, ctime: 0.250, messages: 50000}
+      - {func: cpp_poll_test  , utime: 0.010, stime: 0.240, ctime: 0.250, messages: 50000}
+      - {func: cpp_epoll_test , utime: 0.020, stime: 0.220, ctime: 0.260, messages: 50000}
+      - {func: cpp_epoll_test , utime: 0.040, stime: 0.210, ctime: 0.270, messages: 50000}
+      - {func: cpp_epoll_test , utime: 0.030, stime: 0.230, ctime: 0.260, messages: 50000}
+      - {func: cpp_epoll_test , utime: 0.010, stime: 0.240, ctime: 0.260, messages: 50000}
+      - {func: cpp_epoll_test , utime: 0.010, stime: 0.240, ctime: 0.270, messages: 50000}
+      - {func: cpp_epoll_test , utime: 0.010, stime: 0.240, ctime: 0.260, messages: 50000}
+      - {func: cpp_epoll_test , utime: 0.010, stime: 0.240, ctime: 0.270, messages: 50000}
+      - {func: cpp_th_test    , utime: 0.010, stime: 0.300, ctime: 0.320, messages: 50000}
+      - {func: cpp_th_test    , utime: 0.020, stime: 0.270, ctime: 0.300, messages: 50000}
+      - {func: cpp_th_test    , utime: 0.010, stime: 0.300, ctime: 0.310, messages: 50000}
+      - {func: cpp_th_test    , utime: 0.000, stime: 0.300, ctime: 0.310, messages: 50000}
+      - {func: cpp_th_test    , utime: 0.010, stime: 0.290, ctime: 0.300, messages: 50000}
+      - {func: cpp_th_test    , utime: 0.010, stime: 0.290, ctime: 0.300, messages: 50000}
+      - {func: cpp_th_test    , utime: 0.010, stime: 0.270, ctime: 0.280, messages: 50000}
+-   workers: 100
+    data:
+      - {func: thread_test    , utime: 0.260, stime: 0.720, ctime: 0.980, messages: 100000}
+      - {func: thread_test    , utime: 0.330, stime: 0.720, ctime: 1.060, messages: 100000}
+      - {func: thread_test    , utime: 0.250, stime: 0.810, ctime: 1.060, messages: 100000}
+      - {func: thread_test    , utime: 0.270, stime: 0.790, ctime: 1.070, messages: 100000}
+      - {func: thread_test    , utime: 0.230, stime: 0.830, ctime: 1.060, messages: 100000}
+      - {func: thread_test    , utime: 0.250, stime: 0.820, ctime: 1.080, messages: 100000}
+      - {func: thread_test    , utime: 0.170, stime: 0.670, ctime: 0.850, messages: 100000}
+      - {func: asyncio_test   , utime: 4.100, stime: 1.200, ctime: 5.310, messages: 100000}
+      - {func: asyncio_test   , utime: 3.870, stime: 1.370, ctime: 5.240, messages: 100000}
+      - {func: asyncio_test   , utime: 3.970, stime: 1.360, ctime: 5.340, messages: 100000}
+      - {func: asyncio_test   , utime: 3.840, stime: 1.270, ctime: 5.120, messages: 100000}
+      - {func: asyncio_test   , utime: 3.870, stime: 1.230, ctime: 5.110, messages: 100000}
+      - {func: asyncio_test   , utime: 3.950, stime: 1.320, ctime: 5.280, messages: 100000}
+      - {func: asyncio_test   , utime: 3.920, stime: 1.340, ctime: 5.260, messages: 100000}
+      - {func: selector_test  , utime: 0.330, stime: 0.530, ctime: 0.860, messages: 100000}
+      - {func: selector_test  , utime: 0.300, stime: 0.530, ctime: 0.850, messages: 100000}
+      - {func: selector_test  , utime: 0.330, stime: 0.480, ctime: 0.810, messages: 100000}
+      - {func: selector_test  , utime: 0.300, stime: 0.550, ctime: 0.850, messages: 100000}
+      - {func: selector_test  , utime: 0.320, stime: 0.490, ctime: 0.800, messages: 100000}
+      - {func: selector_test  , utime: 0.340, stime: 0.460, ctime: 0.820, messages: 100000}
+      - {func: selector_test  , utime: 0.350, stime: 0.500, ctime: 0.850, messages: 100000}
+      - {func: gevent_test    , utime: 1.980, stime: 0.770, ctime: 2.760, messages: 100000}
+      - {func: gevent_test    , utime: 1.840, stime: 0.840, ctime: 2.690, messages: 100000}
+      - {func: gevent_test    , utime: 1.490, stime: 0.730, ctime: 2.220, messages: 100000}
+      - {func: gevent_test    , utime: 1.940, stime: 0.800, ctime: 2.750, messages: 100000}
+      - {func: gevent_test    , utime: 1.900, stime: 0.830, ctime: 2.750, messages: 100000}
+      - {func: gevent_test    , utime: 2.030, stime: 0.900, ctime: 2.940, messages: 100000}
+      - {func: gevent_test    , utime: 1.920, stime: 0.810, ctime: 2.730, messages: 100000}
+      - {func: cpp_poll_test  , utime: 0.000, stime: 0.460, ctime: 0.470, messages: 100000}
+      - {func: cpp_poll_test  , utime: 0.020, stime: 0.450, ctime: 0.470, messages: 100000}
+      - {func: cpp_poll_test  , utime: 0.020, stime: 0.440, ctime: 0.460, messages: 100000}
+      - {func: cpp_poll_test  , utime: 0.020, stime: 0.440, ctime: 0.470, messages: 100000}
+      - {func: cpp_poll_test  , utime: 0.030, stime: 0.430, ctime: 0.460, messages: 100000}
+      - {func: cpp_poll_test  , utime: 0.010, stime: 0.440, ctime: 0.470, messages: 100000}
+      - {func: cpp_poll_test  , utime: 0.020, stime: 0.430, ctime: 0.460, messages: 100000}
+      - {func: cpp_epoll_test , utime: 0.060, stime: 0.410, ctime: 0.500, messages: 100000}
+      - {func: cpp_epoll_test , utime: 0.020, stime: 0.440, ctime: 0.500, messages: 100000}
+      - {func: cpp_epoll_test , utime: 0.030, stime: 0.440, ctime: 0.510, messages: 100000}
+      - {func: cpp_epoll_test , utime: 0.040, stime: 0.430, ctime: 0.500, messages: 100000}
+      - {func: cpp_epoll_test , utime: 0.040, stime: 0.430, ctime: 0.500, messages: 100000}
+      - {func: cpp_epoll_test , utime: 0.030, stime: 0.440, ctime: 0.500, messages: 100000}
+      - {func: cpp_epoll_test , utime: 0.060, stime: 0.410, ctime: 0.490, messages: 100000}
+      - {func: cpp_th_test    , utime: 0.010, stime: 0.590, ctime: 0.610, messages: 100000}
+      - {func: cpp_th_test    , utime: 0.020, stime: 0.580, ctime: 0.610, messages: 100000}
+      - {func: cpp_th_test    , utime: 0.020, stime: 0.600, ctime: 0.620, messages: 100000}
+      - {func: cpp_th_test    , utime: 0.020, stime: 0.570, ctime: 0.600, messages: 100000}
+      - {func: cpp_th_test    , utime: 0.010, stime: 0.580, ctime: 0.610, messages: 100000}
+      - {func: cpp_th_test    , utime: 0.010, stime: 0.620, ctime: 0.630, messages: 100000}
+      - {func: cpp_th_test    , utime: 0.010, stime: 0.610, ctime: 0.620, messages: 100000}
+-   workers: 200
+    data:
+      - {func: thread_test    , utime: 0.450, stime: 1.630, ctime: 2.100, messages: 200000}
+      - {func: thread_test    , utime: 0.490, stime: 1.580, ctime: 2.070, messages: 200000}
+      - {func: thread_test    , utime: 0.550, stime: 1.530, ctime: 2.090, messages: 200000}
+      - {func: thread_test    , utime: 0.510, stime: 1.570, ctime: 2.080, messages: 200000}
+      - {func: thread_test    , utime: 0.570, stime: 1.510, ctime: 2.090, messages: 200000}
+      - {func: thread_test    , utime: 0.530, stime: 1.530, ctime: 2.060, messages: 200000}
+      - {func: thread_test    , utime: 0.580, stime: 1.620, ctime: 2.220, messages: 200000}
+      - {func: asyncio_test   , utime: 7.740, stime: 2.640, ctime: 10.390, messages: 200000}
+      - {func: asyncio_test   , utime: 7.840, stime: 2.570, ctime: 10.420, messages: 200000}
+      - {func: asyncio_test   , utime: 7.750, stime: 2.590, ctime: 10.370, messages: 200000}
+      - {func: asyncio_test   , utime: 8.230, stime: 2.550, ctime: 10.790, messages: 200000}
+      - {func: asyncio_test   , utime: 7.860, stime: 2.610, ctime: 10.490, messages: 200000}
+      - {func: asyncio_test   , utime: 7.770, stime: 2.730, ctime: 10.500, messages: 200000}
+      - {func: asyncio_test   , utime: 6.970, stime: 2.390, ctime: 9.360, messages: 200000}
+      - {func: selector_test  , utime: 0.680, stime: 0.960, ctime: 1.650, messages: 200000}
+      - {func: selector_test  , utime: 0.600, stime: 1.030, ctime: 1.640, messages: 200000}
+      - {func: selector_test  , utime: 0.660, stime: 1.000, ctime: 1.680, messages: 200000}
+      - {func: selector_test  , utime: 0.600, stime: 1.050, ctime: 1.660, messages: 200000}
+      - {func: selector_test  , utime: 0.640, stime: 1.080, ctime: 1.730, messages: 200000}
+      - {func: selector_test  , utime: 0.690, stime: 1.040, ctime: 1.750, messages: 200000}
+      - {func: selector_test  , utime: 0.630, stime: 1.150, ctime: 1.780, messages: 200000}
+      - {func: gevent_test    , utime: 3.980, stime: 1.760, ctime: 5.760, messages: 200000}
+      - {func: gevent_test    , utime: 3.880, stime: 1.730, ctime: 5.620, messages: 200000}
+      - {func: gevent_test    , utime: 4.120, stime: 1.750, ctime: 5.880, messages: 200000}
+      - {func: gevent_test    , utime: 3.660, stime: 1.610, ctime: 5.270, messages: 200000}
+      - {func: gevent_test    , utime: 3.230, stime: 1.480, ctime: 4.720, messages: 200000}
+      - {func: gevent_test    , utime: 4.180, stime: 1.750, ctime: 5.940, messages: 200000}
+      - {func: gevent_test    , utime: 3.790, stime: 1.770, ctime: 5.570, messages: 200000}
+      - {func: cpp_poll_test  , utime: 0.010, stime: 0.880, ctime: 0.900, messages: 200000}
+      - {func: cpp_poll_test  , utime: 0.030, stime: 0.880, ctime: 0.900, messages: 200000}
+      - {func: cpp_poll_test  , utime: 0.020, stime: 0.880, ctime: 0.920, messages: 200000}
+      - {func: cpp_poll_test  , utime: 0.030, stime: 0.870, ctime: 0.920, messages: 200000}
+      - {func: cpp_poll_test  , utime: 0.030, stime: 0.880, ctime: 0.920, messages: 200000}
+      - {func: cpp_poll_test  , utime: 0.040, stime: 0.880, ctime: 0.920, messages: 200000}
+      - {func: cpp_poll_test  , utime: 0.020, stime: 0.880, ctime: 0.910, messages: 200000}
+      - {func: cpp_epoll_test , utime: 0.090, stime: 0.840, ctime: 0.980, messages: 200000}
+      - {func: cpp_epoll_test , utime: 0.080, stime: 0.840, ctime: 0.970, messages: 200000}
+      - {func: cpp_epoll_test , utime: 0.100, stime: 0.810, ctime: 0.980, messages: 200000}
+      - {func: cpp_epoll_test , utime: 0.070, stime: 0.840, ctime: 0.970, messages: 200000}
+      - {func: cpp_epoll_test , utime: 0.060, stime: 0.860, ctime: 0.970, messages: 200000}
+      - {func: cpp_epoll_test , utime: 0.040, stime: 0.880, ctime: 0.980, messages: 200000}
+      - {func: cpp_epoll_test , utime: 0.080, stime: 0.840, ctime: 0.960, messages: 200000}
+      - {func: cpp_th_test    , utime: 0.050, stime: 1.290, ctime: 1.350, messages: 200000}
+      - {func: cpp_th_test    , utime: 0.050, stime: 1.350, ctime: 1.410, messages: 200000}
+      - {func: cpp_th_test    , utime: 0.050, stime: 1.400, ctime: 1.460, messages: 200000}
+      - {func: cpp_th_test    , utime: 0.060, stime: 1.370, ctime: 1.430, messages: 200000}
+      - {func: cpp_th_test    , utime: 0.040, stime: 1.420, ctime: 1.480, messages: 200000}
+      - {func: cpp_th_test    , utime: 0.040, stime: 1.390, ctime: 1.430, messages: 200000}
+      - {func: cpp_th_test    , utime: 0.030, stime: 1.430, ctime: 1.460, messages: 200000}
+-   workers: 300
+    data:
+      - {func: thread_test    , utime: 0.820, stime: 2.310, ctime: 3.150, messages: 300000}
+      - {func: thread_test    , utime: 0.850, stime: 2.300, ctime: 3.160, messages: 300000}
+      - {func: thread_test    , utime: 0.870, stime: 2.280, ctime: 3.160, messages: 300000}
+      - {func: thread_test    , utime: 0.810, stime: 2.360, ctime: 3.180, messages: 300000}
+      - {func: thread_test    , utime: 0.780, stime: 2.390, ctime: 3.180, messages: 300000}
+      - {func: thread_test    , utime: 0.680, stime: 2.190, ctime: 2.860, messages: 300000}
+      - {func: thread_test    , utime: 0.850, stime: 2.330, ctime: 3.200, messages: 300000}
+      - {func: asyncio_test   , utime: 11.730, stime: 3.830, ctime: 15.570, messages: 300000}
+      - {func: asyncio_test   , utime: 12.070, stime: 3.940, ctime: 16.020, messages: 300000}
+      - {func: asyncio_test   , utime: 11.660, stime: 3.920, ctime: 15.590, messages: 300000}
+      - {func: asyncio_test   , utime: 12.050, stime: 3.880, ctime: 15.950, messages: 300000}
+      - {func: asyncio_test   , utime: 11.630, stime: 3.710, ctime: 15.350, messages: 300000}
+      - {func: asyncio_test   , utime: 11.760, stime: 3.950, ctime: 15.720, messages: 300000}
+      - {func: asyncio_test   , utime: 11.320, stime: 3.690, ctime: 15.020, messages: 300000}
+      - {func: selector_test  , utime: 0.960, stime: 1.710, ctime: 2.680, messages: 300000}
+      - {func: selector_test  , utime: 0.970, stime: 1.670, ctime: 2.640, messages: 300000}
+      - {func: selector_test  , utime: 1.000, stime: 1.650, ctime: 2.640, messages: 300000}
+      - {func: selector_test  , utime: 1.020, stime: 1.610, ctime: 2.640, messages: 300000}
+      - {func: selector_test  , utime: 0.970, stime: 1.700, ctime: 2.680, messages: 300000}
+      - {func: selector_test  , utime: 0.970, stime: 1.710, ctime: 2.680, messages: 300000}
+      - {func: selector_test  , utime: 0.920, stime: 1.740, ctime: 2.670, messages: 300000}
+      - {func: gevent_test    , utime: 5.740, stime: 2.770, ctime: 8.520, messages: 300000}
+      - {func: gevent_test    , utime: 6.010, stime: 2.890, ctime: 8.900, messages: 300000}
+      - {func: gevent_test    , utime: 6.050, stime: 2.540, ctime: 8.600, messages: 300000}
+      - {func: gevent_test    , utime: 5.960, stime: 2.890, ctime: 8.870, messages: 300000}
+      - {func: gevent_test    , utime: 5.970, stime: 2.770, ctime: 8.740, messages: 300000}
+      - {func: gevent_test    , utime: 6.040, stime: 2.820, ctime: 8.870, messages: 300000}
+      - {func: gevent_test    , utime: 5.870, stime: 2.610, ctime: 8.510, messages: 300000}
+      - {func: cpp_poll_test  , utime: 0.050, stime: 1.330, ctime: 1.400, messages: 300000}
+      - {func: cpp_poll_test  , utime: 0.040, stime: 1.310, ctime: 1.360, messages: 300000}
+      - {func: cpp_poll_test  , utime: 0.030, stime: 1.320, ctime: 1.370, messages: 300000}
+      - {func: cpp_poll_test  , utime: 0.030, stime: 1.320, ctime: 1.380, messages: 300000}
+      - {func: cpp_poll_test  , utime: 0.040, stime: 1.320, ctime: 1.360, messages: 300000}
+      - {func: cpp_poll_test  , utime: 0.040, stime: 1.300, ctime: 1.340, messages: 300000}
+      - {func: cpp_poll_test  , utime: 0.040, stime: 1.320, ctime: 1.360, messages: 300000}
+      - {func: cpp_epoll_test , utime: 0.120, stime: 1.280, ctime: 1.460, messages: 300000}
+      - {func: cpp_epoll_test , utime: 0.120, stime: 1.250, ctime: 1.430, messages: 300000}
+      - {func: cpp_epoll_test , utime: 0.140, stime: 1.260, ctime: 1.450, messages: 300000}
+      - {func: cpp_epoll_test , utime: 0.120, stime: 1.280, ctime: 1.460, messages: 300000}
+      - {func: cpp_epoll_test , utime: 0.100, stime: 1.280, ctime: 1.430, messages: 300000}
+      - {func: cpp_epoll_test , utime: 0.060, stime: 1.330, ctime: 1.440, messages: 300000}
+      - {func: cpp_epoll_test , utime: 0.100, stime: 1.310, ctime: 1.450, messages: 300000}
+      - {func: cpp_th_test    , utime: 0.080, stime: 2.450, ctime: 2.550, messages: 300000}
+      - {func: cpp_th_test    , utime: 0.150, stime: 2.580, ctime: 2.730, messages: 300000}
+      - {func: cpp_th_test    , utime: 0.070, stime: 2.580, ctime: 2.680, messages: 300000}
+      - {func: cpp_th_test    , utime: 0.070, stime: 2.520, ctime: 2.600, messages: 300000}
+      - {func: cpp_th_test    , utime: 0.060, stime: 2.470, ctime: 2.540, messages: 300000}
+      - {func: cpp_th_test    , utime: 0.080, stime: 2.740, ctime: 2.840, messages: 300000}
+      - {func: cpp_th_test    , utime: 0.070, stime: 2.580, ctime: 2.660, messages: 300000}
+-   workers: 400
+    data:
+      - {func: thread_test    , utime: 1.090, stime: 3.120, ctime: 4.220, messages: 400000}
+      - {func: thread_test    , utime: 1.100, stime: 3.360, ctime: 4.470, messages: 400000}
+      - {func: thread_test    , utime: 1.300, stime: 3.270, ctime: 4.570, messages: 400000}
+      - {func: thread_test    , utime: 1.220, stime: 3.930, ctime: 5.170, messages: 400000}
+      - {func: thread_test    , utime: 1.100, stime: 3.010, ctime: 4.120, messages: 400000}
+      - {func: thread_test    , utime: 0.840, stime: 2.510, ctime: 3.340, messages: 400000}
+      - {func: thread_test    , utime: 1.120, stime: 3.080, ctime: 4.200, messages: 400000}
+      - {func: asyncio_test   , utime: 16.070, stime: 5.140, ctime: 21.230, messages: 400000}
+      - {func: asyncio_test   , utime: 16.490, stime: 5.310, ctime: 21.800, messages: 400000}
+      - {func: asyncio_test   , utime: 16.390, stime: 5.230, ctime: 21.640, messages: 400000}
+      - {func: asyncio_test   , utime: 16.550, stime: 5.240, ctime: 21.810, messages: 400000}
+      - {func: asyncio_test   , utime: 16.460, stime: 5.320, ctime: 21.800, messages: 400000}
+      - {func: asyncio_test   , utime: 15.590, stime: 5.210, ctime: 20.810, messages: 400000}
+      - {func: asyncio_test   , utime: 14.490, stime: 4.960, ctime: 19.470, messages: 400000}
+      - {func: selector_test  , utime: 1.410, stime: 2.490, ctime: 3.910, messages: 400000}
+      - {func: selector_test  , utime: 1.430, stime: 2.360, ctime: 3.790, messages: 400000}
+      - {func: selector_test  , utime: 1.430, stime: 2.370, ctime: 3.810, messages: 400000}
+      - {func: selector_test  , utime: 1.360, stime: 2.420, ctime: 3.780, messages: 400000}
+      - {func: selector_test  , utime: 1.380, stime: 2.430, ctime: 3.810, messages: 400000}
+      - {func: selector_test  , utime: 1.310, stime: 2.410, ctime: 3.720, messages: 400000}
+      - {func: selector_test  , utime: 1.340, stime: 2.390, ctime: 3.740, messages: 400000}
+      - {func: gevent_test    , utime: 7.620, stime: 3.400, ctime: 11.030, messages: 400000}
+      - {func: gevent_test    , utime: 6.980, stime: 3.210, ctime: 10.210, messages: 400000}
+      - {func: gevent_test    , utime: 6.380, stime: 3.090, ctime: 9.470, messages: 400000}
+      - {func: gevent_test    , utime: 6.600, stime: 3.230, ctime: 9.840, messages: 400000}
+      - {func: gevent_test    , utime: 7.040, stime: 3.320, ctime: 10.360, messages: 400000}
+      - {func: gevent_test    , utime: 6.810, stime: 3.580, ctime: 10.390, messages: 400000}
+      - {func: gevent_test    , utime: 6.110, stime: 3.060, ctime: 9.170, messages: 400000}
+      - {func: cpp_poll_test  , utime: 0.060, stime: 1.770, ctime: 1.830, messages: 400000}
+      - {func: cpp_poll_test  , utime: 0.060, stime: 1.780, ctime: 1.840, messages: 400000}
+      - {func: cpp_poll_test  , utime: 0.080, stime: 1.740, ctime: 1.830, messages: 400000}
+      - {func: cpp_poll_test  , utime: 0.070, stime: 1.760, ctime: 1.850, messages: 400000}
+      - {func: cpp_poll_test  , utime: 0.040, stime: 1.800, ctime: 1.860, messages: 400000}
+      - {func: cpp_poll_test  , utime: 0.040, stime: 1.810, ctime: 1.870, messages: 400000}
+      - {func: cpp_poll_test  , utime: 0.090, stime: 1.750, ctime: 1.840, messages: 400000}
+      - {func: cpp_epoll_test , utime: 0.120, stime: 1.760, ctime: 1.930, messages: 400000}
+      - {func: cpp_epoll_test , utime: 0.080, stime: 1.780, ctime: 1.920, messages: 400000}
+      - {func: cpp_epoll_test , utime: 0.110, stime: 1.740, ctime: 1.910, messages: 400000}
+      - {func: cpp_epoll_test , utime: 0.140, stime: 1.730, ctime: 1.930, messages: 400000}
+      - {func: cpp_epoll_test , utime: 0.090, stime: 1.810, ctime: 1.950, messages: 400000}
+      - {func: cpp_epoll_test , utime: 0.140, stime: 1.720, ctime: 1.910, messages: 400000}
+      - {func: cpp_epoll_test , utime: 0.110, stime: 1.780, ctime: 1.940, messages: 400000}
+      - {func: cpp_th_test    , utime: 0.130, stime: 2.990, ctime: 3.130, messages: 400000}
+      - {func: cpp_th_test    , utime: 0.100, stime: 2.590, ctime: 2.700, messages: 400000}
+      - {func: cpp_th_test    , utime: 0.060, stime: 2.170, ctime: 2.240, messages: 400000}
+      - {func: cpp_th_test    , utime: 0.120, stime: 2.980, ctime: 3.120, messages: 400000}
+      - {func: cpp_th_test    , utime: 0.090, stime: 3.310, ctime: 3.400, messages: 400000}
+      - {func: cpp_th_test    , utime: 0.060, stime: 2.760, ctime: 2.830, messages: 400000}
+      - {func: cpp_th_test    , utime: 0.070, stime: 2.290, ctime: 2.380, messages: 400000}
+
+taskset -c 0,2,4 ./srv 0 100

@@ -21,6 +21,12 @@ AsyncIO explained:
     asyncio + SA - http://asvetlov.blogspot.com/2014/05/aiopgsa.html
     introduction to async programming http://cs.brown.edu/courses/cs168/f12/handouts/async.pdf
 
+Threads:
+    some python? thread issues on 10k+
+    с большим количеством потоков система становится менее контролируемой, необходимо выделять
+    управляющим потокам повышенный приоритет или выделенные ядра
+    Выделение ядер немного напоминает выделенные сети для администрирования
+
 Links:
     gevent http://sdiehl.github.io/gevent-tutorial/
     написание asyncio вручную - https://www.youtube.com/watch?v=MCs5OvhV9S4
@@ -47,10 +53,14 @@ Posts:
 Альтернативы:
     https://github.com/dabeaz/curio
 
+    go - переключение на блокирующих вызовах и, иногда, на входах в функцию
+
 Что рассказать:
     Введение - C10k, 
+    Наиболее известные примеры асинхронных систем: erlang, akka, 
     невозможно скрыть асинхронную операцию - не будет ORM, ...
     нет контроля/управления жизненным циклом гринлетов
+    шедулеры для сопроцедур - проблема (но в варианте питона - пофиг, epoll и есть шедулер)
     yield не маштабируется - чем больше степень вложенности вызовов, тем дороже yield
 
     вариант массивной параллельности плохо работает с лимитами
@@ -62,6 +72,10 @@ Posts:
     asyncio для массового параллелизма отдельного запроса
     аналогия с threadpool/future
     хороший пример - openstack API
+
+Картинки:
+    rrate, sys/req, user/req for low/moderate and heavy loaded systems
+    syscalls/cpu switches with and without affinity
 
 Финальный ссылки:
     http://techspot.zzzeek.org/2015/02/15/asynchronous-python-and-databases/

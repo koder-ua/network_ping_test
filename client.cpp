@@ -14,14 +14,15 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <stropts.h>
 #include <sys/types.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-const char message[] = "Hello World!\n";
-const int message_len = sizeof(message) - 1;
+const int message_len = 1024;
+const char message[message_len] = {'X'};
 
 bool connect_all(int sock_count,
                  std::vector<int> & sockets,
@@ -72,7 +73,7 @@ bool connect_all(int sock_count,
 }
 
 bool process_message(int sockfd) {
-    std::array<char, 32> buffer;
+    std::array<char, message_len> buffer;
     int bc = recv(sockfd, buffer.begin(), buffer.size(), 0);
     if (0 > bc) {
         std::perror("recv(sockfd, buffer.begin(), buffer.size(), 0)");
@@ -212,14 +213,43 @@ public:
     }
 };
 
+const unsigned long NS_TO_S = 1000000000;
+unsigned long time_ns()
+{
+    struct timespec spec;
+    clock_gettime(CLOCK_REALTIME, &spec);
+    return spec.tv_sec * NS_TO_S + spec.tv_nsec;
+}
+
 
 void th_func(int sockfd,
-             std::atomic_ulong * msg_processed_a){
-    int counter = 0;
+             std::atomic_ulong * msg_processed_a,
+             std::atomic_ulong * started,
+             std::atomic_ulong * finished,
+             std::atomic_bool  * run_lola_run) {
+
+    unsigned long counter = 0;
+    (*started) += 1;
+
+    while(not run_lola_run->load())
+        usleep(1000000);
+
     while(process_message(sockfd))
         ++counter;
-    *msg_processed_a += counter;
+
+    (*msg_processed_a) += counter;
+    (*finished) += 1;
 }
+
+
+class SocksList{
+public:
+    std::vector<int> sockets;
+    ~SocksList() {
+        for(int sockfd: sockets)
+            close(sockfd);
+    }
+};
 
 
 extern "C"
@@ -227,20 +257,44 @@ int run_test_th(const char * ip, const int port,
                 const int th_count, int * msg_processed,
                 void (*preparation_done)(), void (*test_done)()) {
     std::atomic_ulong counter{0};
-    std::vector<int> sockets;
+    std::atomic_ulong started{0};
+    std::atomic_ulong finished{0};
+    std::atomic_bool run_lola_run{false};
+
+    SocksList sockets;
     std::thread threads[th_count];
 
-    if (not connect_all(th_count, sockets, ip, port, false)) {
-        for(int sockfd: sockets)
-            close(sockfd);
+    if (not connect_all(th_count, sockets.sockets, ip, port, false)) {
         return 1;
     }
 
-    for(unsigned int idx = 0; idx < sockets.size(); ++idx)
-        threads[idx] = std::thread(th_func, sockets[idx], &counter);
+    for(unsigned int idx = 0; idx < sockets.sockets.size(); ++idx)
+        threads[idx] = std::thread(th_func, sockets.sockets[idx],
+                                   &counter,
+                                   &started,
+                                   &finished,
+                                   &run_lola_run);
+
+    int policy;
+    struct sched_param param;
+
+    pthread_getschedparam(pthread_self(), &policy, &param);
+    auto saved_prio = param.sched_priority;
+    param.sched_priority = sched_get_priority_max(SCHED_RR);
+
+    if ( 0 > pthread_setschedparam(pthread_self(), SCHED_RR, &param))
+        perror("pthread_setschedparam:");
+
+    param.sched_priority = saved_prio;
+    pthread_setschedparam(pthread_self(), policy, &param);
+
+    while(started.load() != (unsigned int)th_count)
+        usleep(1000000);
 
     if (nullptr != preparation_done)
         preparation_done();
+
+    run_lola_run.store(true);
 
     for(auto & th: threads)
         th.join();
@@ -251,9 +305,6 @@ int run_test_th(const char * ip, const int port,
     if (nullptr != msg_processed)
         *msg_processed = counter.load();
 
-    for(int sockfd: sockets)
-        close(sockfd);    
-
     return 0;
 }
 
@@ -262,31 +313,21 @@ int run_test(RSelector & selector,
              void (*preparation_done)(), void (*test_done)()) {
     int counter = 0;
     int fd_left = th_count;
-    std::vector<int> sockets;
+    SocksList sockets;
 
-    if (not connect_all(th_count, sockets, ip, port, true)) {
-        for(int sockfd: sockets)
-            close(sockfd);
+    if (not connect_all(th_count, sockets.sockets, ip, port, true))
         return 1;
-    }
 
     if (nullptr != preparation_done)
         preparation_done();
 
-    for(int sockfd: sockets) {
-        if (not selector.add_fd(sockfd)) {
-            for(int sockfd: sockets)
-                close(sockfd);
+    for(int sockfd: sockets.sockets)
+        if (not selector.add_fd(sockfd))
             return 1;
-        }
-    }
 
     while(fd_left > 0) {
-        if (not selector.wait()){
-            for(int sockfd: sockets)
-                close(sockfd);
+        if (not selector.wait())
             return 1;
-        }
 
         uint32_t events;
         int sockfd;
@@ -310,7 +351,6 @@ int run_test(RSelector & selector,
             }
 
             if (close_sock) {
-                close(sockfd);
                 selector.remove_current_ready();
                 --fd_left;
             }
@@ -322,9 +362,6 @@ int run_test(RSelector & selector,
 
     if (nullptr != msg_processed)
         *msg_processed = counter;
-
-    for(int sockfd: sockets)
-        close(sockfd);
 
     return 0;
 }
