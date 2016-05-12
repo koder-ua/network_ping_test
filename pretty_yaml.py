@@ -3,19 +3,7 @@ __all__ = ['dumps']
 
 
 def dumps_simple(val):
-    bad_symbols = set(" \r\t\n,':{}[]><;")
-
-    if isinstance(val, basestring):
-        if isinstance(val, unicode):
-            val = val.encode('utf8')
-
-        try:
-            float(val)
-            val = repr(val)
-        except ValueError:
-            if len(bad_symbols & set(val)) != 0:
-                val = repr(val)
-
+    if isinstance(val, str):
         return val
     elif val is True:
         return 'true'
@@ -23,17 +11,16 @@ def dumps_simple(val):
         return 'false'
     elif val is None:
         return 'null'
-
     return str(val)
 
 
 def is_simple(val):
-    simple_type = isinstance(val, (str, unicode, int, long, bool, float))
+    simple_type = isinstance(val, (str, bytes, int, bool, float))
     return simple_type or val is None
 
 
 def all_nums(vals):
-    return all(isinstance(val, (int, float, long)) for val in vals)
+    return all(isinstance(val, (int, float)) for val in vals)
 
 
 def dumpv(data, tab_sz=4, width=160, min_width=40):

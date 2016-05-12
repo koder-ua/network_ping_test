@@ -15,7 +15,7 @@ from gevent import socket as gevent_socket
 import uvloop
 
 
-from pretty_yaml import 
+import pretty_yaml
 
 
 class TestParams:
@@ -179,29 +179,30 @@ def asyncio_test(params, ready_to_connect, before_test, after_test,
 def asyncio_proto_test(params, ready_to_connect, before_test, after_test,
                        loop_cls=asyncio.new_event_loop):
 
-    class EchoProtocol(asyncio.Protocol):
-        started = False
-        finished = False
-        server = None
+    started = False
+    finished = False
+    e_server = []
 
+    class EchoProtocol(asyncio.Protocol):
         def connection_made(self, transport):
             self.transport = transport
 
         def connection_lost(self, exc):
+            nonlocal finished
             self.transport = None
-            if not self.finished:
-                self.finished = True
-                self.server.close()
-                self.server = None
+            if not finished:
+                finished = True
+                e_server.pop().close()
 
         def data_received(self, data):
+            nonlocal started
+            if not started:
+                before_test()
+                started = True
             if len(data) != params.msize:
                 self.transport.close()
             else:
                 self.transport.write(data)
-                if not self.started:
-                    before_test()
-                    self.started = True
 
     loop = loop_cls()
     loop.set_debug(False)
@@ -212,7 +213,7 @@ def asyncio_proto_test(params, ready_to_connect, before_test, after_test,
                               reuse_port=True)
 
     server = loop.run_until_complete(coro)
-    EchoProtocol.server = server
+    e_server.append(server)
     ready_to_connect()
     loop.run_until_complete(server.wait_closed())
     after_test()
@@ -427,8 +428,14 @@ def main(argv):
         msize=opts.msize,
         runtime=opts.runtime,
         timeout=opts.timeout,
-        data=[]
+        data=[],
     )
+
+    if opts.meta != []:
+        results_struct['meta'] = {}
+        for data in opts.meta:
+            key, val = data.split('=', 1)
+            results_struct['meta'][key] = val
 
     # templ = "      - {{func: {:<15}, utime: {:>6.2f}, stime: {:>6.2f}, ctime: {:>6.2f}, messages: {:>8d}}}"
     # print("-   workers: {0.count}".format(opts))
@@ -436,8 +443,6 @@ def main(argv):
     # print("    msize: {0.msize}".format(opts))
     # print("    runtime: {0.runtime}".format(opts))
     # print("    timeout: {0.timeout}".format(opts))
-    # for data in opts.meta:
-    #     print("    {}: {}".format(*data.split('=', 1)))
     # print("    data:")
 
     for func in run_tests:
@@ -446,13 +451,12 @@ def main(argv):
             # print(templ.format(func.__name__.replace("_test", ''), utime, stime, ctime, msg_precessed))
             curr_res = dict(
                 func=func.__name__.replace("_test", ''),
-                utime=utime,
-                stime=stime,
-                ctime=ctime,
-                messages=msg_precessed,
-                meta=meta)
+                utime="{:.2f}".format(utime),
+                stime="{:.2f}".format(stime),
+                ctime="{:.2f}".format(ctime),
+                messages=msg_precessed)
             results_struct['data'].append(curr_res)
-    print(yaml.dumps(results_struct))
+    print(pretty_yaml.dumps([results_struct]))
     return 0
 
 
