@@ -5,7 +5,8 @@ BIN_FOLDER=bin
 BINARIES = $(BIN_FOLDER)/client_cpp $(BIN_FOLDER)/libclient.so $(BIN_FOLDER)/libclient2.so $(BIN_FOLDER)/server_cpp
 
 # CPP_OPTS = -pthread -O3 -march=native -Wall -Wpedantic -Wno-vla -Wextra -std=c++11
-CPP_OPTS = -pthread -O0 -Wall -Wpedantic -Wno-vla -Wextra -std=c++11 -g -ggdb
+# CPP_OPTS = -fsanitize=address -pthread -O0 -Wall -Wpedantic -Wno-vla -Wextra -std=c++11 -g3 -ggdb -fno-omit-frame-pointer
+CPP_OPTS = -pthread -O0 -Wall -Wpedantic -Wno-vla -Wextra -std=c++11 -g3 -ggdb -fno-omit-frame-pointer
 
 all: $(BINARIES)
 

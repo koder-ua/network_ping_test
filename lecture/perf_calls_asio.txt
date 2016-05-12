@@ -1,0 +1,63 @@
+REMOTE
+ubuntu@cz7834:~/koder/network_ping_test$ sudo taskset -c 0 perf stat -e 'syscalls:sys_enter_*' python3.5 main.py 172.16.40.37 300 'asyncio'
+-   workers: 300
+    data:
+      - {func: asyncio        , utime:   7.97, stime:   2.04, ctime:  10.02, messages:   330603}
+
+ Performance counter stats for 'python3.5 main.py 172.16.40.37 300 asyncio':
+
+           330,903      syscalls:sys_enter_sendto                                   
+           331,503      syscalls:sys_enter_recvfrom                                   
+             1,202      syscalls:sys_enter_epoll_ctl                                   
+             4,319      syscalls:sys_enter_epoll_wait                                   
+             2,049      syscalls:sys_enter_futex                                    
+           331,083      syscalls:sys_enter_mmap                                     
+           330,903      syscalls:sys_enter_mremap                                   
+           330,997      syscalls:sys_enter_munmap                                   
+
+      10.246325515 seconds time elapsed
+
+
+REMOTE
+ubuntu@cz7834:~/koder/network_ping_test$ sudo taskset -c 0 perf stat -e 'syscalls:sys_enter_*' python3.5 main.py 172.16.40.37 300 'asyncio_sock'
+-   workers: 300
+    data:
+      - {func: asyncio_sock   , utime:   8.82, stime:   1.20, ctime:  10.03, messages:   220486}
+
+ Performance counter stats for 'python3.5 main.py 172.16.40.37 300 asyncio_sock':
+
+           220,486      syscalls:sys_enter_sendto                                   
+           441,271      syscalls:sys_enter_recvfrom                                   
+           440,972      syscalls:sys_enter_epoll_ctl                                   
+
+
+LOCAL
+ubuntu@cz7834:~/koder/network_ping_test$ sudo taskset -c 0 perf stat -e 'syscalls:sys_enter_*' python3.5 main.py 172.16.40.43 300 'asyncio'       
+-   workers: 300
+    data:
+      - {func: asyncio        , utime:   7.32, stime:   2.68, ctime:  10.02, messages:   332100}
+
+ Performance counter stats for 'python3.5 main.py 172.16.40.43 300 asyncio':
+
+           332,400      syscalls:sys_enter_sendto                                   
+           333,000      syscalls:sys_enter_recvfrom                                   
+             1,202      syscalls:sys_enter_epoll_ctl                                   
+             4,319      syscalls:sys_enter_epoll_wait                                   
+             2,051      syscalls:sys_enter_futex                                    
+           332,400      syscalls:sys_enter_mremap                                   
+           332,541      syscalls:sys_enter_munmap                                   
+           332,629      syscalls:sys_enter_mmap                                     
+
+      10.213483503 seconds time elapsed
+
+LOCAL
+ubuntu@cz7834:~/koder/network_ping_test$ sudo taskset -c 0 perf stat -e 'syscalls:sys_enter_*' python3.5 main.py 172.16.40.43 300 'asyncio_sock'
+-   workers: 300
+    data:
+      - {func: asyncio_sock   , utime:   7.77, stime:   2.25, ctime:  10.04, messages:   540428}
+
+ Performance counter stats for 'python3.5 main.py 172.16.40.43 300 asyncio_sock':
+
+           540,428      syscalls:sys_enter_sendto                                   
+           647,503      syscalls:sys_enter_recvfrom                                   
+           213,552      syscalls:sys_enter_epoll_ctl                                   

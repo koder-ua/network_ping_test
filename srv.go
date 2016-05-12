@@ -12,6 +12,7 @@ import (
 const (
     CONN_HOST = "0.0.0.0"
     CONN_PORT = 33331
+    CONTROL_PORT = 33332
     CONN_TYPE = "tcp"
 )
 
@@ -36,7 +37,52 @@ func handleRequest(conn *net.TCPConn, max_time int, timeout int, msize int, mess
     conn.Close()
 }
 
+struct Settings {}
+struct Stat {}
+
+func controlProc(req_ch chan Stat) {
+    addr, err := net.ResolveUDPAddr("udp", ":" + str(CONTROL_PORT))
+    conn, err := net.ListenUDP("udp", &addr)
+    defer conn.Close()
+    buffer := make([]byte, 1024)
+
+    for {
+        n, addr, err := conn.ReadFromUDP(buffer)
+        s := strings.SplitN(string(buffer[:n]), " ", 2)
+        if len(s) == 1 {}
+
+        // send reply
+    }
+}
+
+func masterProc(conn_ch chan net.TCPConn) {
+    addr := net.TCPAddr{net.ParseIP(CONN_HOST), CONN_PORT, ""}
+    l, err := net.ListenTCP(CONN_TYPE, &addr)
+    if err != nil {
+        fmt.Println("Error listening:", err.Error())
+        os.Exit(1)
+    }
+
+    for {
+        conn, err := l.AcceptTCP()
+        if err != nil {
+            fmt.Println("Error accepting: ", err.Error())
+            os.Exit(1)
+        }
+        l = conn.SetNoDelay(true)
+        conn_ch <- l
+    }
+}
+
 func mainLoop(timeout int, conn_time int, msize int) {
+
+    settings_chan := make chan Settings
+    stat_chan := make chan Stat
+    conn_chan := make chan net.TCPConn
+
+    go controlProc(settings_chan, stat_chan)
+    go masterProc()
+
     message := []byte(strings.Repeat("X", msize))
 
     addr := net.TCPAddr{net.ParseIP(CONN_HOST), CONN_PORT, ""}
@@ -45,16 +91,17 @@ func mainLoop(timeout int, conn_time int, msize int) {
         fmt.Println("Error listening:", err.Error())
         os.Exit(1)
     }
-    defer l.Close()
     for {
-        conn, err := l.AcceptTCP()
-        if err != nil {
-            fmt.Println("Error accepting: ", err.Error())
-            os.Exit(1)
-        }
-
-        _ = conn.SetNoDelay(true)
-        go handleRequest(conn, conn_time, timeout, msize, message)
+        select {
+        case conn := <-conn_chan:
+            go handleRequest(conn, curr_sett, message)
+        case new_stat := <-stat_chan:
+            ...
+        case addr, req := <-req_chan:
+            ...
+        default:
+            fmt.Println("No value ready, moving on.")
+        }                
     }
 }
 

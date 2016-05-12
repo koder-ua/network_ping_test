@@ -257,7 +257,7 @@ void worker_thread(int epollfd,
 
             if ( not item.second ) {
                 auto tout_l2 = log2_64(curr_time - item.first->second);
-                if (tout_l2 > (int)result->lat_ns_log2.size()) {
+                if (tout_l2 >= (int)result->lat_ns_log2.size()) {
                     ++(result->lat_ns_log2[result->lat_ns_log2.size() - 1]);
                 } else {
                     ++(result->lat_ns_log2[tout_l2]);
@@ -336,7 +336,11 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads) {
     tresults.resize(worker_threads);
 
     std::atomic_bool done{false};
+
+    // unsigned char guard1 = 0x7A;
+    // unsigned char guard2 = 0x7A;
     std::vector<std::thread> workers;
+
     std::atomic_int active_count{worker_threads};
 
     for(int i = 0; i < worker_threads ; ++i)
@@ -348,7 +352,7 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads) {
                              &tresults[i]);
 
 
-    bool failed;
+    bool failed = false;
     char message[params.message_len];
     std::memset(message, 'X', sizeof(message));
 
@@ -382,6 +386,10 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads) {
             res.lat_ns_log2[pos] += ires.lat_ns_log2[pos];
     }
 
+
+    // std::cout << std::hex << (unsigned int)guard1 << " " << (unsigned int)guard2 << std::dec << "\n";
+    // std::cout << "res.mcount = " << res.mcount << "\n";
+
     return not failed;
 }
 
@@ -409,7 +417,7 @@ void process_client(int sock) {
     if (not load_from_str(buff, params))
         return;
 
-    const int worker_thread = 1;
+    const int worker_thread = 3;
     TestResult res;
     if (not run_test(params, res, worker_thread))
         return;

@@ -8,13 +8,14 @@ import asyncio
 import argparse
 import selectors
 import threading
-
 from concurrent.futures import ThreadPoolExecutor, wait
 
 import gevent
 from gevent import socket as gevent_socket
-
 import uvloop
+
+
+from pretty_yaml import 
 
 
 class TestParams:
@@ -256,18 +257,19 @@ def thread_test(params, ready_to_connect, before_test, after_test):
 
     threads = []
     ready_to_connect()
-    for _ in range(params.count):
+    for i in range(params.count):
         sock, _ = master_sock.accept()
         prepare_socket(sock, set_no_block=False)
         th = threading.Thread(target=tcp_echo_client,
                               args=(sock,))
         threads.append(th)
         th.daemon = True
+        if i == params.count - 1:
+            before_test()
         th.start()
 
     master_sock.close()
 
-    before_test()
     for th in threads:
         th.join()
     after_test()
@@ -418,23 +420,39 @@ def main(argv):
             run_tests.append(ALL_TESTS[test_name])
 
     run_tests.sort(key=lambda x: x.__name__)
-    templ = "      - {{func: {:<15}, utime: {:>6.2f}, stime: {:>6.2f}, ctime: {:>6.2f}, messages: {:>8d}}}"
 
-    print("-   workers: {0.count}".format(opts))
-    print("    server: {0.loader_ip}:{0.loader_port}".format(opts))
-    print("    msize: {0.msize}".format(opts))
-    print("    runtime: {0.runtime}".format(opts))
-    print("    timeout: {0.timeout}".format(opts))
+    results_struct = dict(
+        workers=opts.count,
+        server="{0.loader_ip}:{0.loader_port}".format(opts),
+        msize=opts.msize,
+        runtime=opts.runtime,
+        timeout=opts.timeout,
+        data=[]
+    )
 
-    for data in opts.meta:
-        print("    {}: {}".format(*data.split('=', 1)))
+    # templ = "      - {{func: {:<15}, utime: {:>6.2f}, stime: {:>6.2f}, ctime: {:>6.2f}, messages: {:>8d}}}"
+    # print("-   workers: {0.count}".format(opts))
+    # print("    server: {0.loader_ip}:{0.loader_port}".format(opts))
+    # print("    msize: {0.msize}".format(opts))
+    # print("    runtime: {0.runtime}".format(opts))
+    # print("    timeout: {0.timeout}".format(opts))
+    # for data in opts.meta:
+    #     print("    {}: {}".format(*data.split('=', 1)))
+    # print("    data:")
 
-    print("    data:")
     for func in run_tests:
         for i in range(opts.rounds):
             utime, stime, ctime, msg_precessed, lat_distribution = get_run_stats(func, params)
-            print(templ.format(func.__name__.replace("_test", ''), utime, stime, ctime, msg_precessed))
-
+            # print(templ.format(func.__name__.replace("_test", ''), utime, stime, ctime, msg_precessed))
+            curr_res = dict(
+                func=func.__name__.replace("_test", ''),
+                utime=utime,
+                stime=stime,
+                ctime=ctime,
+                messages=msg_precessed,
+                meta=meta)
+            results_struct['data'].append(curr_res)
+    print(yaml.dumps(results_struct))
     return 0
 
 
