@@ -11,6 +11,7 @@
 #include <cstring>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 #include <condition_variable>
 
 #include <poll.h>
@@ -33,7 +34,8 @@ const int MICRO = 1000 * 1000;
 const unsigned long BILLION = 1000 * 1000 * 1000;
 
 struct TestParams{
-    int port, num_conn, runtime, timeout, message_len;
+    int port, num_conn, runtime, message_len;
+    unsigned long int timeout;
     char ip[MAX_CLIENT_MESSAGE + 1];
 };
 
@@ -49,8 +51,10 @@ public:
 class FDCloser {
 public:
     int fd;
-    FDCloser(int _fd): fd(_fd) {}
-    ~FDCloser() { close(fd); }
+    // FDCloser(int _fd): fd(_fd) {}
+    ~FDCloser() {
+        close(fd);
+    }
 };
 
 template <typename T> class Queue {
@@ -84,6 +88,14 @@ struct EventsList {
     unsigned long recv_time;
 };
 
+std::vector<epoll_event>::iterator begin(EventsList & elist) {
+    return elist.events.begin();
+}
+
+std::vector<epoll_event>::iterator end(EventsList & elist) {
+    return elist.events.begin() + elist.num_ready;
+}
+
 struct TestResult{
     unsigned long int mcount;
     std::array<unsigned long int, 30> lat_ns_log2;
@@ -103,7 +115,7 @@ bool load_from_str(const char * data, TestParams & params) {
         std::cerr << "Message too large\n";
         return false;
     }
-    int num_scanned = std::sscanf(data, "%s %d %d %d %d %d",
+    int num_scanned = std::sscanf(data, "%s %d %d %d %lu %d",
                                   params.ip,
                                   &params.port,
                                   &params.num_conn,
@@ -194,18 +206,62 @@ bool connect_all(int sock_count,
     return true;
 }
 
-bool epoll_wait_ex(std::atomic_bool * done,
-                   int epollfd,
-                   EventsList & ready)
+bool epoll_wait_ex(int epollfd,
+                   EventsList & ready,
+                   long int timeout_ns)
 {
+    bool already_polled = false;
+    bool sleep_next_cycle = false;
+
+    ready.num_ready = 0;
+
+    if (timeout_ns < 0) {
+        std::cerr << "timeout_ns for epoll_wait_ex should be >0\n";
+        return false;
+    }
+
+    auto curr_time = get_fast_time();
+    auto return_time = curr_time + timeout_ns;
+
     for(;;) {
-        ready.num_ready = epoll_wait(epollfd, &(ready.events[0]), ready.events.size(), 100);
-        if ( done->load() ) {
-            return false;
-        } if ( 0 == ready.num_ready ) {
+        auto time_left = (long int)return_time - (long int)curr_time;
+
+        if (time_left <= 0 and already_polled)
+            return true;
+
+        if (time_left < 0)
+            time_left = 0;
+
+        auto poll_timeout = time_left / 1000000;
+        sleep_next_cycle = (0 == poll_timeout and 0 != time_left);
+
+        ready.num_ready = epoll_wait(epollfd,
+                                     &(ready.events[0]),
+                                     ready.events.size(),
+                                     poll_timeout);
+        already_polled = true;
+        curr_time = get_fast_time();
+
+        if (0 == ready.num_ready) {
+            if (curr_time >= return_time)
+                return true;
+
+            if (sleep_next_cycle) {
+                // sleep 1us
+                timespec stime{0, time_left};
+                if (0 > nanosleep(&stime, nullptr)) {
+                    if (errno != EINTR) {
+                        perror("nanosleep failed");
+                        return false;
+                    }
+                }
+                curr_time = get_fast_time();
+            }
             continue;
+
         } else if ( 0 > ready.num_ready ) {
             if (errno == EINTR) {
+                ready.num_ready = 0;
                 continue;
             } else {
                 perror("epoll_wait failed");
@@ -213,7 +269,7 @@ bool epoll_wait_ex(std::atomic_bool * done,
             }
         }
 
-        ready.recv_time = get_fast_time();
+        ready.recv_time = curr_time;
         return true;
     }
 }
@@ -225,8 +281,43 @@ public:
     ~DecOnExit() {--(*counter);}
 };
 
+bool ping(int fd, char * buff, int buff_sz) {
+    int bc = recv(fd, buff, buff_sz, 0);
+    if (ECONNRESET == errno) {
+        return false;
+    } else if (0 > bc) {
+        std::perror("recv(fd, &buffer[0], buff_sz, 0)");
+        return false;
+    } else if (0 == bc) {
+        perror("recv 0 bytes");
+        return false;
+    } else if (buff_sz != bc) {
+        std::perror("partial message");
+        return false;
+    }
+
+    if (buff_sz != write(fd, buff, buff_sz)) {
+        std::perror("write(fd, &buffer[0], buff_sz)");
+        return false;
+    }
+    return true;
+}
+
+
+struct FdTimout {
+    int fd;
+    unsigned long int ready_time;
+
+    FdTimout(int _fd, unsigned long int _ready_time):fd(_fd), ready_time(_ready_time){}
+    bool operator<(const FdTimout & fd)const {
+        return ready_time < fd.ready_time;
+    }
+};
+
+
 void worker_thread(int epollfd,
                    int message_len,
+                   unsigned long int timeout_ns,
                    std::atomic_bool * done,
                    std::atomic_int * active_count,
                    TestResult * result)
@@ -234,62 +325,110 @@ void worker_thread(int epollfd,
     DecOnExit exitor(active_count);
     std::map<int, unsigned long> last_time_for_socket;
     result->mcount = 0;
+
     EventsList elist;
     elist.events.resize(1024);
+
     std::vector<char> buffer;
     buffer.resize(message_len);
 
+    std::vector<int> ready_fds;
+    ready_fds.reserve(1024);
+
+    std::vector<FdTimout> wait_queue;
+
     for(;;) {
-        if (not epoll_wait_ex(done, epollfd, elist))
+        ready_fds.clear();
+        unsigned long int curr_time;
+
+        // if there a ready sockets, waiting for timeout
+        // need to not sleep too long in epoll
+        if (wait_queue.size() > 0) {
+            curr_time = get_fast_time();
+            long int poll_timeout = begin(wait_queue)->ready_time - curr_time;
+
+            if (poll_timeout < 0)
+                poll_timeout = 0;
+
+            if (not epoll_wait_ex(epollfd, elist, poll_timeout))
+                return;
+
+            // fill ready_fds with sockets
+            // with expired timeouts
+            curr_time = get_fast_time();
+            while(wait_queue.size() > 0) {
+                auto item = begin(wait_queue);
+                // if timeout expires - remove from timeout_wait_queue
+                // and put to ready_fds
+                if (item->ready_time <= curr_time) {
+                    ready_fds.push_back(item->fd);
+                    std::pop_heap(begin(wait_queue), end(wait_queue));
+                    wait_queue.pop_back();
+                } else
+                    break;
+            }
+        } else {
+            if (not epoll_wait_ex(epollfd, elist, 100 * 1000 * 1000))
+                return;
+            curr_time = get_fast_time();
+        }
+
+
+        if (done->load())
             return;
 
-        for (auto event_it = elist.events.begin();
-             event_it != elist.events.begin() + elist.num_ready; ++event_it) {
-
-            if (done->load()) {
-                return;
-            }
-
-            auto curr_time = get_fast_time();
-            int fd = event_it->data.fd;
+        // go throught all polled fds, calculated latency
+        // and mova some to wait_queue
+        for (auto & event: elist) {
+            auto fd = event.data.fd;
 
             auto item = last_time_for_socket.emplace(fd, 0);
 
-            if ( not item.second ) {
-                auto tout_l2 = log2_64(curr_time - item.first->second);
-                if (tout_l2 >= (int)result->lat_ns_log2.size()) {
-                    ++(result->lat_ns_log2[result->lat_ns_log2.size() - 1]);
-                } else {
-                    ++(result->lat_ns_log2[tout_l2]);
+            // previous write time for curr socket
+            auto ltime = item.first->second;
+
+            // if have previous write time for curr socket
+            if (not item.second) {
+                auto tout_l2 = log2_64(curr_time - ltime);
+
+                if (tout_l2 >= (int)result->lat_ns_log2.size())
+                    tout_l2 = result->lat_ns_log2.size() - 1;
+
+                // increment array of log2-scale counters
+                ++(result->lat_ns_log2[tout_l2]);
+            }
+
+            // if has timeout
+            if (timeout_ns > 0) {
+
+                // if socket isn't ready for new ping yet
+                // put it into wait_queue
+                if (ltime + timeout_ns > curr_time) {
+                    wait_queue.emplace_back(fd, ltime + timeout_ns);
+                    std::push_heap(begin(wait_queue), end(wait_queue));
+                    continue;
                 }
             }
 
-            int bc = recv(fd, &buffer[0], message_len, 0);
-            if (ECONNRESET == errno) {
-                if (-1 == epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, nullptr))
-                    perror("epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, nullptr)");
-            } else if (0 > bc) {
-                std::perror("recv(fd, &buffer[0], message_len, 0)");
-                return;
-            } else if (0 == bc) {
-                perror("recv 0 bytes");
-            } else if (message_len != bc) {
-                std::perror("partial message");
-                return;
-            }
-
-            if (message_len != write(fd, &buffer[0], message_len)) {
-                std::perror("write(fd, &buffer[0], message_len)");
-                return;
-            }
-
-            item.first->second = get_fast_time();
+            ready_fds.push_back(fd);
         }
+
+        for(auto fd: ready_fds) {
+            if (done->load())
+                return;
+
+            if (not ping(fd, &buffer[0], message_len))
+                return;
+
+            last_time_for_socket[fd] = get_fast_time();
+        }
+
         result->mcount += elist.num_ready;
     }
 }
 
-bool run_test(const TestParams & params, TestResult & res, int worker_threads) {
+bool run_test(const TestParams & params, TestResult & res, int worker_threads)
+{
     FDList sockets;
 
     if (not connect_all(params.num_conn, sockets.fds, params.ip, params.port))
@@ -334,19 +473,15 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads) {
 
     std::vector<TestResult> tresults;
     tresults.resize(worker_threads);
-
     std::atomic_bool done{false};
-
-    // unsigned char guard1 = 0x7A;
-    // unsigned char guard2 = 0x7A;
     std::vector<std::thread> workers;
-
     std::atomic_int active_count{worker_threads};
 
     for(int i = 0; i < worker_threads ; ++i)
         workers.emplace_back(worker_thread,
                              efd_list.fds[i],
                              params.message_len,
+                             params.timeout,
                              &done,
                              &active_count,
                              &tresults[i]);
@@ -394,7 +529,7 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads) {
 }
 
 void process_client(int sock) {
-    FDCloser fdc(sock);
+    FDCloser fdc{sock};
     char buff[MAX_CLIENT_MESSAGE + 1];
     int data_len = recv(sock, buff, sizeof(buff), 0);
 
@@ -428,7 +563,6 @@ void process_client(int sock) {
         perror("write failed");
         return;
     }
-
     return;
 }
 

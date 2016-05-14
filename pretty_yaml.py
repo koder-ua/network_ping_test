@@ -4,7 +4,9 @@ __all__ = ['dumps']
 
 def dumps_simple(val):
     if isinstance(val, str):
-        return val
+        if val.replace('_', '').replace('.', '').isalnum():
+            return val
+        return '"' + val + '"'
     elif val is True:
         return 'true'
     elif val is False:

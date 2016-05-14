@@ -1,6 +1,5 @@
 #include <set>
 #include <array>
-#include <mutex>
 #include <atomic>
 #include <vector>
 #include <cstdio>
@@ -8,7 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <condition_variable>
+#include <functional>
 
 #include <poll.h>
 #include <fcntl.h>
@@ -21,76 +20,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-bool connect_all(int sock_count,
-                 std::vector<int> & sockets,
-                 const char * ip,
-                 const int port,
-                 bool async=false)
-{
-    const struct hostent * host = gethostbyname(ip);
-    if (NULL == host) {
-        std::perror("No such host");
-        return 0;
-    }
-
-    struct sockaddr_in serv_addr;
-    bzero((char *)&serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    bcopy((const char *)host->h_addr, (char *)&serv_addr.sin_addr.s_addr, host->h_length);
-    serv_addr.sin_port = htons(port);
-
-    sockets.clear();
-    for(int i = 0; i < sock_count ; ++i) {
-        int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-        if (sockfd < 0) {
-            std::perror("Socket creation");
-            return false;
-        }
-
-        if (0 > connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))) {
-            std::perror("Connecting:");
-            return false;
-        }
-
-        if(async) {
-            int flags = fcntl(sockfd, F_GETFL, 0);
-            if (flags < 0) { 
-                std::perror("fcntl(sockfd, F_GETFL, 0)");
-                return false;
-            } 
-
-            if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) < 0) { 
-                std::perror("fcntl(sockfd, F_SETFL, flags | O_NONBLOCK)");
-                return false;
-            }
-        }
-        sockets.push_back(sockfd);
-    }
-    return true;
-}
-
-bool process_message(int sockfd, const char * message, int message_len) {
-    char buffer[message_len];
-    int bc = recv(sockfd, buffer, message_len, 0);
-    if (0 > bc) {
-        std::perror("recv(sockfd, buffer.begin(), buffer.size(), 0)");
-        return false;   
-    } else if (0 == bc) {
-        return false;
-    } else if (message_len != bc){
-        std::perror("partial message");
-        return false;
-    }
-
-    if (message_len != write(sockfd, message, message_len)) {
-        std::perror("write(sockfd, message, std::strlen(message))");
-        return false;   
-    }
-
-    return true;
-}
-
-
 class RSelector {
 public:
     virtual bool add_fd(int sockfd) = 0;
@@ -99,6 +28,21 @@ public:
     virtual bool next(int & sockfd, uint32_t & flags) = 0;
 };
 
+class FDList {
+public:
+    std::vector<int> fds;
+    ~FDList() {
+        for(int fd: fds)
+            close(fd);
+    }
+};
+
+class FDCloser {
+public:
+    int fd;
+    FDCloser(int _fd): fd(_fd) {}
+    ~FDCloser() { close(fd); }
+};
 
 class PollRSelector: public RSelector {
 protected:
@@ -219,86 +163,128 @@ unsigned long time_ns()
 }
 
 
-void th_func(int sockfd,
-             std::atomic_ulong * msg_processed_a,
-             std::atomic_ulong * started,
-             std::atomic_ulong * finished,
-             std::atomic_bool  * run_lola_run,
-             const char * message,
-             int msize) {
+bool wait_for_conn(int sock_count,
+                   std::vector<int> & sockets,
+                   const char * ip,
+                   const int port,
+                   const int listen_queue,
+                   void (*ready_for_connect)(),
+                   std::function<void(int)> * on_sock_cb,
+                   bool async=false)
+{
+    (void)ip;
 
-    unsigned long counter = 0;
-    (*started) += 1;
+    sockaddr_in server, client;
+    int master_sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (-1 == master_sock){
+        perror("Could not create socket");
+        return false;
+    }
 
-    while(not run_lola_run->load())
-        usleep(1000000);
+    FDCloser _master_sock(master_sock);
+    int enable = 1;
+    if (setsockopt(master_sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0)
+        perror("setsockopt(SO_REUSEADDR) failed");
 
-    while(process_message(sockfd, message, msize))
-        ++counter;
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_port = htons(port);
 
-    (*msg_processed_a) += counter;
-    (*finished) += 1;
+    if( 0 > bind(master_sock, (sockaddr *)&server , sizeof(server))) {
+        perror("bind failed. Error");
+        return 1;
+    }
+     
+    listen(master_sock, listen_queue);
+    socklen_t sock_data_len = sizeof(client);
+    
+    if (nullptr != ready_for_connect)
+        ready_for_connect();
+
+    for(int i = 0; i < sock_count; ++i){
+        int client_sock = accept(master_sock, (sockaddr *)&client, &sock_data_len);
+        if (client_sock < 0) {
+            perror("accept failed");
+            return false;
+        }
+
+        if(async) {
+            int flags = fcntl(client_sock, F_GETFL, 0);
+            if (flags < 0) { 
+                std::perror("fcntl(client_sock, F_GETFL, 0)");
+                return false;
+            } 
+
+            if (fcntl(client_sock, F_SETFL, flags | O_NONBLOCK) < 0) { 
+                std::perror("fcntl(client_sock, F_SETFL, flags | O_NONBLOCK)");
+                return false;
+            }
+        }
+        sockets.push_back(client_sock);
+        if (nullptr != on_sock_cb) {
+            (*on_sock_cb)(client_sock);
+        }
+    }
+    return true;
 }
 
-
-class SocksList{
-public:
-    std::vector<int> sockets;
-    ~SocksList() {
-        for(int sockfd: sockets)
-            close(sockfd);
+bool process_message(int sockfd, const char * message, int message_len) {
+    char buffer[message_len];
+    int bc = recv(sockfd, buffer, message_len, 0);
+    if (0 > bc) {
+        if (ECONNRESET != errno)
+            std::perror("recv(sockfd, buffer.begin(), buffer.size(), 0)");
+        return false;
+    } else if (0 == bc) {
+        return false;
+    } else if (message_len != bc){
+        std::perror("partial message");
+        return false;
     }
-};
 
+    if (message_len != write(sockfd, message, message_len)) {
+        std::perror("write(sockfd, message, std::strlen(message))");
+        return false;   
+    }
+
+    return true;
+}
+
+void th_func(int sockfd, const char * message, int msize) {
+    while(process_message(sockfd, message, msize));
+}
 
 extern "C"
-int run_test_th(const char * ip, const int port,
-                const int th_count, int * msg_processed,
-                void (*preparation_done)(), void (*test_done)(),
-                int msize) {
-    std::atomic_ulong counter{0};
-    std::atomic_ulong started{0};
-    std::atomic_ulong finished{0};
-    std::atomic_bool run_lola_run{false};
+int run_test_th(const char * ip,
+                const int port,
+                const int th_count,
+                int msize,
+                int listen_queue,
+                void (*ready_for_connect)(),
+                void (*preparation_done)(),
+                void (*test_done)())
+{
     char message[msize];
     std::memset(message, 'X', msize);
 
-    SocksList sockets;
-    std::thread threads[th_count];
+    FDList sockets;
+    std::vector<std::thread> threads;
+    std::function<void(int)> cb = [&](int sock){
+        threads.emplace_back(th_func, sock, &message[0], msize);
+    };
 
-    if (not connect_all(th_count, sockets.sockets, ip, port, false)) {
+    if (not wait_for_conn(th_count,
+                          sockets.fds,
+                          ip,
+                          port,
+                          listen_queue,
+                          ready_for_connect,
+                          &cb,
+                          false))
         return 1;
-    }
-
-    for(unsigned int idx = 0; idx < sockets.sockets.size(); ++idx)
-        threads[idx] = std::thread(th_func, sockets.sockets[idx],
-                                   &counter,
-                                   &started,
-                                   &finished,
-                                   &run_lola_run,
-                                   &message[0],
-                                   msize);
-
-    int policy;
-    struct sched_param param;
-
-    pthread_getschedparam(pthread_self(), &policy, &param);
-    auto saved_prio = param.sched_priority;
-    param.sched_priority = sched_get_priority_max(SCHED_RR);
-
-    if ( 0 > pthread_setschedparam(pthread_self(), SCHED_RR, &param))
-        perror("pthread_setschedparam:");
-
-    param.sched_priority = saved_prio;
-    pthread_setschedparam(pthread_self(), policy, &param);
-
-    while(started.load() != (unsigned int)th_count)
-        usleep(1000000);
 
     if (nullptr != preparation_done)
         preparation_done();
-
-    run_lola_run.store(true);
 
     for(auto & th: threads)
         th.join();
@@ -306,29 +292,31 @@ int run_test_th(const char * ip, const int port,
     if (nullptr != test_done)
         test_done();
 
-    if (nullptr != msg_processed)
-        *msg_processed = counter.load();
-
     return 0;
 }
 
 int run_test(RSelector & selector,
-             const char * ip, const int port, const int th_count, int * msg_processed,
-             void (*preparation_done)(), void (*test_done)(),
-             int msize) {
-    int counter = 0;
+             const char * ip,
+             const int port,
+             const int th_count,
+             const int msize,
+             const int listen_queue,
+             void (*ready_for_connect)(),
+             void (*preparation_done)(),
+             void (*test_done)())
+{
     int fd_left = th_count;
     char message[msize];
     std::memset(message, 'X', msize);
-    SocksList sockets;
+    FDList sockets;
 
-    if (not connect_all(th_count, sockets.sockets, ip, port, true))
+    if (not wait_for_conn(th_count, sockets.fds, ip, port, listen_queue, ready_for_connect, nullptr, false))
         return 1;
 
     if (nullptr != preparation_done)
         preparation_done();
 
-    for(int sockfd: sockets.sockets)
+    for(int sockfd: sockets.fds)
         if (not selector.add_fd(sockfd))
             return 1;
 
@@ -349,8 +337,6 @@ int run_test(RSelector & selector,
                 close_sock = true;
             } else if (events & POLLIN) {
                 close_sock = not process_message(sockfd, message, msize);
-                if (not close_sock)
-                    counter += 1;
             } else if (0 != events) {
                 std::cerr << "Poll - ??? for fd " << sockfd;
                 std::cerr << " val " << events << "\n";
@@ -367,53 +353,47 @@ int run_test(RSelector & selector,
     if (nullptr != test_done)
         test_done();
 
-    if (nullptr != msg_processed)
-        *msg_processed = counter;
-
     return 0;
 }
 
 extern "C"
-int run_test_epoll(const char * ip, const int port, const int th_count, int * msg_processed,
-                   void (*preparation_done)(), void (*test_done)(),
-                   int msize) {
+int run_test_epoll(const char * ip,
+                   const int port,
+                   const int th_count,
+                   int msize,
+                   int listen_queue,
+                   void (*ready_for_connect)(),
+                   void (*preparation_done)(),
+                   void (*test_done)())
+{
     EPollRSelector eps(th_count);
     if (not eps.ok())
         return 1;
-    return run_test(eps, ip, port, th_count, msg_processed, preparation_done, test_done, msize);
+    return run_test(eps, ip, port, th_count, msize, listen_queue, ready_for_connect, preparation_done, test_done);
 }
 
 extern "C"
-int run_test_poll(const char * ip, const int port, const int th_count, int * msg_processed,
-                  void (*preparation_done)(), void (*test_done)(),
-                  int msize) {
+int run_test_poll(const char * ip,
+                  const int port,
+                  const int th_count,
+                  int msize,
+                  int listen_queue,
+                  void (*ready_for_connect)(),
+                  void (*preparation_done)(),
+                  void (*test_done)())
+{
     PollRSelector eps(th_count);
-    return run_test(eps, ip, port, th_count, msg_processed, preparation_done, test_done, msize);
+    return run_test(eps, ip, port, th_count, msize, listen_queue, ready_for_connect, preparation_done, test_done);
 }
 
-#if !defined(BUILDSHARED)
-int main(int argc, const char ** argv) {
-    if (argc < 3) {
-        std::cerr << "Usage " << argv[0] << " IP CONN_COUNT\n";
+extern "C"
+int set_rr_prio() {
+    int policy;
+    struct sched_param param;
+    pthread_getschedparam(pthread_self(), &policy, &param);
+    param.sched_priority = sched_get_priority_max(SCHED_RR);
+    if ( 0 > pthread_setschedparam(pthread_self(), SCHED_RR, &param))
         return 1;
-    }
 
-    const char * ip = argv[1];
-    const int th_count = std::atoi(argv[2]);
-    const int port = 33331;
-
-    if (0 == th_count) {
-        std::cerr << "Usage " << argv[0] << " IP CONN_COUNT\n";
-        return 1;
-    }
-
-    int msg_count = 0;
-
-    // int err = run_test_poll(ip, port, th_count, &msg_count, nullptr, nullptr);
-    // int err = run_test_epoll(ip, port, th_count, &msg_count, nullptr, nullptr);
-    int err = run_test_th(ip, port, th_count, &msg_count, nullptr, nullptr, 1024);
-
-    std::cout << msg_count << " message cycles processed\n";
-    return err;
+    return 0;
 }
-#endif

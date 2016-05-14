@@ -6,17 +6,27 @@ import ctypes
 import socket
 import asyncio
 import argparse
+import traceback
 import selectors
 import threading
-
 from concurrent.futures import ThreadPoolExecutor, wait
 
 import gevent
 from gevent import socket as gevent_socket
+import uvloop
 
-# this vars initialized in main
-MESSAGE_SIZE = None
-MESSAGE = None
+
+import pretty_yaml
+
+
+class TestParams:
+    def __init__(self):
+        self.loader_addr = None
+        self.count = None
+        self.msize = None
+        self.runtime = None
+        self.timeout = None
+        self.local_addr = None
 
 
 def prepare_socket(sock, set_no_block=True):
@@ -32,35 +42,46 @@ def prepare_socket(sock, set_no_block=True):
 ALL_TESTS = {}
 
 
+def get_listen_param(count):
+    return max(min(count * 5 // 100, 100), 15)
+
+
 def im_test(func):
-    ALL_TESTS[func.__name__.replace('_test', '')] = func
+    func.test_name = func.__name__.replace('_test', '')
+    ALL_TESTS[func.test_name] = func
     return func
 
 
 @im_test
-def selector_test(addr, count, before_test, after_test):
+def selector_test(params, ready_to_connect, before_test, after_test):
+    message = ('X' * params.msize).encode('ascii')
     sel = selectors.DefaultSelector()
     sockets = set()
+    master_sock = socket.socket()
+    master_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    master_sock.bind(params.local_addr)
+    master_sock.listen(get_listen_param(params.count))
 
-    for _ in range(count):
-        sock = socket.socket()
-        sock.connect(addr)
-        sockets.add(sock)
+    ready_to_connect()
+
+    while len(sockets) != params.count:
+        sock, _ = master_sock.accept()
         prepare_socket(sock)
+        sockets.add(sock)
         sel.register(sock, selectors.EVENT_READ, None)
 
-    msg_counter = 0
+    master_sock.close()
+
     before_test()
     while sockets:
         for key, mask in sel.select():
             try:
-                data = key.fileobj.recv(MESSAGE_SIZE)
+                data = key.fileobj.recv(params.msize)
                 if data:
-                    if len(data) != MESSAGE_SIZE:
+                    if len(data) != params.msize:
                         raise RuntimeError("Partial message")
                     else:
-                        msg_counter += 1
-                        key.fileobj.send(MESSAGE)
+                        key.fileobj.send(message)
             except ConnectionResetError:
                 data = b""
 
@@ -68,37 +89,38 @@ def selector_test(addr, count, before_test, after_test):
                 sockets.remove(key.fileobj)
                 sel.unregister(key.fileobj)
                 key.fileobj.close()
-    after_test()
 
-    return msg_counter
+    after_test()
 
 
 @im_test
-def asyncio_sock_test(addr, count, before_test, after_test,
+def asyncio_sock_test(params, ready_to_connect, before_test, after_test,
                       loop_cls=asyncio.new_event_loop):
 
-    counter = 0
     async def client(loop, sock):
-        nonlocal counter
         try:
             while True:
-                data = await loop.sock_recv(sock, MESSAGE_SIZE)
+                data = await loop.sock_recv(sock, params.msize)
                 if not data:
                     break
-                elif len(data) != MESSAGE_SIZE:
+                elif len(data) != params.msize:
                     raise RuntimeError("Partial message")
-                counter += 1
-                await loop.sock_sendall(sock, MESSAGE)
+                await loop.sock_sendall(sock, data)
         except ConnectionResetError:
             pass
         finally:
             sock.close()
 
+    master_sock = socket.socket()
+    master_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    master_sock.bind(params.local_addr)
+    master_sock.listen(get_listen_param(params.count))
+
     socks = []
-    for _ in range(count):
-        sock = socket.socket()
-        sock.connect(addr)
-        prepare_socket(sock)
+    ready_to_connect()
+    for _ in range(params.count):
+        sock, _ = master_sock.accept()
+        prepare_socket(sock, set_no_block=False)
         socks.append(sock)
 
     loop = loop_cls()
@@ -110,156 +132,147 @@ def asyncio_sock_test(addr, count, before_test, after_test,
     after_test()
 
     loop.close()
-    return counter
 
 
 @im_test
-def asyncio_test(addr, count, before_test, after_test,
+def asyncio_test(params, ready_to_connect, before_test, after_test,
                  loop_cls=asyncio.new_event_loop):
-    async def connect_all(addr, count, loop):
-        conns = []
-        for i in range(count):
-            r, w = await asyncio.open_connection(*addr, loop=loop)
-            conns.append((r, w))
-            wsock = w.get_extra_info('socket')
-            prepare_socket(wsock, set_no_block=False)
-        return conns
+    started = False
+    finished = False
+    server = []
 
-    loop = loop_cls()
-    loop.set_debug(False)
-
-    connect_task = loop.create_task(connect_all(addr, count, loop))
-    loop.run_until_complete(connect_task)
-
-    counter = 0
     async def tcp_echo_client(reader, writer):
-        nonlocal counter
+        nonlocal started
+        nonlocal finished
         try:
+            data = await reader.read(params.msize)
+            if not started:
+                started = True
+                before_test()
+
             while True:
-                data = await reader.read(MESSAGE_SIZE)
                 if not data:
                     break
-                elif len(data) != MESSAGE_SIZE:
+                elif len(data) != params.msize:
                     raise RuntimeError("Partial message")
-                counter += 1
-                writer.write(MESSAGE)
+                writer.write(data)
+                data = await reader.read(params.msize)
         except ConnectionResetError:
             pass
         finally:
             writer.close()
-
-    tasks = []
-    for r, w in connect_task.result():
-        tasks.append(
-            loop.create_task(tcp_echo_client(r, w)))
-
-    before_test()
-    loop.run_until_complete(asyncio.gather(*tasks))
-    after_test()
-
-    loop.close()
-    return counter
-
-
-@im_test
-def asyncio_proto_test(addr, count, before_test, after_test,
-                       loop_cls=asyncio.new_event_loop):
-
-    counter = 0
-
-    class EchoProtocol(asyncio.Protocol):
-        def __init__(self):
-            self.on_done = asyncio.Future(loop=loop)
-
-        def connection_made(self, transport):
-            self.transport = transport
-
-        def connection_lost(self, exc):
-            self.transport = None
-            if not self.on_done.done():
-                self.on_done.set_result(True)
-
-        def data_received(self, data):
-            nonlocal counter
-            if len(data) != MESSAGE_SIZE:
-                self.on_done.set_exception(RuntimeError('partial message'))
-                self.transport.close()
-            else:
-                self.transport.write(data)
-                counter += 1
-
-    async def connect_all(addr, count, loop):
-        futs = []
-        for i in range(count):
-            tr, protocol = await loop.create_connection(EchoProtocol, *addr)
-            futs.append(protocol.on_done)
-            sock = tr.get_extra_info('socket')
-            prepare_socket(sock, set_no_block=False)
-        return futs
+            if not finished:
+                finished = True
+                server[0].close()
 
     loop = loop_cls()
     loop.set_debug(False)
 
-    futs = loop.run_until_complete(connect_all(addr, count, loop))
-
-    before_test()
-    loop.run_until_complete(asyncio.gather(*futs, loop=loop))
+    coro = asyncio.start_server(tcp_echo_client,
+                                params.local_addr[0],
+                                params.local_addr[1],
+                                loop=loop,
+                                reuse_address=True,
+                                reuse_port=True,
+                                backlog=get_listen_param(params.count))
+    server.append(loop.run_until_complete(coro))
+    ready_to_connect()
+    loop.run_until_complete(server[0].wait_closed())
     after_test()
-
     loop.close()
-    return counter
+
+
+@im_test
+def asyncio_proto_test(params, ready_to_connect, before_test, after_test,
+                       loop_cls=asyncio.new_event_loop):
+
+    started = False
+    finished = False
+    e_server = []
+
+    class EchoProtocol(asyncio.Protocol):
+        def connection_made(self, transport):
+            self.transport = transport
+
+        def connection_lost(self, exc):
+            nonlocal finished
+            self.transport = None
+            if not finished:
+                finished = True
+                e_server.pop().close()
+
+        def data_received(self, data):
+            nonlocal started
+            if not started:
+                before_test()
+                started = True
+            if len(data) != params.msize:
+                self.transport.close()
+            else:
+                self.transport.write(data)
+
+    loop = loop_cls()
+    loop.set_debug(False)
+    coro = loop.create_server(EchoProtocol,
+                              params.local_addr[0],
+                              params.local_addr[1],
+                              reuse_address=True,
+                              reuse_port=True,
+                              backlog=get_listen_param(params.count))
+
+    server = loop.run_until_complete(coro)
+    e_server.append(server)
+    ready_to_connect()
+    loop.run_until_complete(server.wait_closed())
+    after_test()
+    loop.close()
 
 
 @im_test
 def uvloop_test(*params):
-    import uvloop
     return asyncio_test(*params, uvloop.new_event_loop)
 
 
 @im_test
 def uvloop_sock_test(*params):
-    import uvloop
     return asyncio_sock_test(*params, uvloop.new_event_loop)
 
 
 @im_test
 def uvloop_proto_test(*params):
-    import uvloop
     return asyncio_proto_test(*params, uvloop.new_event_loop)
 
 
 @im_test
-def thread_test(addr, count, before_test, after_test):
-    started_count = 0
-    msg_count = 0
-    ready = False
-
+def thread_test(params, ready_to_connect, before_test, after_test):
     def tcp_echo_client(sock):
-        nonlocal msg_count
-        nonlocal started_count
-
-        started_count += 1
-        while not ready:
-            time.sleep(0.1)
-
         try:
             while True:
-                data = sock.recv(MESSAGE_SIZE)
+                data = sock.recv(params.msize)
                 if not data:
                     break
-                elif len(data) != MESSAGE_SIZE:
+                elif len(data) != params.msize:
                     raise RuntimeError("Partial message")
-                sock.send(MESSAGE)
-                msg_count += 1
+                sock.send(data)
         except ConnectionResetError:
             pass
         finally:
             sock.close()
 
+    master_sock = socket.socket()
+    master_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    master_sock.bind(params.local_addr)
+
+    listen_queue_sz = get_listen_param(params.count)
+    master_sock.listen(listen_queue_sz)
+
     threads = []
-    for i in range(count):
-        sock = socket.socket()
-        sock.connect(addr)
+    ready_to_connect()
+
+    for i in range(params.count):
+        if i == params.count - listen_queue_sz - 1:
+            before_test()
+        sock, _ = master_sock.accept()
         prepare_socket(sock, set_no_block=False)
         th = threading.Thread(target=tcp_echo_client,
                               args=(sock,))
@@ -267,130 +280,169 @@ def thread_test(addr, count, before_test, after_test):
         th.daemon = True
         th.start()
 
-    while started_count != count:
-        time.sleep(1)
-
-    before_test()
-    ready = True
+    master_sock.close()
 
     for th in threads:
         th.join()
-
     after_test()
-
-    return msg_count
 
 
 @im_test
-def gevent_test(addr, count, before_test, after_test):
-    counter = 0
+def gevent_test(params, ready_to_connect, before_test, after_test):
 
     def tcp_echo_client(sock):
-        nonlocal counter
         try:
             while True:
-                data = sock.recv(MESSAGE_SIZE)
+                data = sock.recv(params.msize)
                 if not data:
                     break
-                elif len(data) != MESSAGE_SIZE:
+                elif len(data) != params.msize:
                     raise RuntimeError("Partial message")
-                sock.send(MESSAGE)
-                counter += 1
+                sock.send(data)
         except ConnectionResetError:
             pass
         finally:
             sock.close()
 
+    master_sock = gevent_socket.socket()
+    master_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    master_sock.bind(params.local_addr)
+    master_sock.listen(get_listen_param(params.count))
+
+    ready_to_connect()
     gl = []
-    for _ in range(count):
-        sock = gevent_socket.socket()
-        sock.connect(addr)
+
+    while len(gl) != params.count:
+        sock, _ = master_sock.accept()
         prepare_socket(sock, set_no_block=False)
         gl.append(gevent.spawn(tcp_echo_client, sock))
+
+    master_sock.close()
 
     before_test()
     gevent.joinall(gl)
     after_test()
 
-    return counter
-
 
 TIME_CB = ctypes.CFUNCTYPE(None)
 
 
-def run_c_test(fname, addr, count, before_test, after_test, msize):
-    so = ctypes.cdll.LoadLibrary("./libclient.so")
+def run_c_test(fname, params, ready_to_connect, before_test, after_test):
+    so = ctypes.cdll.LoadLibrary("./bin/libclient2.so")
     func = getattr(so, fname)
     func.restype = ctypes.c_int
-    func.argtypes = [ctypes.POINTER(ctypes.c_char),
-                     ctypes.c_int,
-                     ctypes.c_int,
-                     ctypes.POINTER(ctypes.c_int),
+    func.argtypes = [ctypes.POINTER(ctypes.c_char),  # local ip
+                     ctypes.c_int,                   # local port
+                     ctypes.c_int,                   # params.count
+                     ctypes.c_int,                   # msize
+                     ctypes.c_int,                   # listen value
                      TIME_CB,
                      TIME_CB,
-                     ctypes.c_int]
-    counter = ctypes.c_int()
-    func(addr[0].encode(),
-         addr[1],
-         count,
-         ctypes.byref(counter),
+                     TIME_CB]
+
+    func(params.local_addr[0].encode(),
+         params.local_addr[1],
+         params.count,
+         params.msize,
+         get_listen_param(params.count),
+         TIME_CB(ready_to_connect),
          TIME_CB(before_test),
-         TIME_CB(after_test),
-         msize)
-    return counter.value
+         TIME_CB(after_test))
 
 
 @im_test
 def cpp_poll_test(*params):
-    return run_c_test("run_test_poll", *params, MESSAGE_SIZE)
+    return run_c_test("run_test_poll", *params)
 
 
 @im_test
 def cpp_epoll_test(*params):
-    return run_c_test("run_test_epoll", *params, MESSAGE_SIZE)
+    return run_c_test("run_test_epoll", *params)
 
 
 @im_test
 def cpp_th_test(*params):
-    return run_c_test("run_test_th", *params, MESSAGE_SIZE)
+    return run_c_test("run_test_th", *params)
 
 
-def get_run_stats(func, *params):
+def get_run_stats(func, params):
     times = []
+    s = socket.socket()
+    s.connect(params.loader_addr)
+
+    def ready_func():
+        s.send(("{0.local_addr[0]} {0.local_addr[1]} {0.count} " +
+                "{0.runtime} {0.timeout} {0.msize}").format(params).encode('ascii'))
 
     def stamp():
         times.append(os.times())
 
-    msg_processed = func(*params, stamp, stamp)
+    func(params, ready_func, stamp, stamp)
 
     utime = times[1].user - times[0].user
     stime = times[1].system - times[0].system
     ctime = times[1].elapsed - times[0].elapsed
-    return utime, stime, ctime, msg_processed
+
+    result = s.recv(1024)
+    s.close()
+
+    results = list(map(int, result.split()))
+    msg_processed = results[0]
+    lat_distribution = results[1:]
+    return utime, stime, ctime, msg_processed, lat_distribution
+
+
+def get_lats(lats, percs=(0.5, 0.75, 0.95)):
+    all_mess = sum(lats)
+    curr = 0
+    res = [None] * len(percs)
+    assert list(sorted(percs)) == list(percs)
+
+    for idx, val in enumerate(lats):
+        curr += val
+        for res_idx, perc in enumerate(percs):
+            if curr >= all_mess * perc and res[res_idx] is None:
+                res[res_idx] = 2 ** idx
+
+    return res
+
+
+def ns_to_readable(val):
+    for limit, ext in ((1E9, ''), (1E6, 'm'), (1E3, 'u'), (1, 'n')):
+        if val >= limit:
+            return "{}{}s".format(int(val / limit), ext)
 
 
 def main(argv):
-    if argv[1] == '--list':
+    if len(argv) == 2 and argv[1] == '--list':
         print(",".join(ALL_TESTS.keys()))
         return 0
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('server_ip')
-    parser.add_argument('num_workers', type=int)
+    parser.add_argument('loader_ip')
+    parser.add_argument('count', type=int)
     parser.add_argument('tests')
-    parser.add_argument('--port', '-p', type=int, default=33331)
+    parser.add_argument('--loader-port', '-p', type=int, default=33331)
+    parser.add_argument('--bind-port', '-b', type=int, default=33332)
+    parser.add_argument('--bind-ip', '-i', default='0.0.0.0')
     parser.add_argument('--rounds', '-r', type=int, default=1)
     parser.add_argument('--msize', '-s', type=int, default=1024)
+    parser.add_argument('--meta', '-m', type=str, nargs='*', default=[])
+    parser.add_argument('--runtime', type=int, default=30)
+    parser.add_argument('--timeout', '-t', type=int, default=0)
+
     opts = parser.parse_args(argv[1:])
 
+    params = TestParams()
+    params.loader_addr = (opts.loader_ip, opts.loader_port)
+    params.local_addr = (opts.bind_ip, opts.bind_port)
+    params.msize = opts.msize
+    params.count = opts.count
+    params.runtime = opts.runtime
+    params.timeout = opts.timeout
+
     test_names = opts.tests.split(',')
-
-    global MESSAGE_SIZE
-    MESSAGE_SIZE = opts.msize
-
-    global MESSAGE
-    MESSAGE = ('X' * MESSAGE_SIZE).encode()
 
     if test_names == ['*']:
         run_tests = list(ALL_TESTS.values())
@@ -403,14 +455,53 @@ def main(argv):
             run_tests.append(ALL_TESTS[test_name])
 
     run_tests.sort(key=lambda x: x.__name__)
-    templ = "      - {{func: {:<15}, utime: {:>6.2f}, stime: {:>6.2f}, ctime: {:>6.2f}, messages: {:>8d}}}"
 
-    print("-   workers: {}\n    data:".format(opts.num_workers))
+    results_struct = dict(
+        workers=opts.count,
+        server="{0.loader_ip}:{0.loader_port}".format(opts),
+        bind_addr="{0.bind_ip}:{0.bind_port}".format(opts),
+        msize=opts.msize,
+        runtime=opts.runtime,
+        timeout=opts.timeout,
+        data=[],
+    )
+
+    if opts.meta != []:
+        results_struct['meta'] = {}
+        for data in opts.meta:
+            key, val = data.split('=', 1)
+            results_struct['meta'][key] = val
+
+    # templ = "      - {{func: {:<15}, utime: {:>6.2f}, stime: {:>6.2f}, ctime: {:>6.2f}, messages: {:>8d}}}"
+    # print("-   workers: {0.count}".format(opts))
+    # print("    server: {0.loader_ip}:{0.loader_port}".format(opts))
+    # print("    msize: {0.msize}".format(opts))
+    # print("    runtime: {0.runtime}".format(opts))
+    # print("    timeout: {0.timeout}".format(opts))
+    # print("    data:")
+
     for func in run_tests:
         for i in range(opts.rounds):
-            utime, stime, ctime, msg_precessed = get_run_stats(func, (opts.server_ip, opts.port),
-                                                               opts.num_workers)
-            print(templ.format(func.__name__.replace("_test", ''), utime, stime, ctime, msg_precessed))
+            try:
+                utime, stime, ctime, msg_precessed, lat_distribution = get_run_stats(func, params)
+                lat_50, lat_75, lat_95 = get_lats(lat_distribution)
+                # print(templ.format(func.__name__.replace("_test", ''), utime, stime, ctime, msg_precessed))
+                curr_res = dict(
+                    func=func.__name__.replace("_test", ''),
+                    utime="{:.2f}".format(utime),
+                    stime="{:.2f}".format(stime),
+                    ctime="{:.2f}".format(ctime),
+                    lat_50=ns_to_readable(lat_50),
+                    lat_75=ns_to_readable(lat_75),
+                    lat_95=ns_to_readable(lat_95),
+                    messages=msg_precessed)
+                results_struct['data'].append(curr_res)
+            except Exception as exc:
+                traceback.print_exc()
+                curr_res = dict(func=func.test_name,
+                                err=str(exc))
+                results_struct['data'].append(curr_res)
+    print(pretty_yaml.dumps([results_struct], width=200))
     return 0
 
 
@@ -422,4 +513,3 @@ if __name__ == "__main__":
 # perf stat -e cs python3.5 main.py 172.18.200.44 1000 cpp
 # sudo perf stat -e 'syscalls:sys_enter_*'
 # strace -f -o /tmp/th_res.txt python3.5 main.py 172.18.200.44 100
-
