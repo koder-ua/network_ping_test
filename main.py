@@ -394,6 +394,9 @@ def get_run_stats(func, params):
 
 def get_lats(lats, percs=(0.5, 0.75, 0.95)):
     all_mess = sum(lats)
+    if 0 == all_mess:
+        return [0] * len(percs)
+
     curr = 0
     res = [None] * len(percs)
     assert list(sorted(percs)) == list(percs)

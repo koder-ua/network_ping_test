@@ -12,6 +12,7 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <unordered_map>
 #include <condition_variable>
 
 #include <poll.h>
@@ -109,7 +110,6 @@ std::string serialize_to_str(const TestResult & res) {
     return serialized.str();
 }
 
-
 bool load_from_str(const char * data, TestParams & params) {
     if (std::strlen(data) > sizeof(params.ip)) {
         std::cerr << "Message too large\n";
@@ -129,7 +129,11 @@ bool load_from_str(const char * data, TestParams & params) {
     return true;
 }
 
-unsigned long get_fast_time() {
+#ifdef USERDTSC
+inline unsigned long gettime_helper() {
+#else
+inline unsigned long get_fast_time() {
+#endif
     timespec curr_time;
     if( -1 == clock_gettime( CLOCK_REALTIME, &curr_time)) {
       perror( "clock gettime" );
@@ -138,6 +142,42 @@ unsigned long get_fast_time() {
 
     return curr_time.tv_nsec + ((unsigned long)curr_time.tv_sec) * BILLION;
 }
+
+#ifdef USERDTSC
+
+// this coefficient updated after prifiling RDTSC in profile_RDTSC
+double tick_to_nsec_coef = 1.0;
+inline unsigned long get_fast_time() {
+    uint32_t low, high;
+    asm volatile ("rdtsc" : "=a" (low), "=d" (high));
+    return (unsigned long)(tick_to_nsec_coef * (((unsigned long)high << 32) | low));
+}
+
+bool profile_RDTSC() {
+    std::cout << "Profiling timer....\n";
+
+    auto ctime1 = gettime_helper();
+    auto rdtsc1 = get_fast_time();
+
+    const int RDTSC_PRIFILE_SECONDS = 3;
+    timespec stime{RDTSC_PRIFILE_SECONDS, 0};
+    if (0 > nanosleep(&stime, nullptr)) {
+        if (errno != EINTR) {
+            perror("nanosleep failed");
+            return false;
+        }
+    }
+
+    auto ctime2 = gettime_helper();
+    auto rdtsc2 = get_fast_time();
+
+    tick_to_nsec_coef = (double)(ctime2 - ctime1) / (double)(rdtsc2 - rdtsc1);
+
+    std::cout << "Tick to ns coefficient = " << tick_to_nsec_coef << "\n";
+    return true;
+}
+
+#endif
 
 const int tab64[64] = {
     63,  0, 58,  1, 59, 47, 53,  2,
@@ -274,6 +314,7 @@ bool epoll_wait_ex(int epollfd,
     }
 }
 
+
 class DecOnExit {
 public:
     std::atomic_int * counter;
@@ -315,6 +356,49 @@ struct FdTimout {
 };
 
 
+void worker_thread_fast(int epollfd,
+                        int message_len,
+                        unsigned long int timeout_ns,
+                        std::atomic_bool * done,
+                        std::atomic_int * active_count,
+                        TestResult * result)
+{
+    if (0 != timeout_ns) {
+        std::cerr << "worker_thread_fast doesn't support timeout\n";
+        return;   
+    }
+
+    DecOnExit exitor(active_count);
+    result->mcount = 0;
+
+    EventsList elist;
+    elist.events.resize(1024);
+
+    std::vector<char> buffer;
+    buffer.resize(message_len);
+
+    for(;;) {
+        elist.num_ready = epoll_wait(epollfd,
+                                     &(elist.events[0]),
+                                     elist.events.size(),
+                                     100);
+        if (elist.num_ready < 0 ) {
+            perror("epoll_wait");
+            return;
+        }
+
+        if (done->load())
+            return;
+
+        for (const auto & event: elist) {
+            if (not ping(event.data.fd, &buffer[0], message_len))
+                return;
+        }
+        result->mcount += elist.num_ready;
+    }
+}
+
+
 void worker_thread(int epollfd,
                    int message_len,
                    unsigned long int timeout_ns,
@@ -323,7 +407,8 @@ void worker_thread(int epollfd,
                    TestResult * result)
 {
     DecOnExit exitor(active_count);
-    std::map<int, unsigned long> last_time_for_socket;
+    std::unordered_map<int, unsigned long> last_time_for_socket;
+    // std::map<int, unsigned long> last_time_for_socket;
     result->mcount = 0;
 
     EventsList elist;
@@ -336,6 +421,7 @@ void worker_thread(int epollfd,
     ready_fds.reserve(1024);
 
     std::vector<FdTimout> wait_queue;
+    wait_queue.reserve(1024);
 
     for(;;) {
         ready_fds.clear();
@@ -378,8 +464,8 @@ void worker_thread(int epollfd,
             return;
 
         // go throught all polled fds, calculated latency
-        // and mova some to wait_queue
-        for (auto & event: elist) {
+        // and move some to wait_queue
+        for (const auto & event: elist) {
             auto fd = event.data.fd;
 
             auto item = last_time_for_socket.emplace(fd, 0);
@@ -486,7 +572,6 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
                              &active_count,
                              &tresults[i]);
 
-
     bool failed = false;
     char message[params.message_len];
     std::memset(message, 'X', sizeof(message));
@@ -573,8 +658,7 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-
-int main_loop_thread(int port) {
+int main_loop_thread(int port, bool single_shot=false) {
     sockaddr_in server, client;
 
     // this requires in order to fir write issue
@@ -618,11 +702,25 @@ int main_loop_thread(int port) {
         }
 
         process_client(client_sock);
+
+        if (single_shot)
+            break;
     }
     return 0;
 }
 
+int main(int argc, const char **argv) {
+    bool single_shot = false;
+    if (argc > 1) {
+        if (argv[1] == std::string("-s")) {
+            single_shot = true;
+        }
+    }
 
-int main(int, const char **) {
-    return main_loop_thread(DEFAULT_PORT);
+#ifdef USERDTSC
+    if (not profile_RDTSC())
+        return 1;
+#endif
+
+    return main_loop_thread(DEFAULT_PORT, single_shot);
 }
