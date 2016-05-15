@@ -43,7 +43,11 @@ ALL_TESTS = {}
 
 
 def get_listen_param(count):
-    return max(min(count * 5 // 100, 100), 15)
+    if count < 15:
+        return int(count / 5)
+    if count < 100:
+        return max(count / 10, 3)
+    return max(count / 20, 10)
 
 
 def im_test(func):
@@ -268,10 +272,13 @@ def thread_test(params, ready_to_connect, before_test, after_test):
 
     threads = []
     ready_to_connect()
+    inited = False
 
     for i in range(params.count):
-        if i == params.count - listen_queue_sz - 1:
+        if i >= params.count - listen_queue_sz - 1 and not inited:
             before_test()
+            inited = True
+
         sock, _ = master_sock.accept()
         prepare_socket(sock, set_no_block=False)
         th = threading.Thread(target=tcp_echo_client,

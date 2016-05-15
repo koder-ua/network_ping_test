@@ -1,13 +1,9 @@
-#include <set>
 #include <map>
-#include <array>
-#include <mutex>
 #include <queue>
+#include <mutex>
 #include <atomic>
 #include <vector>
-#include <cstdio>
 #include <thread>
-#include <cstdlib>
 #include <cstring>
 #include <sstream>
 #include <iostream>
@@ -20,8 +16,6 @@
 #include <netdb.h>
 #include <signal.h>
 #include <unistd.h>
-#include <pthread.h>
-#include <stropts.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/epoll.h>
@@ -351,7 +345,7 @@ struct FdTimout {
 
     FdTimout(int _fd, unsigned long int _ready_time):fd(_fd), ready_time(_ready_time){}
     bool operator<(const FdTimout & fd)const {
-        return ready_time < fd.ready_time;
+        return ready_time > fd.ready_time;
     }
 };
 
@@ -420,8 +414,7 @@ void worker_thread(int epollfd,
     std::vector<int> ready_fds;
     ready_fds.reserve(1024);
 
-    std::vector<FdTimout> wait_queue;
-    wait_queue.reserve(1024);
+    std::priority_queue<FdTimout> wait_queue;
 
     for(;;) {
         ready_fds.clear();
@@ -431,7 +424,7 @@ void worker_thread(int epollfd,
         // need to not sleep too long in epoll
         if (wait_queue.size() > 0) {
             curr_time = get_fast_time();
-            long int poll_timeout = begin(wait_queue)->ready_time - curr_time;
+            long int poll_timeout = wait_queue.top().ready_time - curr_time;
 
             if (poll_timeout < 0)
                 poll_timeout = 0;
@@ -443,13 +436,12 @@ void worker_thread(int epollfd,
             // with expired timeouts
             curr_time = get_fast_time();
             while(wait_queue.size() > 0) {
-                auto item = begin(wait_queue);
+                auto & item = wait_queue.top();
                 // if timeout expires - remove from timeout_wait_queue
                 // and put to ready_fds
-                if (item->ready_time <= curr_time) {
-                    ready_fds.push_back(item->fd);
-                    std::pop_heap(begin(wait_queue), end(wait_queue));
-                    wait_queue.pop_back();
+                if (item.ready_time <= curr_time) {
+                    ready_fds.push_back(item.fd);
+                    wait_queue.pop();
                 } else
                     break;
             }
@@ -490,8 +482,7 @@ void worker_thread(int epollfd,
                 // if socket isn't ready for new ping yet
                 // put it into wait_queue
                 if (ltime + timeout_ns > curr_time) {
-                    wait_queue.emplace_back(fd, ltime + timeout_ns);
-                    std::push_heap(begin(wait_queue), end(wait_queue));
+                    wait_queue.emplace(fd, ltime + timeout_ns);
                     continue;
                 }
             }
