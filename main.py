@@ -44,10 +44,10 @@ ALL_TESTS = {}
 
 def get_listen_param(count):
     if count < 15:
-        return int(count / 5)
+        return int(count // 5)
     if count < 100:
-        return max(count / 10, 3)
-    return max(count / 20, 10)
+        return max(count // 10, 3)
+    return max(count // 20, 10)
 
 
 def im_test(func):
