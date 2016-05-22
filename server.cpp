@@ -32,6 +32,7 @@ const int MAX_CLIENT_MESSAGE = 1024;
 const int MICRO = 1000 * 1000;
 const unsigned long BILLION = 1000 * 1000 * 1000;
 
+
 struct TestParams {
     int port, num_conn, runtime, message_len;
     unsigned long int min_timeout, max_timeout;
@@ -78,6 +79,23 @@ const int LAT_ARR_SIZE = 300;
 struct TestResult{
     unsigned long int mcount;
     std::array<unsigned long int, LAT_ARR_SIZE> lat_ns_log2;
+};
+
+class DecOnExit {
+public:
+    std::atomic_int * counter;
+    DecOnExit(std::atomic_int * _counter):counter(_counter){}
+    ~DecOnExit() {--(*counter);}
+};
+
+struct FdTimout {
+    int fd;
+    unsigned long int ready_time;
+
+    FdTimout(int _fd, unsigned long int _ready_time):fd(_fd), ready_time(_ready_time){}
+    bool operator<(const FdTimout & fd)const {
+        return ready_time > fd.ready_time;
+    }
 };
 
 std::string serialize_to_str(const TestResult & res) {
@@ -140,9 +158,9 @@ inline unsigned long get_fast_time() {
 }
 
 #ifdef USERDTSC
-
-// this coefficient updated after prifiling RDTSC in profile_RDTSC
+// this coefficient updated after prifiling RDTSC in profile_RDTSC from main
 double tick_to_nsec_coef = 1.0;
+
 inline unsigned long get_fast_time() {
     uint32_t low, high;
     asm volatile ("rdtsc" : "=a" (low), "=d" (high));
@@ -203,8 +221,11 @@ bool connect_all(int sock_count,
 {
     const struct hostent * host = gethostbyname(ip);
     if (NULL == host) {
-        std::perror("No such host");
-        return 0;
+        std::string message("No such host: '");
+        message.append(ip);
+        message.append("'");
+        std::perror(message.c_str());
+        return false;
     }
 
     struct sockaddr_in serv_addr;
@@ -217,7 +238,7 @@ bool connect_all(int sock_count,
     for(int i = 0; i < sock_count ; ++i) {
         int sockfd = socket(AF_INET, SOCK_STREAM, 0);
         if (sockfd < 0) {
-            std::perror("Socket creation");
+            std::perror("Socket creation:");
             return false;
         }
 
@@ -253,7 +274,6 @@ bool epoll_wait_ex(int epollfd,
                    long int timeout_ns)
 {
     bool already_polled = false;
-    bool sleep_next_cycle = false;
 
     ready.num_ready = 0;
 
@@ -268,40 +288,27 @@ bool epoll_wait_ex(int epollfd,
     for(;;) {
         auto time_left = (long int)return_time - (long int)curr_time;
 
-        if (time_left <= 0 and already_polled)
-            return true;
-
-        if (time_left < 0)
-            time_left = 0;
+        if (time_left <= 0) {
+            if (already_polled)
+                return true;
+            else
+                time_left = 0;
+        }
 
         auto poll_timeout = time_left / 1000000;
-        sleep_next_cycle = (0 == poll_timeout and 0 != time_left);
 
         ready.num_ready = epoll_wait(epollfd,
                                      &(ready.events[0]),
                                      ready.events.size(),
                                      poll_timeout);
-
         already_polled = true;
+
         curr_time = get_fast_time();
 
-        if (0 == ready.num_ready) {
+        if (ready.num_ready == 0) {
             if (curr_time >= return_time)
                 return true;
-
-            if (sleep_next_cycle) {
-                // sleep 1us
-                timespec stime{0, time_left};
-                if (0 > nanosleep(&stime, nullptr)) {
-                    if (errno != EINTR) {
-                        perror("nanosleep failed");
-                        return false;
-                    }
-                }
-                curr_time = get_fast_time();
-            }
             continue;
-
         } else if ( 0 > ready.num_ready ) {
             if (errno == EINTR) {
                 ready.num_ready = 0;
@@ -323,14 +330,6 @@ bool epoll_wait_ex(int epollfd,
         return true;
     }
 }
-
-
-class DecOnExit {
-public:
-    std::atomic_int * counter;
-    DecOnExit(std::atomic_int * _counter):counter(_counter){}
-    ~DecOnExit() {--(*counter);}
-};
 
 bool ping(int fd, char * buff, int buff_sz) {
     int bc = recv(fd, buff, buff_sz, 0);
@@ -354,20 +353,9 @@ bool ping(int fd, char * buff, int buff_sz) {
     return true;
 }
 
-
-struct FdTimout {
-    int fd;
-    unsigned long int ready_time;
-
-    FdTimout(int _fd, unsigned long int _ready_time):fd(_fd), ready_time(_ready_time){}
-    bool operator<(const FdTimout & fd)const {
-        return ready_time > fd.ready_time;
-    }
-};
-
-
 void worker_thread_fast(int epollfd,
                         int message_len,
+                        int sock_count,
                         unsigned long int timeout_ns_min,
                         unsigned long int timeout_ns_max,
                         std::atomic_bool * done,
@@ -383,7 +371,7 @@ void worker_thread_fast(int epollfd,
     result->mcount = 0;
 
     EventsList elist;
-    elist.events.resize(1024);
+    elist.events.resize(sock_count);
 
     std::vector<char> buffer;
     buffer.resize(message_len);
@@ -409,9 +397,9 @@ void worker_thread_fast(int epollfd,
     }
 }
 
-
 void worker_thread(int epollfd,
                    int message_len,
+                   int sock_count,
                    unsigned long timeout_ns_min,
                    unsigned long timeout_ns_max,
                    std::atomic_bool * done,
@@ -428,13 +416,13 @@ void worker_thread(int epollfd,
 
     bool has_timeout = (0 != timeout_ns_min) or (0 != timeout_ns_max);
     EventsList elist;
-    elist.events.resize(1024);
+    elist.events.resize(sock_count);
 
     std::vector<char> buffer;
     buffer.resize(message_len);
 
     std::vector<int> ready_fds;
-    ready_fds.reserve(1024);
+    ready_fds.reserve(sock_count);
 
     std::priority_queue<FdTimout> wait_queue;
 
@@ -489,6 +477,7 @@ void worker_thread(int epollfd,
 
             // if have previous write time for curr socket
             if (not item.second) {
+
                 #ifdef LOG2_LAT
                 auto tout_l2 = log2_64(curr_time - ltime);
                 #else
@@ -576,11 +565,12 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
     std::atomic_bool done{false};
     std::vector<std::thread> workers;
     std::atomic_int active_count{worker_threads};
-
+    int max_sock_count_per_worker = params.num_conn / worker_threads + 1;
     for(int i = 0; i < worker_threads ; ++i)
         workers.emplace_back(worker_thread,
                              efd_list.fds[i],
                              params.message_len,
+                             max_sock_count_per_worker,
                              params.min_timeout,
                              params.max_timeout,
                              &done,
@@ -588,12 +578,11 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
                              &tresults[i]);
 
     bool failed = false;
-    char message[params.message_len];
-    std::memset(message, 'X', sizeof(message));
+    std::string message((size_t)params.message_len, 'X');
 
     for(auto sock: sockets.fds) {
-        if (params.message_len != write(sock, message, params.message_len)) {
-            std::perror("write(sockfd, message, std::strlen(message))");
+        if (params.message_len != write(sock, message.c_str(), message.length())) {
+            std::perror("write(sock, message, ...)");
             failed = true;
             break;
         }
@@ -602,7 +591,7 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
     if (not failed) {
         int sleeps = params.runtime * 10;
         for(;sleeps > 0; --sleeps) {
-            usleep(100 * 1000);
+            usleep(100 * 1000); // 100ms sleep
             if (active_count.load() == 0)
                 break;
         }
