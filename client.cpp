@@ -103,17 +103,34 @@ protected:
     std::vector<epoll_event>::iterator current_ready;
     std::vector<epoll_event>::iterator end_of_ready;
 
+#ifdef EPOLL_CALL_STATS
+    unsigned long int sock_activation_count;
+    unsigned int wait_count;
+#endif
+
 public:
-    EPollRSelector(int th_count) {
+    EPollRSelector(int sock_count) {
+#ifdef EPOLL_CALL_STATS
+        sock_activation_count = 0;
+        wait_count = 0;
+#endif
         efd = epoll_create1(0);
         if (-1 == efd) {
-          perror("epoll_create");
+            perror("epoll_create");
         }
-        events.resize(th_count);
+        events.resize(sock_count);
     }
 
-    ~EPollRSelector() { close(efd); }
-    bool ok() const { return efd != -1;}
+    ~EPollRSelector() {
+#ifdef EPOLL_CALL_STATS
+        if (0 != wait_count) {
+            std::cout << "Avg socket per wait = ";
+            std::cout << sock_activation_count / wait_count << "\n";
+        }
+#endif
+        close(efd);
+    }
+    bool ok() const {return efd != -1;}
 
     bool add_fd(int sockfd) {
         epoll_event event;
@@ -136,6 +153,11 @@ public:
         }
         current_ready = events.begin();
         end_of_ready = current_ready + n;
+
+#ifdef EPOLL_CALL_STATS
+        wait_count += 1;
+        sock_activation_count += n;
+#endif
         return true;
     }
 
@@ -155,8 +177,7 @@ public:
 };
 
 const unsigned long NS_TO_S = 1000 * 1000 * 1000;
-unsigned long time_ns()
-{
+unsigned long time_ns() {
     struct timespec spec;
     clock_gettime(CLOCK_REALTIME, &spec);
     return spec.tv_sec * NS_TO_S + spec.tv_nsec;
@@ -313,12 +334,12 @@ int run_test(RSelector & selector,
     if (not wait_for_conn(th_count, sockets.fds, ip, port, listen_queue, ready_for_connect, nullptr, false))
         return 1;
 
-    if (nullptr != preparation_done)
-        preparation_done();
-
     for(int sockfd: sockets.fds)
         if (not selector.add_fd(sockfd))
             return 1;
+
+    if (nullptr != preparation_done)
+        preparation_done();
 
     while(fd_left > 0) {
         if (not selector.wait())
@@ -369,7 +390,9 @@ int run_test_epoll(const char * ip,
     EPollRSelector eps(th_count);
     if (not eps.ok())
         return 1;
-    return run_test(eps, ip, port, th_count, msize, listen_queue, ready_for_connect, preparation_done, test_done);
+    return run_test(eps, ip, port, th_count, msize,
+                    listen_queue,
+                    ready_for_connect, preparation_done, test_done);
 }
 
 extern "C"

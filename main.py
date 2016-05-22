@@ -335,7 +335,7 @@ TIME_CB = ctypes.CFUNCTYPE(None)
 
 
 def run_c_test(fname, params, ready_to_connect, before_test, after_test):
-    so = ctypes.cdll.LoadLibrary("./bin/libclient2.so")
+    so = ctypes.cdll.LoadLibrary("./bin/libclient.so")
     func = getattr(so, fname)
     func.restype = ctypes.c_int
     func.argtypes = [ctypes.POINTER(ctypes.c_char),  # local ip
@@ -379,7 +379,7 @@ def get_run_stats(func, params):
 
     def ready_func():
         s.send(("{0.local_addr[0]} {0.local_addr[1]} {0.count} " +
-                "{0.runtime} {0.timeout} {0.msize}").format(params).encode('ascii'))
+                "{0.runtime} {0.timeout[0]} {0.timeout[1]} {0.msize}").format(params).encode('ascii'))
 
     def stamp():
         times.append(os.times())
@@ -393,13 +393,11 @@ def get_run_stats(func, params):
     result = s.recv(1024)
     s.close()
 
-    results = list(map(int, result.split()))
-    msg_processed = results[0]
-    lat_distribution = results[1:]
-    return utime, stime, ctime, msg_processed, lat_distribution
+    msg_processed, lat_base, *lat_distribution = result.split()
+    return utime, stime, ctime, int(msg_processed), float(lat_base), list(map(int, lat_distribution))
 
 
-def get_lats(lats, percs=(0.5, 0.75, 0.95)):
+def get_lats(lats, log_base, percs=(0.5, 0.75, 0.95)):
     all_mess = sum(lats)
     if 0 == all_mess:
         return [0] * len(percs)
@@ -412,7 +410,7 @@ def get_lats(lats, percs=(0.5, 0.75, 0.95)):
         curr += val
         for res_idx, perc in enumerate(percs):
             if curr >= all_mess * perc and res[res_idx] is None:
-                res[res_idx] = 2 ** idx
+                res[res_idx] = log_base ** idx
 
     return res
 
@@ -441,6 +439,8 @@ def main(argv):
     parser.add_argument('--meta', '-m', type=str, nargs='*', default=[])
     parser.add_argument('--runtime', type=int, default=30)
     parser.add_argument('--timeout', '-t', type=int, default=0)
+    parser.add_argument('--max-timeout', type=int, default=None)
+    parser.add_argument('--min-timeout', type=int, default=None)
 
     opts = parser.parse_args(argv[1:])
 
@@ -450,7 +450,25 @@ def main(argv):
     params.msize = opts.msize
     params.count = opts.count
     params.runtime = opts.runtime
-    params.timeout = opts.timeout
+
+    if opts.timeout and (opts.max_timeout or opts.min_timeout):
+        print("--runtime option is conflict with --max-timeout/--min-timeout")
+        return 1
+
+    if (opts.max_timeout or opts.min_timeout) and not (opts.max_timeout and opts.min_timeout):
+        print("--max-timeout requires --min-timeout and vice versa")
+        return 1
+
+    if opts.max_timeout and (opts.max_timeout < opts.min_timeout):
+        print("--max-timeout should be >= --min-timeout")
+        return 1
+
+    if opts.max_timeout:
+        params.timeout = (opts.min_timeout, opts.max_timeout)
+    elif opts.timeout:
+        params.timeout = (opts.timeout, opts.timeout)
+    else:
+        params.timeout = (0, 0)
 
     test_names = opts.tests.split(',')
 
@@ -493,8 +511,8 @@ def main(argv):
     for func in run_tests:
         for i in range(opts.rounds):
             try:
-                utime, stime, ctime, msg_precessed, lat_distribution = get_run_stats(func, params)
-                lat_50, lat_75, lat_95 = get_lats(lat_distribution)
+                utime, stime, ctime, msg_processed, lat_base, lat_distribution = get_run_stats(func, params)
+                lat_50, lat_75, lat_95 = get_lats(lat_distribution, lat_base)
                 # print(templ.format(func.__name__.replace("_test", ''), utime, stime, ctime, msg_precessed))
                 curr_res = dict(
                     func=func.__name__.replace("_test", ''),
@@ -504,7 +522,7 @@ def main(argv):
                     lat_50=ns_to_readable(lat_50),
                     lat_75=ns_to_readable(lat_75),
                     lat_95=ns_to_readable(lat_95),
-                    messages=msg_precessed)
+                    messages=msg_processed)
                 results_struct['data'].append(curr_res)
             except Exception as exc:
                 traceback.print_exc()

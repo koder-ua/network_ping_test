@@ -1,15 +1,19 @@
 #include <map>
 #include <queue>
-#include <mutex>
 #include <atomic>
 #include <vector>
 #include <thread>
+#include <random>
 #include <cstring>
 #include <sstream>
+#include <iomanip>
 #include <iostream>
 #include <algorithm>
 #include <unordered_map>
-#include <condition_variable>
+
+#ifndef LOG2_LAT
+#include <cmath>
+#endif
 
 #include <poll.h>
 #include <fcntl.h>
@@ -28,9 +32,9 @@ const int MAX_CLIENT_MESSAGE = 1024;
 const int MICRO = 1000 * 1000;
 const unsigned long BILLION = 1000 * 1000 * 1000;
 
-struct TestParams{
+struct TestParams {
     int port, num_conn, runtime, message_len;
-    unsigned long int timeout;
+    unsigned long int min_timeout, max_timeout;
     char ip[MAX_CLIENT_MESSAGE + 1];
 };
 
@@ -46,36 +50,10 @@ public:
 class FDCloser {
 public:
     int fd;
-    // FDCloser(int _fd): fd(_fd) {}
     ~FDCloser() {
         close(fd);
     }
 };
-
-template <typename T> class Queue {
-private:
-    std::queue<T> queue;
-    std::mutex mutex;
-    std::condition_variable cond;
-public:
-    T pop() {
-        std::unique_lock<std::mutex> mlock(mutex);
-
-        while (queue.empty())
-            cond.wait(mlock);
-        
-        auto item = queue.front();
-        queue.pop();
-        return item;
-    }
- 
-    void push(const T& item) {
-        std::unique_lock<std::mutex> mlock(mutex);
-        queue.push(item);
-        mlock.unlock();
-        cond.notify_one();
-    }
- };
 
 struct EventsList {
     std::vector<epoll_event> events;
@@ -91,14 +69,29 @@ std::vector<epoll_event>::iterator end(EventsList & elist) {
     return elist.events.begin() + elist.num_ready;
 }
 
+#ifdef LOG2_LAT
+const int LAT_ARR_SIZE = 30;
+#else
+const int LAT_ARR_SIZE = 300;
+#endif
+
 struct TestResult{
     unsigned long int mcount;
-    std::array<unsigned long int, 30> lat_ns_log2;
+    std::array<unsigned long int, LAT_ARR_SIZE> lat_ns_log2;
 };
 
 std::string serialize_to_str(const TestResult & res) {
     std::stringstream serialized;
     serialized << res.mcount;
+
+    #ifdef LOG2_LAT
+    serialized << " 2";
+    #else
+    serialized << " " << std::setprecision(12) << std::pow(2L, 0.1L);
+    #endif
+
+    std::cout << serialized.str() << "\n";
+
     for(auto val: res.lat_ns_log2)
         serialized << " " << val;
     return serialized.str();
@@ -109,17 +102,26 @@ bool load_from_str(const char * data, TestParams & params) {
         std::cerr << "Message too large\n";
         return false;
     }
-    int num_scanned = std::sscanf(data, "%s %d %d %d %lu %d",
+    int num_scanned = std::sscanf(data, "%s %d %d %d %lu %lu %d",
                                   params.ip,
                                   &params.port,
                                   &params.num_conn,
                                   &params.runtime,
-                                  &params.timeout,
+                                  &params.min_timeout,
+                                  &params.max_timeout,
                                   &params.message_len);
-    if (num_scanned != 6) {
+    if (num_scanned != 7) {
         std::cerr << "Message from client is broken '" << data << "'\n";
         return false;
     }
+
+    if (params.min_timeout > params.max_timeout) {
+        std::cerr << "Message from client is broken. (min_timeout)" << params.min_timeout;
+        std::cerr << " > (max_timeout) " << params.min_timeout << "\n";
+        std::cerr << " data = '" << data << "'\n";
+        return false;
+    }
+
     return true;
 }
 
@@ -173,23 +175,24 @@ bool profile_RDTSC() {
 
 #endif
 
-const int tab64[64] = {
-    63,  0, 58,  1, 59, 47, 53,  2,
-    60, 39, 48, 27, 54, 33, 42,  3,
-    61, 51, 37, 40, 49, 18, 28, 20,
-    55, 30, 34, 11, 43, 14, 22,  4,
-    62, 57, 46, 52, 38, 26, 32, 41,
-    50, 36, 17, 19, 29, 10, 13, 21,
-    56, 45, 25, 31, 35, 16,  9, 12,
-    44, 24, 15,  8, 23,  7,  6,  5};
-
 int log2_64(uint64_t value) {
+    const int tab64[64] = {
+        63,  0, 58,  1, 59, 47, 53,  2,
+        60, 39, 48, 27, 54, 33, 42,  3,
+        61, 51, 37, 40, 49, 18, 28, 20,
+        55, 30, 34, 11, 43, 14, 22,  4,
+        62, 57, 46, 52, 38, 26, 32, 41,
+        50, 36, 17, 19, 29, 10, 13, 21,
+        56, 45, 25, 31, 35, 16,  9, 12,
+        44, 24, 15,  8, 23,  7,  6,  5};
+
     value |= value >> 1;
     value |= value >> 2;
     value |= value >> 4;
     value |= value >> 8;
     value |= value >> 16;
     value |= value >> 32;
+
     return tab64[((uint64_t)((value - (value >> 1))*0x07EDD5E59A4E28C2)) >> 58];
 }
 
@@ -240,6 +243,11 @@ bool connect_all(int sock_count,
     return true;
 }
 
+#ifdef EPOLL_CALL_STATS
+std::atomic<unsigned long int> socket_count_from_wait;
+std::atomic<unsigned int> epoll_wait_calls;
+#endif
+
 bool epoll_wait_ex(int epollfd,
                    EventsList & ready,
                    long int timeout_ns)
@@ -273,6 +281,7 @@ bool epoll_wait_ex(int epollfd,
                                      &(ready.events[0]),
                                      ready.events.size(),
                                      poll_timeout);
+
         already_polled = true;
         curr_time = get_fast_time();
 
@@ -302,6 +311,13 @@ bool epoll_wait_ex(int epollfd,
                 return false;
             }
         }
+
+        #ifdef EPOLL_CALL_STATS
+        if (0 != ready.num_ready) {
+            socket_count_from_wait += ready.num_ready;
+            epoll_wait_calls += 1;
+        }
+        #endif
 
         ready.recv_time = curr_time;
         return true;
@@ -352,13 +368,14 @@ struct FdTimout {
 
 void worker_thread_fast(int epollfd,
                         int message_len,
-                        unsigned long int timeout_ns,
+                        unsigned long int timeout_ns_min,
+                        unsigned long int timeout_ns_max,
                         std::atomic_bool * done,
                         std::atomic_int * active_count,
                         TestResult * result)
 {
-    if (0 != timeout_ns) {
-        std::cerr << "worker_thread_fast doesn't support timeout\n";
+    if (0 != timeout_ns_min or 0 != timeout_ns_max) {
+        std::cerr << "worker_thread_fast doesn't support timeouts\n";
         return;   
     }
 
@@ -395,7 +412,8 @@ void worker_thread_fast(int epollfd,
 
 void worker_thread(int epollfd,
                    int message_len,
-                   unsigned long int timeout_ns,
+                   unsigned long timeout_ns_min,
+                   unsigned long timeout_ns_max,
                    std::atomic_bool * done,
                    std::atomic_int * active_count,
                    TestResult * result)
@@ -405,6 +423,10 @@ void worker_thread(int epollfd,
     // std::map<int, unsigned long> last_time_for_socket;
     result->mcount = 0;
 
+    std::mt19937 rand_gen;
+    std::uniform_int_distribution<unsigned long> rand_timeout(timeout_ns_min, timeout_ns_max);
+
+    bool has_timeout = (0 != timeout_ns_min) or (0 != timeout_ns_max);
     EventsList elist;
     elist.events.resize(1024);
 
@@ -418,7 +440,7 @@ void worker_thread(int epollfd,
 
     for(;;) {
         ready_fds.clear();
-        unsigned long int curr_time;
+        unsigned long curr_time;
 
         // if there a ready sockets, waiting for timeout
         // need to not sleep too long in epoll
@@ -467,7 +489,11 @@ void worker_thread(int epollfd,
 
             // if have previous write time for curr socket
             if (not item.second) {
+                #ifdef LOG2_LAT
                 auto tout_l2 = log2_64(curr_time - ltime);
+                #else
+                int tout_l2 = std::lround(std::log2((float)(curr_time - ltime)) * 10);
+                #endif
 
                 if (tout_l2 >= (int)result->lat_ns_log2.size())
                     tout_l2 = result->lat_ns_log2.size() - 1;
@@ -477,7 +503,13 @@ void worker_thread(int epollfd,
             }
 
             // if has timeout
-            if (timeout_ns > 0) {
+            if (has_timeout) {
+                unsigned long timeout_ns = 0;
+                if (timeout_ns_max != timeout_ns_min) {
+                    timeout_ns = rand_timeout(rand_gen);
+                } else {
+                    timeout_ns = timeout_ns_max;
+                }
 
                 // if socket isn't ready for new ping yet
                 // put it into wait_queue
@@ -516,10 +548,7 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
     epoll_event event;
     event.events = EPOLLIN | EPOLLET;
 
-    if (worker_threads > params.num_conn)
-        worker_threads = params.num_conn;
-
-    int step = params.num_conn / worker_threads;
+    worker_threads = std::min(params.num_conn, worker_threads);
 
     for(int i = 0; i < worker_threads ; ++i) {
         int efd = epoll_create1(0);
@@ -528,28 +557,22 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
             return false;
         }
         efd_list.fds.push_back(efd);
+    }
 
-        auto begin_iter = sockets.fds.begin() + step * i;
-        auto end_iter = (
-            i == worker_threads - 1 ? sockets.fds.end() : sockets.fds.begin() + step * (i + 1)
-        );
-
-        if (begin_iter == end_iter) {
-            std::cerr << "An issue\n";
+    int idx = 0;
+    for(auto fd: sockets.fds) {
+        event.data.fd = fd;
+        int efd = efd_list.fds[idx % worker_threads];
+        if (-1 == epoll_ctl(efd, EPOLL_CTL_ADD, fd, &event)) {
+            perror("epoll_ctl");
             return false;
         }
-
-        for(; begin_iter != end_iter ; ++begin_iter) {
-            event.data.fd = *begin_iter;
-            if (-1 == epoll_ctl(efd, EPOLL_CTL_ADD, *begin_iter, &event)) {
-                perror("epoll_ctl");
-                return false;
-            }
-        }
+        ++idx;
     }
 
     std::vector<TestResult> tresults;
     tresults.resize(worker_threads);
+
     std::atomic_bool done{false};
     std::vector<std::thread> workers;
     std::atomic_int active_count{worker_threads};
@@ -558,7 +581,8 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
         workers.emplace_back(worker_thread,
                              efd_list.fds[i],
                              params.message_len,
-                             params.timeout,
+                             params.min_timeout,
+                             params.max_timeout,
                              &done,
                              &active_count,
                              &tresults[i]);
@@ -579,9 +603,8 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
         int sleeps = params.runtime * 10;
         for(;sleeps > 0; --sleeps) {
             usleep(100 * 1000);
-            if (active_count.load() == 0) {
+            if (active_count.load() == 0)
                 break;
-            }
         }
     }
 
@@ -596,10 +619,6 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
         for(int pos = 0; pos < (int)res.lat_ns_log2.size(); ++pos)
             res.lat_ns_log2[pos] += ires.lat_ns_log2[pos];
     }
-
-
-    // std::cout << std::hex << (unsigned int)guard1 << " " << (unsigned int)guard2 << std::dec << "\n";
-    // std::cout << "res.mcount = " << res.mcount << "\n";
 
     return not failed;
 }
@@ -634,7 +653,9 @@ void process_client(int sock) {
         return;
 
     std::string responce = serialize_to_str(res);
-    std::cout << "Test finished. Results : " << responce << "\n";
+    std::cout << "Test finished. Results : " << "\n";
+    std::cout << "    mess_count = " << res.mcount << "\n";
+    std::cout << "    average_mps = " << res.mcount / params.runtime << "\n";
     if( write(sock, &responce[0], responce.size()) != (int)responce.size()) {
         perror("write failed");
         return;
@@ -642,8 +663,7 @@ void process_client(int sock) {
     return;
 }
 
-void *get_in_addr(struct sockaddr *sa)
-{
+void *get_in_addr(struct sockaddr *sa) {
     if (sa->sa_family == AF_INET)
         return &(((struct sockaddr_in*)sa)->sin_addr);
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
@@ -692,7 +712,19 @@ int main_loop_thread(int port, bool single_shot=false) {
             std::cout << "Client connected: " << ipstr << ":" << ntohs(client.sin_port) << "\n";
         }
 
+        #ifdef EPOLL_CALL_STATS
+        socket_count_from_wait = 0;
+        epoll_wait_calls = 0;
+        #endif
+
         process_client(client_sock);
+
+        #ifdef EPOLL_CALL_STATS
+        if ( 0 != epoll_wait_calls.load()) {
+            std::cout << "Average sockets from epoll_wait = ";
+            std::cout << socket_count_from_wait / epoll_wait_calls << "\n";
+        }
+        #endif
 
         if (single_shot)
             break;
