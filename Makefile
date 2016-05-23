@@ -12,7 +12,7 @@ VTUNE_CPP_PROF:=-O2 -march=native
 CPP_O3:=-O3 -march=native -fomit-frame-pointer
 CPP_DEBUG:=-O0 -fno-omit-frame-pointer -g3 -ggdb
 
-CPP_OPTS:=$(CPP_OPTS) $(VTUNE_CPP_PROF) -DEPOLL_CALL_STATS
+CPP_OPTS:=$(CPP_OPTS) $(CPP_O3)
 
 COMPILER=g++
 

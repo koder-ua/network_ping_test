@@ -124,8 +124,10 @@ def asyncio_sock_test(params, ready_to_connect, before_test, after_test,
     ready_to_connect()
     for _ in range(params.count):
         sock, _ = master_sock.accept()
-        prepare_socket(sock, set_no_block=False)
+        prepare_socket(sock)
         socks.append(sock)
+
+    master_sock.close()
 
     loop = loop_cls()
     loop.set_debug(False)
