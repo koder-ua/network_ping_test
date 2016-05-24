@@ -1,5 +1,6 @@
 #include <map>
 #include <queue>
+#include <mutex>
 #include <atomic>
 #include <vector>
 #include <thread>
@@ -77,8 +78,11 @@ const int LAT_ARR_SIZE = 300;
 #endif
 
 struct TestResult{
-    unsigned long int mcount;
-    std::array<unsigned long int, LAT_ARR_SIZE> lat_ns_log2;
+    unsigned long mcount;
+    unsigned long avg_lat_ns;
+    std::array<unsigned long, 19> percentiles;
+    std::array<unsigned long, LAT_ARR_SIZE> lat_ns_log2;
+    std::unordered_map<int, unsigned long> mess_count_for_sock;
 };
 
 class DecOnExit {
@@ -98,6 +102,12 @@ struct FdTimout {
     }
 };
 
+struct Sync {
+   std::atomic_bool done;
+   std::mutex run_lola_run;
+   std::atomic_int active_count;
+};
+
 std::string serialize_to_str(const TestResult & res) {
     std::stringstream serialized;
     serialized << res.mcount;
@@ -108,10 +118,14 @@ std::string serialize_to_str(const TestResult & res) {
     serialized << " " << std::setprecision(12) << std::pow(2L, 0.1L);
     #endif
 
-    std::cout << serialized.str() << "\n";
-
+    serialized << " " << res.lat_ns_log2.size();
     for(auto val: res.lat_ns_log2)
         serialized << " " << val;
+
+    serialized << " " << res.percentiles.size();
+    for(auto val: res.percentiles)
+        serialized << " " << val;
+
     return serialized.str();
 }
 
@@ -358,8 +372,7 @@ void worker_thread_fast(int epollfd,
                         int sock_count,
                         unsigned long int timeout_ns_min,
                         unsigned long int timeout_ns_max,
-                        std::atomic_bool * done,
-                        std::atomic_int * active_count,
+                        Sync * sync,
                         TestResult * result)
 {
     if (0 != timeout_ns_min or 0 != timeout_ns_max) {
@@ -367,7 +380,7 @@ void worker_thread_fast(int epollfd,
         return;   
     }
 
-    DecOnExit exitor(active_count);
+    DecOnExit exitor(&sync->active_count);
     result->mcount = 0;
 
     EventsList elist;
@@ -375,6 +388,10 @@ void worker_thread_fast(int epollfd,
 
     std::vector<char> buffer;
     buffer.resize(message_len);
+
+    sync->active_count++;
+    sync->run_lola_run.lock();
+    sync->run_lola_run.unlock();
 
     for(;;) {
         elist.num_ready = epoll_wait(epollfd,
@@ -386,7 +403,7 @@ void worker_thread_fast(int epollfd,
             return;
         }
 
-        if (done->load())
+        if (sync->done.load())
             return;
 
         for (const auto & event: elist) {
@@ -402,13 +419,10 @@ void worker_thread(int epollfd,
                    int sock_count,
                    unsigned long timeout_ns_min,
                    unsigned long timeout_ns_max,
-                   std::atomic_bool * done,
-                   std::atomic_int * active_count,
+                   Sync * sync,
                    TestResult * result)
 {
-    DecOnExit exitor(active_count);
     std::unordered_map<int, unsigned long> last_time_for_socket;
-    // std::map<int, unsigned long> last_time_for_socket;
     result->mcount = 0;
 
     std::mt19937 rand_gen;
@@ -425,6 +439,11 @@ void worker_thread(int epollfd,
     ready_fds.reserve(sock_count);
 
     std::priority_queue<FdTimout> wait_queue;
+
+    sync->active_count++;
+    DecOnExit exitor(&sync->active_count);
+    sync->run_lola_run.lock();
+    sync->run_lola_run.unlock();
 
     for(;;) {
         ready_fds.clear();
@@ -462,7 +481,7 @@ void worker_thread(int epollfd,
         }
 
 
-        if (done->load())
+        if (sync->done.load())
             return;
 
         // go throught all polled fds, calculated latency
@@ -479,7 +498,7 @@ void worker_thread(int epollfd,
             if (not item.second) {
 
                 #ifdef LOG2_LAT
-                auto tout_l2 = log2_64(curr_time - ltime);
+                int tout_l2 = (int)log2_64(curr_time - ltime);
                 #else
                 int tout_l2 = std::lround(std::log2((float)(curr_time - ltime)) * 10);
                 #endif
@@ -512,13 +531,14 @@ void worker_thread(int epollfd,
         }
 
         for(auto fd: ready_fds) {
-            if (done->load())
+            if (sync->done.load())
                 return;
 
             if (not ping(fd, &buffer[0], message_len))
                 return;
 
             last_time_for_socket[fd] = get_fast_time();
+            result->mess_count_for_sock.emplace(fd, 0).first->second++;
         }
 
         result->mcount += elist.num_ready;
@@ -562,9 +582,13 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
     std::vector<TestResult> tresults;
     tresults.resize(worker_threads);
 
-    std::atomic_bool done{false};
     std::vector<std::thread> workers;
-    std::atomic_int active_count{worker_threads};
+    Sync sync;
+
+    sync.done = false;
+    sync.active_count = 0;
+    sync.run_lola_run.lock();
+
     int max_sock_count_per_worker = params.num_conn / worker_threads + 1;
     for(int i = 0; i < worker_threads ; ++i)
         workers.emplace_back(worker_thread,
@@ -573,8 +597,7 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
                              max_sock_count_per_worker,
                              params.min_timeout,
                              params.max_timeout,
-                             &done,
-                             &active_count,
+                             &sync,
                              &tresults[i]);
 
     bool failed = false;
@@ -589,25 +612,61 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
     }
 
     if (not failed) {
+        while (sync.active_count.load() != worker_threads)
+                usleep(100 * 1000); // 100ms sleep
+
+        sync.run_lola_run.unlock();
+
+        // run threads for params.runtime seconds
         int sleeps = params.runtime * 10;
         for(;sleeps > 0; --sleeps) {
             usleep(100 * 1000); // 100ms sleep
-            if (active_count.load() == 0)
+            if (sync.active_count.load() == 0)
                 break;
         }
     }
 
-    done.store(true);
+    sync.done.store(true);
     for(auto & worker: workers)
         worker.join();
 
     res.mcount = 0;
     res.lat_ns_log2.fill(0);
-    for(auto & ires: tresults) {
+    for(const auto & ires: tresults) {
         res.mcount += ires.mcount;
         for(int pos = 0; pos < (int)res.lat_ns_log2.size(); ++pos)
             res.lat_ns_log2[pos] += ires.lat_ns_log2[pos];
     }
+
+    std::vector<unsigned long> mps;
+    mps.reserve(params.num_conn);
+
+    for(const auto & ires: tresults) {
+        for(const auto & item: ires.mess_count_for_sock)
+            mps.push_back(item.second);
+    }
+
+    std::sort(begin(mps), end(mps));
+
+    for(int i = 0 ; i < (int)res.percentiles.size() ; ++i) {
+        int idx = params.num_conn * (i + 1) / (res.percentiles.size() + 1);
+        res.percentiles[i] = mps[idx];
+    }
+
+    #ifdef LOG2_LAT
+    double base = 2.0;
+    #else
+    double base = std::pow(2L, 0.1L);
+    #endif
+
+    long count = 0;
+    double lat_ns_sum = 0;
+
+    for(int pos = 0; pos < (int)res.lat_ns_log2.size(); ++pos) {
+        lat_ns_sum += res.lat_ns_log2[pos] * std::pow(base, pos);
+        count += res.lat_ns_log2[pos];
+    }
+    res.avg_lat_ns = (long) (lat_ns_sum / count);
 
     return not failed;
 }
@@ -641,10 +700,14 @@ void process_client(int sock) {
     if (not run_test(params, res, worker_thread))
         return;
 
-    std::string responce = serialize_to_str(res);
     std::cout << "Test finished. Results : " << "\n";
     std::cout << "    mess_count = " << res.mcount << "\n";
     std::cout << "    average_mps = " << res.mcount / params.runtime << "\n";
+    std::cout << "    average_lat = " << (int)(res.avg_lat_ns / 1000) << " us\n";
+    std::cout << "    5% mess perc = " << res.percentiles[0] << "\n";
+    std::cout << "    95% mess perc = " << res.percentiles[res.percentiles.size() - 1] << "\n";
+
+    std::string responce = serialize_to_str(res);
     if( write(sock, &responce[0], responce.size()) != (int)responce.size()) {
         perror("write failed");
         return;

@@ -392,14 +392,32 @@ def get_run_stats(func, params):
     stime = times[1].system - times[0].system
     ctime = times[1].elapsed - times[0].elapsed
 
-    result = s.recv(1024)
+    result = s.recv(1024 * 64)
     s.close()
 
-    msg_processed, lat_base, *lat_distribution = result.split()
-    return utime, stime, ctime, int(msg_processed), float(lat_base), list(map(int, lat_distribution))
+    msg_processed, lat_base, *lat_distribution_and_percentiles_s = result.split()
+    lat_distribution_and_percentiles = list(map(int, lat_distribution_and_percentiles_s))
+
+    lats_size = lat_distribution_and_percentiles[0]
+    lat_distribution = lat_distribution_and_percentiles[1: 1 + lats_size]
+    lat_distribution_and_percentiles = lat_distribution_and_percentiles[1 + lats_size:]
+
+    perc_size = lat_distribution_and_percentiles[0]
+    assert len(lat_distribution_and_percentiles) == perc_size + 1
+    percentiles = lat_distribution_and_percentiles[1:]
+
+    return utime, stime, ctime, int(msg_processed), float(lat_base), lat_distribution, percentiles
+
+
+def print_lat_stats(lats, log_base):
+    print("Lats:")
+    for pos, i in enumerate(lats):
+        if i > 100:
+            print("    {:<8s}: {}".format(ns_to_readable(log_base ** pos), i))
 
 
 def get_lats(lats, log_base, percs=(0.5, 0.75, 0.95)):
+
     all_mess = sum(lats)
     if 0 == all_mess:
         return [0] * len(percs)
@@ -513,17 +531,22 @@ def main(argv):
     for func in run_tests:
         for i in range(opts.rounds):
             try:
-                utime, stime, ctime, msg_processed, lat_base, lat_distribution = get_run_stats(func, params)
+                utime, stime, ctime, msg_processed, lat_base, \
+                    lat_distribution, msg_percentiles = get_run_stats(func, params)
+
+                assert len(msg_percentiles) == 19
+
                 lat_50, lat_75, lat_95 = get_lats(lat_distribution, lat_base)
-                # print(templ.format(func.__name__.replace("_test", ''), utime, stime, ctime, msg_precessed))
+
                 curr_res = dict(
                     func=func.__name__.replace("_test", ''),
                     utime="{:.2f}".format(utime),
                     stime="{:.2f}".format(stime),
                     ctime="{:.2f}".format(ctime),
                     lat_50=ns_to_readable(lat_50),
-                    lat_75=ns_to_readable(lat_75),
                     lat_95=ns_to_readable(lat_95),
+                    msg_5perc=msg_percentiles[0],
+                    msg_95perc=msg_percentiles[-1],
                     messages=msg_processed)
                 results_struct['data'].append(curr_res)
             except Exception as exc:
