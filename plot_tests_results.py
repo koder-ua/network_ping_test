@@ -53,7 +53,7 @@ def stime_to_ns(data):
     raise ValueError("Can't parse {0!r} as time".format(data))
 
 
-def show_plot(points, data, scale=1):
+def show_plot(points, data, scale=1, with_dev=True, log_scale_y=False, ylabel=None, xlabel=None):
     import matplotlib.pyplot as plt
 
     if 10000 not in points:
@@ -66,6 +66,8 @@ def show_plot(points, data, scale=1):
     all_params = data.keys()
     all_params.sort(key=lambda x: x.func)
 
+    plt.subplot(1, 1, 1)
+
     for params in all_params:
         wrk_to_avg = data[params]
         y = []
@@ -75,9 +77,13 @@ def show_plot(points, data, scale=1):
             if pt in wrk_to_avg:
                 avg, dev = wrk_to_avg[pt]
                 y.append(avg / scale)
-                y_dev.append(dev / scale)
+                if with_dev:
+                    y_dev.append(dev / scale)
                 x.append(pt2coord[pt])
-        plt.errorbar(x, y, y_dev, label=test_label(params))
+        if with_dev:
+            plt.errorbar(x, y, y_dev, label=test_label(params))
+        else:
+            plt.plot(x, y, label=test_label(params))
 
     ticks = []
     for i in points:
@@ -87,9 +93,20 @@ def show_plot(points, data, scale=1):
             assert i % 1000 == 0
             ticks.append(str(i / 1000) + 'k')
 
+    if log_scale_y:
+        plt.yscale('log')
+
     plt.xticks(x_coords_all, ticks + [""])
+
     plt.xlim([0, x_coords_all[-1]])
     plt.ylim(ymin=0)
+
+    if xlabel is not None:
+        plt.xlabel(xlabel)
+
+    if ylabel is not None:
+        plt.ylabel(ylabel)
+
     plt.legend()
     plt.show()
 
@@ -160,8 +177,8 @@ def show_table(points, data, with_dev=True):
 def main(argv):
     func_names = ('uvloop', 'asyncio', 'gevent', 'thread', 'cpp_th', 'cpp_epoll', 'selector')
     # func_names = None
-    # server = '172.16.40.43:33331'
-    server = '172.16.40.37:33331'
+    server = '172.16.40.43:33331'
+    # server = '172.16.40.37:33331'
     files = sys.argv[1:]
 
     results = collections.defaultdict(list)
@@ -191,6 +208,8 @@ def main(argv):
     mps = collections.defaultdict(dict)
     lat_50 = collections.defaultdict(dict)
     lat_95 = collections.defaultdict(dict)
+    lat_50_s = collections.defaultdict(dict)
+    lat_95_s = collections.defaultdict(dict)
     stime = collections.defaultdict(dict)
     utime = collections.defaultdict(dict)
     points = set()
@@ -210,14 +229,16 @@ def main(argv):
             avg_s = ">1s"
         else:
             avg_s = ns_to_readable(avg)
-        lat_95[TestRun(**dparams)][workers] = AvgDev(avg_s, None)
+        lat_95_s[TestRun(**dparams)][workers] = AvgDev(avg_s, None)
+        lat_95[TestRun(**dparams)][workers] = AvgDev(avg / 1000000., dev / 1000000.)
 
         avg, dev = average_and_dev([stime_to_ns(i.lat_50) for i in data])
         if avg >= 1E9 - 1000:
             avg_s = ">1s"
         else:
             avg_s = ns_to_readable(avg)
-        lat_50[TestRun(**dparams)][workers] = AvgDev(avg_s, None)
+        lat_50_s[TestRun(**dparams)][workers] = AvgDev(avg_s, None)
+        lat_50[TestRun(**dparams)][workers] = AvgDev(avg / 1000000., dev / 1000000.)
 
         stime[TestRun(**dparams)][workers] = average_and_dev([int(i.stime * 100 / params.runtime + 0.5) for i in data])
         utime[TestRun(**dparams)][workers] = average_and_dev([int(i.utime * 100 / params.runtime + 0.5) for i in data])
@@ -227,17 +248,20 @@ def main(argv):
     min_mps = min(min(i.avg for i in per_worker_map.values())
                   for per_worker_map in mps.values())
 
+    rel_mps_s = collections.defaultdict(dict)
     rel_mps = collections.defaultdict(dict)
     for key1, val1 in mps.items():
         for key2, val2 in val1.items():
             vl = int(val2.avg / min_mps + 0.5)
-            rel_mps[key1][key2] = AvgDev("{:>2d}".format(vl), None)
+            rel_mps_s[key1][key2] = AvgDev("{:>2d}".format(vl), None)
+            rel_mps[key1][key2] = AvgDev(vl, None)
 
-    show_plot(points, mps, 1000)
+    # show_plot(points, mps, 1000)
     # show_table(points, mps, with_dev=True)
-    # show_table(points, lat_95, with_dev=False)
-    # show_table(points, lat_50, with_dev=False)
-    # show_table(points, rel_mps, with_dev=False)
+    # show_table(points, lat_95_s, with_dev=False)
+    # show_table(points, lat_50_s, with_dev=False)
+    show_plot(points, lat_95, with_dev=False,
+              log_scale_y=True, ylabel="lat, ms", xlabel="conn. count")
 
     # show_table(points, utime, with_dev=False)
 
