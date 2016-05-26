@@ -71,9 +71,11 @@ Asyncio в сравнении с другими способы обработк�
 
 Запуск клиента:
 
-    # ulimit -n 65536
-    # echo 1024 65535 | tee /proc/sys/net/ipv4/ip_local_port_range    
-    # taskset -c 0 python3.5 main.py ....
+```
+# ulimit -n 65536
+# echo 1024 65535 | tee /proc/sys/net/ipv4/ip_local_port_range    
+# taskset -c 0 python3.5 main.py ....
+```
 
 Использовались только пакеты по 64 байта. Использование больших по размеру пакетов
 бессмысленно, посколько код обработки оперирует только указателями на буфер, а 
@@ -85,14 +87,15 @@ Asyncio в сравнении с другими способы обработк�
 
 #### Особенности
 
-    Для тестов asyncio_sock/uvloop_sock(uvloop<0.4.28) с сокетами  и локальным сервером
+Для тестов asyncio\_sock uvloop\_sock (uvloop<0.4.28) с сокетами  и локальным сервером
 все соединения делятся на две группы - активные и стагнирующие. Активные постоянно
 обслуживаются и обрабатывают основную массу сообщений (>95%) в то время как стагнирующие
 крайне редко получали кванты времени и обрабатывали единичные сообщения. В итоге при 20k
 соединений активны менее 100, что не позволяет корректно сравнить эти функции с другими.
 
-Причина в этом участке кода (asyncio/selector_events.py:321):
+Причина в этом участке кода (asyncio/selector\_events.py:321):
 
+```python
 def _sock_recv(self, fut, registered, sock, n):
     ...
     try:
@@ -106,12 +109,13 @@ def _sock_recv(self, fut, registered, sock, n):
     else:
         set result to future
         CONTINUE_WITH_THIS_SOCKET
+```
 
 Если клиент высокоактивен, то data = sock.recv(n) успешно исполнится
 и продолжится обработка текущего сокета.
 
 Это так же поясняет почему для asyncio+socket получается такое низкое количество
-вызовов epoll_ctl. В uvloop==0.4.28 это поведение не проявляется.
+вызовов epoll\_ctl. В uvloop==0.4.28 это поведение не проявляется.
 
 Сам по себе этот код не является ошибкой и подобная проблемы врядли имеет возможно
 возникнуть в реальности, поскольку даже разнесение сервера и клиента на разные машины
@@ -125,11 +129,13 @@ def _sock_recv(self, fut, registered, sock, n):
 Процент времени, использумый ядром для обслуживания tcp стека
 (по выводу perf record):
 
+```
 uvloop, remote server = 35%
 uvloop, local server  = 50%
 
 asyncio, remote server = 20%
 asyncio, local server  = 30%
+```
 
 При локальном тестировании сильно вызрастает нагрузка на CPU из ядра,
 посколько небходимо обслуживать две стороны tcp стека. Так-же локально
@@ -154,12 +160,15 @@ asyncio, local server  = 30%
 дополнительные IP адреса на сетевое устройство, и открыть по одному
 серверному сокету на каждый адрес. См. также тут [8].
 
+
 #### Максимальное количество потоков
 
 Мне не удалось запустить более 30к С++ потоков. Код вылетает по исчерпанию ресурсов.
 
-# echo 1048576 > /proc/sys/vm/max_map_count
-# echo 2097152 > /proc/sys/kernel/threads-max
+```
+echo 1048576 > /proc/sys/vm/max_map_count
+echo 2097152 > /proc/sys/kernel/threads-max
+```
 
 не помогает. Я предполагаю, что нужно ограничить размеры стека для потоков,
 но не Python ни C++11 не позволяют это сделать (в posix/boost можно ограничивать
@@ -181,8 +190,9 @@ Python ведет себя нестабильно при 10k+ потоков.
 
 Сообщений_в_секунду ~ 2.5 * stddev (== 95% интервал). Удаленный сервер.
 
-![Удаленный сервер](/images/msp_remote.png)
+![](/images/mps_remote.png)
 
+<pre>
 +---------------+-------------+-------------+-------------+-------------+-------------+
 |     Test      |     10      |     100     |     1k      |     10k     |     60k     |
 +===============+=============+=============+=============+=============+=============+
@@ -198,9 +208,12 @@ Python ведет себя нестабильно при 10k+ потоков.
 | uvloop_proto  |  140k ~ 17% |  360k ~  6% |  350k ~  6% |  150k ~  6% |  200k ~  5% |
 |  uvloop_sock  |  100k ~  9% |  160k ~  6% |  150k ~  9% |   80k ~  4% |   84k ~  3% |
 +---------------+-------------+-------------+-------------+-------------+-------------+
+</pre>
+
 
 Относительные скорости:
 
+<pre>
 +---------------+----+-----+----+-----+-----+
 |     Test      | 10 | 100 | 1k | 10k | 60k |
 +===============+====+=====+====+=====+=====+
@@ -216,46 +229,47 @@ Python ведет себя нестабильно при 10k+ потоков.
 | uvloop_proto  |  8 | 20  | 19 |  9  | 11  |
 |  uvloop_sock  |  6 |  9  |  8 |  4  |  5  |
 +---------------+----+-----+----+-----+-----+
+</pre>
 
 Сообщений_в_секунду ~ 2.5 * stddev (== 95% интервал). Локальный сервер.
 
-![Локальный сервер](/images/msp_local.png)
+![](/images/mps_local.png)
 
-+---------------+-------------+-------------+-------------+-------------+
-|     Test      |     10      |     100     |     1k      |     20k     |
-+===============+=============+=============+=============+=============+
-|       asyncio |   33k ~ 20% |   37k ~ 17% |   37k ~  3% |   23k ~  8% |
-| asyncio_proto |   70k ~ 32% |   82k ~ 13% |   84k ~ 13% |  100k ~  4% |
-|  asyncio_sock |   68k ~ 44% |      ---    |      ---    |     ---     |
-|     cpp_epoll |  420k ~  4% |  470k ~  2% |  380k ~ 12% |  230k ~  1% |
-|      cpp_poll |  320k ~ 40% |  370k ~ 34% |  360k ~  6% |  220k ~ 18% |
-|        cpp_th |  300k ~  3% |  290k ~ 10% |  180k ~  8% |  130k ~  1% |
-|        gevent |   61k ~ 17% |   70k ~ 19% |   63k ~  9% |   61k ~  9% |
-|      selector |  200k ~ 21% |  240k ~ 10% |  210k ~  6% |  160k ~ 28% |
-|        thread |  230k ~  2% |  210k ~  7% |  140k ~  1% |   70k ~ 89% |
-|        uvloop |  100k ~ 12% |  110k ~  8% |   85k ~  7% |   42k ~  4% |
-|  uvloop_proto |  270k ~ 15% |  310k ~  7% |  230k ~  6% |  160k ~ 12% |
-|   uvloop_sock |  110k ~ 17% |  130k ~  8% |  110k ~  9% |   79k ~  3% |
-+---------------+-------------+-------------+-------------+-------------+
+    +---------------+-------------+-------------+-------------+-------------+
+    |     Test      |     10      |     100     |     1k      |     20k     |
+    +===============+=============+=============+=============+=============+
+    |       asyncio |   33k ~ 20% |   37k ~ 17% |   37k ~  3% |   23k ~  8% |
+    | asyncio_proto |   70k ~ 32% |   82k ~ 13% |   84k ~ 13% |  100k ~  4% |
+    |  asyncio_sock |   68k ~ 44% |      ---    |      ---    |     ---     |
+    |     cpp_epoll |  420k ~  4% |  470k ~  2% |  380k ~ 12% |  230k ~  1% |
+    |      cpp_poll |  320k ~ 40% |  370k ~ 34% |  360k ~  6% |  220k ~ 18% |
+    |        cpp_th |  300k ~  3% |  290k ~ 10% |  180k ~  8% |  130k ~  1% |
+    |        gevent |   61k ~ 17% |   70k ~ 19% |   63k ~  9% |   61k ~  9% |
+    |      selector |  200k ~ 21% |  240k ~ 10% |  210k ~  6% |  160k ~ 28% |
+    |        thread |  230k ~  2% |  210k ~  7% |  140k ~  1% |   70k ~ 89% |
+    |        uvloop |  100k ~ 12% |  110k ~  8% |   85k ~  7% |   42k ~  4% |
+    |  uvloop_proto |  270k ~ 15% |  310k ~  7% |  230k ~  6% |  160k ~ 12% |
+    |   uvloop_sock |  110k ~ 17% |  130k ~  8% |  110k ~  9% |   79k ~  3% |
+    +---------------+-------------+-------------+-------------+-------------+
 
 Относительные скорости:
 
-+---------------+----+-----+----+-----+
-|     Test      | 10 | 100 | 1k | 20k |
-+===============+====+=====+====+=====+
-|       asyncio |  1 |   2 |  2 |   1 |
-| asyncio_proto |  3 |   4 |  4 |   5 |
-|  asyncio_sock |  3 |  -- | -- |  -- |
-|     cpp_epoll | 19 |  21 | 17 |  10 |
-|      cpp_poll | 14 |  16 | 16 |  10 |
-|        cpp_th | 13 |  13 |  8 |   6 |
-|        gevent |  3 |   3 |  3 |   3 |
-|      selector |  9 |  11 |  9 |   7 |
-|        thread | 10 |   9 |  6 |   3 |
-|        uvloop |  4 |   5 |  4 |   2 |
-|  uvloop_proto | 12 |  14 | 10 |   7 |
-|   uvloop_sock |  5 |   6 |  5 |   3 |
-+---------------+----+-----+----+-----+
+    +---------------+----+-----+----+-----+
+    |     Test      | 10 | 100 | 1k | 20k |
+    +===============+====+=====+====+=====+
+    |       asyncio |  1 |   2 |  2 |   1 |
+    | asyncio_proto |  3 |   4 |  4 |   5 |
+    |  asyncio_sock |  3 |  -- | -- |  -- |
+    |     cpp_epoll | 19 |  21 | 17 |  10 |
+    |      cpp_poll | 14 |  16 | 16 |  10 |
+    |        cpp_th | 13 |  13 |  8 |   6 |
+    |        gevent |  3 |   3 |  3 |   3 |
+    |      selector |  9 |  11 |  9 |   7 |
+    |        thread | 10 |   9 |  6 |   3 |
+    |        uvloop |  4 |   5 |  4 |   2 |
+    |  uvloop_proto | 12 |  14 | 10 |   7 |
+    |   uvloop_sock |  5 |   6 |  5 |   3 |
+    +---------------+----+-----+----+-----+
 
 
 #### Обсуждение
@@ -272,6 +286,7 @@ Python ведет себя нестабильно при 10k+ потоков.
 
 
 Выводы по скорости:
+
     * asyncio заметно медленее других систем
     * И asyncio и uvloop тратят больше времени на накладные расходы, чем на реальную работу
       (за исключением uvloop_proto, но о нем ниже)
@@ -302,41 +317,26 @@ Python ведет себя нестабильно при 10k+ потоков.
 
 Латентность 95й персентиль (удаленный сервер):
 
-![95й персентиль](/images/remote_lat_95.png)
+![](/images/remote_lat_95.png)
 
-+---------------+--------+--------+-------+--------+--------+
-|     Test      |   10   |  100   |  1k   |  10k   |  60k   |
-+===============+========+========+=======+========+========+
-|    asyncio    | 333 us |   2 ms | 25 ms | 458 ms |  >1s   |
-| asyncio_proto | 149 us |   1 ms |  9 ms | 164 ms | 569 ms |
-| asyncio_sock  | 450 us |   3 ms | 54 ms | 484 ms |  >1s   |
-|   cpp_epoll   |  98 us | 197 us |  1 ms |  31 ms | 218 ms |
-|    cpp_th     |  99 us | 454 us |  5 ms |  69 ms |   FF   |
-|    gevent     | 157 us |   1 ms | 13 ms | 197 ms | 884 ms |
-|   selector    |  99 us | 493 us |  3 ms |  73 ms | 322 ms |
-|    thread     |  99 us | 610 us |  6 ms | 110 ms |   FF   |
-|    uvloop     | 128 us | 809 us | 11 ms | 280 ms |  >1s   |
-| uvloop_proto  |  98 us | 306 us |  2 ms |  72 ms | 482 ms |
-|  uvloop_sock  |  99 us |   1 ms |  6 ms | 158 ms | 872 ms |
-+---------------+--------+--------+-------+--------+--------+
 
 Латентность медианная (удаленный сервер):
 
-+---------------+--------+--------+-------+--------+--------+
-|     Test      |   10   |  100   |  1k   |  10k   |  60k   |
-+===============+========+========+=======+========+========+
-|    asyncio    | 263 us |   2 ms | 24 ms | 336 ms |  >1s   |
-| asyncio_proto | 100 us | 898 us |  9 ms | 123 ms | 482 ms |
-| asyncio_sock  | 427 us |   3 ms | 43 ms | 467 ms |  >1s   |
-|   cpp_epoll   |  46 us | 147 us |  1 ms |  29 ms | 189 ms |
-|    cpp_th     |  49 us | 244 us |  3 ms |  47 ms |   FF   |
-|    gevent     |  99 us |   1 ms | 12 ms | 146 ms | 828 ms |
-|   selector    |  80 us | 252 us |  3 ms |  55 ms | 295 ms |
-|    thread     |  65 us | 345 us |  4 ms |  64 ms |   FF   |
-|    uvloop     |  93 us | 794 us |  9 ms | 184 ms |  >1s   |
-| uvloop_proto  |  56 us | 271 us |  2 ms |  59 ms | 243 ms |
-|  uvloop_sock  |  92 us | 564 us |  6 ms | 125 ms | 660 ms |
-+---------------+--------+--------+-------+--------+--------+
+    +---------------+--------+--------+-------+--------+--------+
+    |     Test      |   10   |  100   |  1k   |  10k   |  60k   |
+    +---------------+--------+--------+-------+--------+--------+
+    |    asyncio    | 263 us |   2 ms | 24 ms | 336 ms |  >1s   |
+    | asyncio_proto | 100 us | 898 us |  9 ms | 123 ms | 482 ms |
+    | asyncio_sock  | 427 us |   3 ms | 43 ms | 467 ms |  >1s   |
+    |   cpp_epoll   |  46 us | 147 us |  1 ms |  29 ms | 189 ms |
+    |    cpp_th     |  49 us | 244 us |  3 ms |  47 ms |   FF   |
+    |    gevent     |  99 us |   1 ms | 12 ms | 146 ms | 828 ms |
+    |   selector    |  80 us | 252 us |  3 ms |  55 ms | 295 ms |
+    |    thread     |  65 us | 345 us |  4 ms |  64 ms |   FF   |
+    |    uvloop     |  93 us | 794 us |  9 ms | 184 ms |  >1s   |
+    | uvloop_proto  |  56 us | 271 us |  2 ms |  59 ms | 243 ms |
+    |  uvloop_sock  |  92 us | 564 us |  6 ms | 125 ms | 660 ms |
+    +---------------+--------+--------+-------+--------+--------+
 
 
 Латентность согласуется с mps. В целом фунции, основанные на epoll/poll
@@ -355,59 +355,58 @@ Python ведет себя нестабильно при 10k+ потоков.
 
 тип_теста = количество_вызовов_на_один_пинг
 
+    thread(no affinity) = sendto + recvfrom + 15 * futex
+    Основную часть времени система мучала GIL
 
-thread(no affinity) = sendto + recvfrom + 15 * futex
-Основную часть времени система мучала GIL
+    thread(affinity) = sendto + recvfrom + 0.01 * futex
 
-thread(affinity) = sendto + recvfrom + 0.01 * futex
+    selector = sendto + recvfrom + 0.01 * epoll_wait
 
-selector = sendto + recvfrom + 0.01 * epoll_wait
+    asyncio = sendto + recvfrom + mremap + munmap + mmap + 0.02 * epoll_wait
+        Откуда берутся лишние обращения к mXXmap мне не понятно
 
-asyncio = sendto + recvfrom + mremap + munmap + mmap + 0.02 * epoll_wait
-    Откуда берутся лишние обращения к mXXmap мне не понятно
+    asyncio_proto = sendto + recvfrom + mremap + munmap + mmap + 0.01 * epoll_wait
+        Те же странные mXXmap, что и в asyncio
 
-asyncio_proto = sendto + recvfrom + mremap + munmap + mmap + 0.01 * epoll_wait
-    Те же странные mXXmap, что и в asyncio
+    asyncio_sock = sendto + recvfrom + 0.04 * epoll_ctl
+        По идее asyncio_sock должна делать 2 вызова epoll_ctl на каждый
+        recvfrom, но из-за описанной выше опитимизации этого не происходит.
 
-asyncio_sock = sendto + recvfrom + 0.04 * epoll_ctl
-    По идее asyncio_sock должна делать 2 вызова epoll_ctl на каждый
-    recvfrom, но из-за описанной выше опитимизации этого не происходит.
+    uvloop = read + write + 0.01 * epoll_wait
 
-uvloop = read + write + 0.01 * epoll_wait
+    uvloop_sock = 2 * epoll_ctl + sendto + recvfrom + 0.01 * epoll_wait
 
-uvloop_sock = 2 * epoll_ctl + sendto + recvfrom + 0.01 * epoll_wait
+    uvloop_proto = read + write + 0.01 * epoll_wait
 
-uvloop_proto = read + write + 0.01 * epoll_wait
+    cpp_th = recvfrom + write
 
-cpp_th = recvfrom + write
+    cpp_poll = recvfrom + write + 0.01 * poll
 
-cpp_poll = recvfrom + write + 0.01 * poll
+    cpp_epoll = recvfrom + write + 0.01 * epoll_wait
 
-cpp_epoll = recvfrom + write + 0.01 * epoll_wait
-
-gevent = 2 * recvfrom + sendto + 0.01 * epoll_wait
+    gevent = 2 * recvfrom + sendto + 0.01 * epoll_wait
 
 
 #### Доля времени, проведенные в user mode во время теста (округлено до 5-10%):
 
 Значения для других количеств соединений отличаются от этих очень слабо (в пределах погрешности).
 
-+---------------+----+
-|     Test      | 1k |
-+===============+====+
-|       asyncio | 90 |
-| asyncio_proto | 50 |
-|  asyncio_sock | 90 |
-|     cpp_epoll |  5 |
-|      cpp_poll |  5 |
-|        cpp_th |  5 |
-|        gevent | 80 |
-|      selector | 60 |
-|        thread | 30 |
-|        uvloop | 80 |
-|  uvloop_proto | 40 |
-|   uvloop_sock | 70 |
-+---------------+----+
+    +---------------+----+
+    |     Test      | 1k |
+    +===============+====+
+    |       asyncio | 90 |
+    | asyncio_proto | 50 |
+    |  asyncio_sock | 90 |
+    |     cpp_epoll |  5 |
+    |      cpp_poll |  5 |
+    |        cpp_th |  5 |
+    |        gevent | 80 |
+    |      selector | 60 |
+    |        thread | 30 |
+    |        uvloop | 80 |
+    |  uvloop_proto | 40 |
+    |   uvloop_sock | 70 |
+    +---------------+----+
 
 
 #### Полезные ссылки
@@ -423,14 +422,14 @@ gevent = 2 * recvfrom + sendto + 0.01 * epoll_wait
    * Twisted & asyncio - https://glyph.twistedmatrix.com/2014/05/the-report-of-our-death.html
 
 
-[1] https://docs.python.org/3/library/asyncio-stream.html#tcp-echo-client-using-streams
-[2] https://docs.python.org/3/library/asyncio-protocol.html#tcp-echo-client-protocol
-[3] http://www.gevent.org/
-[4] https://docs.python.org/3/library/selectors.html
-[5] https://github.com/MagicStack/uvloop
-[6] https://www.mirantis.com/blog/improve-performance-python-programs-restricting-single-cpu/
-[7] https://github.com/koder-ua/network_ping_test
-[8] https://mrotaru.wordpress.com/2013/10/10/scaling-to-12-million-concurrent-connections-how-migratorydata-did-it/
-[9] http://danielwestheide.com/blog/2013/02/27/the-neophytes-guide-to-scala-part-14-the-actor-approach-to-concurrency.html
-[10] http://danielwestheide.com/blog/2013/03/20/the-neophytes-guide-to-scala-part-15-dealing-with-failure-in-actor-systems.html
-[11] http://doc.akka.io/docs/akka/snapshot/scala/actors.html
+[1]: https://docs.python.org/3/library/asyncio-stream.html#tcp-echo-client-using-streams
+[2]: https://docs.python.org/3/library/asyncio-protocol.html#tcp-echo-client-protocol
+[3]: http://www.gevent.org/
+[4]: https://docs.python.org/3/library/selectors.html
+[5]: https://github.com/MagicStack/uvloop
+[6]: https://www.mirantis.com/blog/improve-performance-python-programs-restricting-single-cpu/
+[7]: https://github.com/koder-ua/network_ping_test
+[8]: https://mrotaru.wordpress.com/2013/10/10/scaling-to-12-million-concurrent-connections-how-migratorydata-did-it/
+[9]: http://danielwestheide.com/blog/2013/02/27/the-neophytes-guide-to-scala-part-14-the-actor-approach-to-concurrency.html
+[10]: http://danielwestheide.com/blog/2013/03/20/the-neophytes-guide-to-scala-part-15-dealing-with-failure-in-actor-systems.html
+[11]: http://doc.akka.io/docs/akka/snapshot/scala/actors.html
