@@ -179,7 +179,6 @@ def asyncio_test(params, ready_to_connect, before_test, after_test,
                                 params.local_addr[1],
                                 loop=loop,
                                 reuse_address=True,
-                                reuse_port=True,
                                 backlog=get_listen_param(params.count))
     server.append(loop.run_until_complete(coro))
     ready_to_connect()
@@ -223,7 +222,6 @@ def asyncio_proto_test(params, ready_to_connect, before_test, after_test,
                               params.local_addr[0],
                               params.local_addr[1],
                               reuse_address=True,
-                              reuse_port=True,
                               backlog=get_listen_param(params.count))
 
     server = loop.run_until_complete(coro)
@@ -443,7 +441,7 @@ def ns_to_readable(val):
 
 def main(argv):
     if len(argv) == 2 and argv[1] == '--list':
-        print(",".join(ALL_TESTS.keys()))
+        print(",".join(sorted(ALL_TESTS.keys())))
         return 0
 
     parser = argparse.ArgumentParser()

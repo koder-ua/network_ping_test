@@ -2,6 +2,7 @@
 #include <queue>
 #include <mutex>
 #include <atomic>
+#include <chrono>
 #include <vector>
 #include <thread>
 #include <random>
@@ -162,6 +163,7 @@ inline unsigned long gettime_helper() {
 #else
 inline unsigned long get_fast_time() {
 #endif
+
     timespec curr_time;
     if( -1 == clock_gettime( CLOCK_REALTIME, &curr_time)) {
       perror( "clock gettime" );
@@ -169,6 +171,10 @@ inline unsigned long get_fast_time() {
     }
 
     return curr_time.tv_nsec + ((unsigned long)curr_time.tv_sec) * BILLION;
+
+    // using namespace std::chrono;
+    // auto curr_time = high_resolution_clock::now().time_since_epoch();
+    // return (unsigned long) duration_cast<nanoseconds>(curr_time).count();
 }
 
 #ifdef USERDTSC
@@ -247,21 +253,26 @@ bool connect_all(int sock_count,
     serv_addr.sin_family = AF_INET;
     bcopy((const char *)host->h_addr, (char *)&serv_addr.sin_addr.s_addr, host->h_length);
     serv_addr.sin_port = htons(port);
-
     sockets.clear();
+
     for(int i = 0; i < sock_count ; ++i) {
         int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
         if (sockfd < 0) {
             std::perror("Socket creation:");
             return false;
         }
 
+        sockets.push_back(sockfd); // external code would close all ports from sockets
+
+        const int enable{1};
+        if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0)
+            perror("setsockopt(SO_REUSEADDR) failed");
+
         if (0 > connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))) {
             std::perror("Connecting:");
             return false;
         }
-
-        sockets.push_back(sockfd);
 
         int flags = fcntl(sockfd, F_GETFL, 0);
         if (flags < 0) { 
@@ -347,7 +358,7 @@ bool epoll_wait_ex(int epollfd,
 
 bool ping(int fd, char * buff, int buff_sz) {
     int bc = recv(fd, buff, buff_sz, 0);
-    if (ECONNRESET == errno) {
+    if (0 > bc and ECONNRESET == errno) {
         return false;
     } else if (0 > bc) {
         std::perror("recv(fd, &buffer[0], buff_sz, 0)");
@@ -551,6 +562,11 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
 
     if (not connect_all(params.num_conn, sockets.fds, params.ip, params.port))
         return false;
+
+    // 1s sleep, allow client to actually accept all connections
+    // as some of already connected sockets may be in listen buffer, and not processed
+    // by client yet
+    usleep(1000 * 1000);
 
     FDList efd_list;
 

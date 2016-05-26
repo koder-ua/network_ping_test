@@ -1,0 +1,1320 @@
+-   timeout: 0
+    workers: 10
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 106us, lat_95: 150us, messages: 2627575, msg_5perc: 237180, msg_95perc: 285774, stime: 12.95, utime: 17.05}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 456us, lat_95: 489us, messages: 650631, msg_5perc: 64944, msg_95perc: 65158, stime: 2.44, utime: 27.55}
+        -   {ctime: 30.11, func: asyncio, lat_50: 262us, lat_95: 345us, messages: 1112162, msg_5perc: 107835, msg_95perc: 114401, stime: 2.40, utime: 27.59}
+        -   {ctime: 30.01, func: cpp_epoll, lat_50: 46us, lat_95: 92us, messages: 5345951, msg_5perc: 484005, msg_95perc: 612383, stime: 11.04, utime: 2.08}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 92us, lat_95: 99us, messages: 4047644, msg_5perc: 360078, msg_95perc: 460729, stime: 11.74, utime: 1.13}
+        -   {ctime: 30.02, func: gevent, lat_50: 106us, lat_95: 172us, messages: 2506127, msg_5perc: 234931, msg_95perc: 276577, stime: 5.46, utime: 24.54}
+        -   {ctime: 30.02, func: selector, lat_50: 49us, lat_95: 99us, messages: 4248907, msg_5perc: 394070, msg_95perc: 471783, stime: 8.20, utime: 14.97}
+        -   {ctime: 30.01, func: thread, lat_50: 92us, lat_95: 99us, messages: 3709755, msg_5perc: 331016, msg_95perc: 426533, stime: 11.16, utime: 5.07}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 46us, lat_95: 99us, messages: 4565387, msg_5perc: 333871, msg_95perc: 612187, stime: 9.71, utime: 8.62}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3182556, msg_5perc: 306224, msg_95perc: 401335, stime: 7.53, utime: 18.59}
+        -   {ctime: 30.12, func: uvloop, lat_50: 99us, lat_95: 161us, messages: 2767918, msg_5perc: 264121, msg_95perc: 287280, stime: 6.11, utime: 22.33}
+    msize: 64
+    bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    runtime: 30
+-   workers: 10
+    runtime: 30
+    server: "172.16.40.37:33331"
+    bind_addr: "172.16.40.43:33332"
+    data: 
+        -   {ctime: 30.01, func: asyncio_proto, lat_50: 99us, lat_95: 150us, messages: 2729566, msg_5perc: 239155, msg_95perc: 292372, stime: 13.48, utime: 16.52}
+        -   {ctime: 30.11, func: asyncio_sock, lat_50: 456us, lat_95: 489us, messages: 638499, msg_5perc: 63800, msg_95perc: 63878, stime: 2.30, utime: 27.68}
+        -   {ctime: 30.11, func: asyncio, lat_50: 262us, lat_95: 345us, messages: 1112612, msg_5perc: 106680, msg_95perc: 116018, stime: 2.37, utime: 27.62}
+        -   {ctime: 30.01, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4798169, msg_5perc: 409540, msg_95perc: 612350, stime: 9.87, utime: 1.95}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 46us, lat_95: 99us, messages: 4483146, msg_5perc: 361206, msg_95perc: 520046, stime: 12.94, utime: 1.08}
+        -   {ctime: 30.12, func: gevent, lat_50: 99us, lat_95: 161us, messages: 2646184, msg_5perc: 252826, msg_95perc: 275921, stime: 5.67, utime: 24.33}
+        -   {ctime: 30.11, func: selector, lat_50: 92us, lat_95: 99us, messages: 3558924, msg_5perc: 317717, msg_95perc: 427816, stime: 7.04, utime: 11.84}
+        -   {ctime: 30.12, func: thread, lat_50: 49us, lat_95: 99us, messages: 4169251, msg_5perc: 361110, msg_95perc: 516887, stime: 12.32, utime: 5.21}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 46us, lat_95: 99us, messages: 4638509, msg_5perc: 341545, msg_95perc: 612223, stime: 10.23, utime: 9.07}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3083336, msg_5perc: 306315, msg_95perc: 317873, stime: 8.00, utime: 18.04}
+        -   {ctime: 30.02, func: uvloop, lat_50: 92us, lat_95: 99us, messages: 3003777, msg_5perc: 292535, msg_95perc: 304552, stime: 6.50, utime: 23.44}
+    timeout: 0
+    msize: 64
+-   server: "172.16.40.37:33331"
+    runtime: 30
+    data: 
+        -   {ctime: 30.11, func: asyncio_proto, lat_50: 114us, lat_95: 150us, messages: 2502350, msg_5perc: 234164, msg_95perc: 266562, stime: 13.43, utime: 16.56}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 425us, lat_95: 456us, messages: 685199, msg_5perc: 68445, msg_95perc: 68600, stime: 2.68, utime: 27.30}
+        -   {ctime: 30.12, func: asyncio, lat_50: 262us, lat_95: 322us, messages: 1113840, msg_5perc: 108626, msg_95perc: 113497, stime: 2.38, utime: 27.61}
+        -   {ctime: 30.12, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4804447, msg_5perc: 415647, msg_95perc: 612006, stime: 9.62, utime: 1.85}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 53us, lat_95: 99us, messages: 4109243, msg_5perc: 342574, msg_95perc: 495702, stime: 11.94, utime: 1.56}
+        -   {ctime: 30.11, func: gevent, lat_50: 99us, lat_95: 161us, messages: 2640930, msg_5perc: 234466, msg_95perc: 281279, stime: 5.61, utime: 24.39}
+        -   {ctime: 30.11, func: selector, lat_50: 46us, lat_95: 99us, messages: 4342824, msg_5perc: 316372, msg_95perc: 595007, stime: 8.54, utime: 14.40}
+        -   {ctime: 30.02, func: thread, lat_50: 92us, lat_95: 99us, messages: 3931324, msg_5perc: 346709, msg_95perc: 426653, stime: 12.37, utime: 5.49}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 49us, lat_95: 99us, messages: 4154213, msg_5perc: 342156, msg_95perc: 534341, stime: 9.21, utime: 8.86}
+        -   {ctime: 30.02, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3204289, msg_5perc: 306329, msg_95perc: 362285, stime: 7.12, utime: 16.58}
+        -   {ctime: 30.11, func: uvloop, lat_50: 92us, lat_95: 99us, messages: 3035255, msg_5perc: 297167, msg_95perc: 305471, stime: 6.22, utime: 23.76}
+    msize: 64
+    timeout: 0
+    bind_addr: "172.16.40.43:33332"
+    workers: 10
+-   msize: 64
+    runtime: 30
+    data: 
+        -   {ctime: 30.01, func: asyncio_proto, lat_50: 99us, lat_95: 140us, messages: 2760245, msg_5perc: 245758, msg_95perc: 294795, stime: 13.28, utime: 16.71}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 425us, lat_95: 456us, messages: 687585, msg_5perc: 68719, msg_95perc: 68789, stime: 2.59, utime: 27.41}
+        -   {ctime: 30.12, func: asyncio, lat_50: 262us, lat_95: 345us, messages: 1104131, msg_5perc: 105423, msg_95perc: 112974, stime: 2.33, utime: 27.65}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4788768, msg_5perc: 418407, msg_95perc: 535003, stime: 9.53, utime: 2.18}
+        -   {ctime: 30.01, func: cpp_th, lat_50: 46us, lat_95: 99us, messages: 4503104, msg_5perc: 397408, msg_95perc: 508362, stime: 13.16, utime: 1.48}
+        -   {ctime: 30.01, func: gevent, lat_50: 99us, lat_95: 150us, messages: 2734118, msg_5perc: 254500, msg_95perc: 285106, stime: 5.50, utime: 24.50}
+        -   {ctime: 30.02, func: selector, lat_50: 92us, lat_95: 99us, messages: 3396098, msg_5perc: 307668, msg_95perc: 373145, stime: 6.69, utime: 12.23}
+        -   {ctime: 30.12, func: thread, lat_50: 46us, lat_95: 99us, messages: 4454345, msg_5perc: 362641, msg_95perc: 579405, stime: 13.25, utime: 6.00}
+        -   {ctime: 30.12, func: uvloop_proto, lat_50: 92us, lat_95: 99us, messages: 3757467, msg_5perc: 327406, msg_95perc: 446146, stime: 8.24, utime: 7.36}
+        -   {ctime: 30.02, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3156359, msg_5perc: 307030, msg_95perc: 337428, stime: 7.62, utime: 17.45}
+        -   {ctime: 30.11, func: uvloop, lat_50: 92us, lat_95: 99us, messages: 3035890, msg_5perc: 297058, msg_95perc: 306849, stime: 6.26, utime: 23.69}
+    bind_addr: "172.16.40.43:33332"
+    workers: 10
+    server: "172.16.40.37:33331"
+    timeout: 0
+-   msize: 64
+    workers: 10
+    data: 
+        -   {ctime: 30.11, func: asyncio_proto, lat_50: 99us, lat_95: 150us, messages: 2668766, msg_5perc: 236229, msg_95perc: 285858, stime: 13.45, utime: 16.54}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 425us, lat_95: 425us, messages: 705218, msg_5perc: 70494, msg_95perc: 70535, stime: 2.42, utime: 27.58}
+        -   {ctime: 30.12, func: asyncio, lat_50: 262us, lat_95: 280us, messages: 1123663, msg_5perc: 111107, msg_95perc: 113117, stime: 2.29, utime: 27.70}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4549636, msg_5perc: 356513, msg_95perc: 611981, stime: 9.09, utime: 1.89}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 46us, lat_95: 99us, messages: 4872445, msg_5perc: 392121, msg_95perc: 604703, stime: 14.05, utime: 1.80}
+        -   {ctime: 30.02, func: gevent, lat_50: 99us, lat_95: 150us, messages: 2684495, msg_5perc: 253455, msg_95perc: 293411, stime: 5.62, utime: 24.37}
+        -   {ctime: 30.01, func: selector, lat_50: 92us, lat_95: 99us, messages: 3888818, msg_5perc: 330599, msg_95perc: 566401, stime: 7.56, utime: 12.09}
+        -   {ctime: 30.02, func: thread, lat_50: 46us, lat_95: 99us, messages: 4393596, msg_5perc: 367265, msg_95perc: 599351, stime: 13.08, utime: 5.94}
+        -   {ctime: 30.12, func: uvloop_proto, lat_50: 49us, lat_95: 99us, messages: 4304842, msg_5perc: 352327, msg_95perc: 489228, stime: 9.10, utime: 8.27}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3098701, msg_5perc: 306651, msg_95perc: 316474, stime: 7.36, utime: 18.57}
+        -   {ctime: 30.12, func: uvloop, lat_50: 92us, lat_95: 140us, messages: 2972107, msg_5perc: 287396, msg_95perc: 308611, stime: 6.25, utime: 23.58}
+    server: "172.16.40.37:33331"
+    timeout: 0
+    bind_addr: "172.16.40.43:33332"
+    runtime: 30
+-   data: 
+        -   {ctime: 30.01, func: asyncio_proto, lat_50: 99us, lat_95: 150us, messages: 2535471, msg_5perc: 233110, msg_95perc: 279102, stime: 13.30, utime: 16.68}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 425us, lat_95: 456us, messages: 672191, msg_5perc: 67194, msg_95perc: 67243, stime: 2.32, utime: 27.68}
+        -   {ctime: 30.02, func: asyncio, lat_50: 280us, lat_95: 345us, messages: 1055175, msg_5perc: 99562, msg_95perc: 111625, stime: 2.73, utime: 27.26}
+        -   {ctime: 30.11, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4768031, msg_5perc: 434469, msg_95perc: 511985, stime: 9.57, utime: 2.04}
+        -   {ctime: 30.01, func: cpp_th, lat_50: 46us, lat_95: 99us, messages: 5153833, msg_5perc: 390226, msg_95perc: 611609, stime: 14.92, utime: 1.44}
+        -   {ctime: 30.12, func: gevent, lat_50: 99us, lat_95: 150us, messages: 2781771, msg_5perc: 255447, msg_95perc: 313578, stime: 5.73, utime: 24.25}
+        -   {ctime: 30.12, func: selector, lat_50: 92us, lat_95: 99us, messages: 3665563, msg_5perc: 309531, msg_95perc: 585252, stime: 7.09, utime: 12.95}
+        -   {ctime: 30.02, func: thread, lat_50: 49us, lat_95: 99us, messages: 4219493, msg_5perc: 331043, msg_95perc: 531553, stime: 12.56, utime: 5.00}
+        -   {ctime: 30.12, func: uvloop_proto, lat_50: 46us, lat_95: 92us, messages: 5035533, msg_5perc: 335258, msg_95perc: 611410, stime: 10.55, utime: 10.07}
+        -   {ctime: 30.01, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3250621, msg_5perc: 307168, msg_95perc: 403207, stime: 7.74, utime: 19.00}
+        -   {ctime: 30.01, func: uvloop, lat_50: 92us, lat_95: 140us, messages: 2833450, msg_5perc: 265116, msg_95perc: 302021, stime: 6.13, utime: 23.58}
+    bind_addr: "172.16.40.43:33332"
+    msize: 64
+    runtime: 30
+    timeout: 0
+    server: "172.16.40.37:33331"
+    workers: 10
+-   workers: 10
+    runtime: 30
+    msize: 64
+    timeout: 0
+    bind_addr: "172.16.40.43:33332"
+    data: 
+        -   {ctime: 30.12, func: asyncio_proto, lat_50: 99us, lat_95: 150us, messages: 2692375, msg_5perc: 242405, msg_95perc: 289787, stime: 13.32, utime: 16.68}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 397us, lat_95: 425us, messages: 739017, msg_5perc: 73867, msg_95perc: 73940, stime: 2.45, utime: 27.53}
+        -   {ctime: 30.01, func: asyncio, lat_50: 280us, lat_95: 322us, messages: 1082066, msg_5perc: 103464, msg_95perc: 113298, stime: 2.24, utime: 27.75}
+        -   {ctime: 30.01, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4701480, msg_5perc: 356717, msg_95perc: 529213, stime: 9.33, utime: 2.17}
+        -   {ctime: 30.02, func: cpp_th, lat_50: 49us, lat_95: 99us, messages: 4358214, msg_5perc: 366532, msg_95perc: 610989, stime: 12.76, utime: 1.40}
+        -   {ctime: 30.12, func: gevent, lat_50: 99us, lat_95: 150us, messages: 2746102, msg_5perc: 264596, msg_95perc: 288279, stime: 5.54, utime: 24.45}
+        -   {ctime: 30.02, func: selector, lat_50: 92us, lat_95: 99us, messages: 4017640, msg_5perc: 336615, msg_95perc: 606745, stime: 7.78, utime: 13.59}
+        -   {ctime: 30.12, func: thread, lat_50: 49us, lat_95: 99us, messages: 4241558, msg_5perc: 335421, msg_95perc: 557778, stime: 12.87, utime: 5.53}
+        -   {ctime: 30.12, func: uvloop_proto, lat_50: 49us, lat_95: 99us, messages: 4167175, msg_5perc: 349841, msg_95perc: 565474, stime: 8.44, utime: 7.23}
+        -   {ctime: 30.11, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3304785, msg_5perc: 306903, msg_95perc: 422834, stime: 7.62, utime: 18.51}
+        -   {ctime: 30.02, func: uvloop, lat_50: 92us, lat_95: 140us, messages: 2982195, msg_5perc: 283428, msg_95perc: 310612, stime: 6.24, utime: 23.60}
+    server: "172.16.40.37:33331"
+-   server: "172.16.40.37:33331"
+    bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    msize: 64
+    workers: 10
+    runtime: 30
+    data: 
+        -   {ctime: 30.01, func: asyncio_proto, lat_50: 99us, lat_95: 150us, messages: 2696177, msg_5perc: 236147, msg_95perc: 289010, stime: 13.25, utime: 16.75}
+        -   {ctime: 30.11, func: asyncio_sock, lat_50: 425us, lat_95: 425us, messages: 695516, msg_5perc: 69535, msg_95perc: 69570, stime: 2.59, utime: 27.40}
+        -   {ctime: 30.01, func: asyncio, lat_50: 262us, lat_95: 345us, messages: 1105868, msg_5perc: 108380, msg_95perc: 112713, stime: 2.67, utime: 27.33}
+        -   {ctime: 30.12, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4995482, msg_5perc: 412576, msg_95perc: 612058, stime: 10.04, utime: 1.93}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 46us, lat_95: 99us, messages: 4691564, msg_5perc: 426529, msg_95perc: 538962, stime: 13.62, utime: 1.60}
+        -   {ctime: 30.02, func: gevent, lat_50: 99us, lat_95: 150us, messages: 2696450, msg_5perc: 243907, msg_95perc: 290483, stime: 5.67, utime: 24.32}
+        -   {ctime: 30.12, func: selector, lat_50: 92us, lat_95: 99us, messages: 3882045, msg_5perc: 358775, msg_95perc: 432228, stime: 7.70, utime: 11.51}
+        -   {ctime: 30.02, func: thread, lat_50: 92us, lat_95: 99us, messages: 3866716, msg_5perc: 351792, msg_95perc: 421492, stime: 11.53, utime: 5.45}
+        -   {ctime: 30.11, func: uvloop_proto, lat_50: 49us, lat_95: 99us, messages: 4299370, msg_5perc: 374820, msg_95perc: 610707, stime: 9.42, utime: 8.58}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3456798, msg_5perc: 307012, msg_95perc: 490611, stime: 7.73, utime: 18.84}
+        -   {ctime: 30.02, func: uvloop, lat_50: 92us, lat_95: 99us, messages: 3058008, msg_5perc: 300515, msg_95perc: 306981, stime: 6.54, utime: 23.10}
+-   runtime: 30
+    workers: 10
+    timeout: 0
+    server: "172.16.40.37:33331"
+    data: 
+        -   {ctime: 30.11, func: asyncio_proto, lat_50: 99us, lat_95: 150us, messages: 2656551, msg_5perc: 235844, msg_95perc: 301851, stime: 13.66, utime: 16.34}
+        -   {ctime: 30.12, func: asyncio_sock, lat_50: 425us, lat_95: 425us, messages: 699862, msg_5perc: 69916, msg_95perc: 70027, stime: 2.68, utime: 27.30}
+        -   {ctime: 30.02, func: asyncio, lat_50: 262us, lat_95: 345us, messages: 1085453, msg_5perc: 106675, msg_95perc: 110603, stime: 2.32, utime: 27.67}
+        -   {ctime: 30.12, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4828764, msg_5perc: 408355, msg_95perc: 545619, stime: 9.92, utime: 2.04}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 46us, lat_95: 99us, messages: 4724143, msg_5perc: 391375, msg_95perc: 598207, stime: 13.65, utime: 1.56}
+        -   {ctime: 30.02, func: gevent, lat_50: 99us, lat_95: 150us, messages: 2665736, msg_5perc: 243846, msg_95perc: 277375, stime: 5.42, utime: 24.59}
+        -   {ctime: 30.11, func: selector, lat_50: 92us, lat_95: 99us, messages: 3930314, msg_5perc: 348822, msg_95perc: 438778, stime: 7.55, utime: 13.09}
+        -   {ctime: 30.01, func: thread, lat_50: 53us, lat_95: 99us, messages: 4121490, msg_5perc: 319423, msg_95perc: 544865, stime: 12.26, utime: 5.39}
+        -   {ctime: 30.12, func: uvloop_proto, lat_50: 46us, lat_95: 99us, messages: 4384161, msg_5perc: 356022, msg_95perc: 611686, stime: 9.85, utime: 8.85}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3141456, msg_5perc: 307141, msg_95perc: 330220, stime: 7.54, utime: 18.07}
+        -   {ctime: 30.01, func: uvloop, lat_50: 92us, lat_95: 114us, messages: 3002114, msg_5perc: 290388, msg_95perc: 308455, stime: 6.40, utime: 23.36}
+    bind_addr: "172.16.40.43:33332"
+    msize: 64
+-   data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 106us, lat_95: 150us, messages: 2630085, msg_5perc: 230329, msg_95perc: 301944, stime: 13.32, utime: 16.68}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 456us, lat_95: 489us, messages: 659052, msg_5perc: 65895, msg_95perc: 65919, stime: 2.67, utime: 27.32}
+        -   {ctime: 30.12, func: asyncio, lat_50: 262us, lat_95: 345us, messages: 1112156, msg_5perc: 106124, msg_95perc: 115999, stime: 2.51, utime: 27.48}
+        -   {ctime: 30.12, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4814160, msg_5perc: 441330, msg_95perc: 612441, stime: 10.05, utime: 2.35}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 49us, lat_95: 99us, messages: 4270933, msg_5perc: 374376, msg_95perc: 473460, stime: 12.59, utime: 1.40}
+        -   {ctime: 30.02, func: gevent, lat_50: 106us, lat_95: 172us, messages: 2541586, msg_5perc: 235765, msg_95perc: 276913, stime: 5.58, utime: 24.42}
+        -   {ctime: 30.01, func: selector, lat_50: 92us, lat_95: 99us, messages: 3397054, msg_5perc: 311424, msg_95perc: 362106, stime: 6.56, utime: 11.73}
+        -   {ctime: 30.01, func: thread, lat_50: 92us, lat_95: 99us, messages: 3922228, msg_5perc: 337504, msg_95perc: 457447, stime: 11.26, utime: 5.49}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 46us, lat_95: 99us, messages: 4296670, msg_5perc: 331577, msg_95perc: 602080, stime: 8.71, utime: 7.62}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3459302, msg_5perc: 304221, msg_95perc: 496333, stime: 7.36, utime: 19.33}
+        -   {ctime: 30.11, func: uvloop, lat_50: 92us, lat_95: 99us, messages: 3054741, msg_5perc: 303366, msg_95perc: 306630, stime: 6.59, utime: 23.02}
+    msize: 64
+    runtime: 30
+    workers: 10
+    bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    timeout: 0
+-   runtime: 30
+    workers: 10
+    bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 99us, lat_95: 150us, messages: 2677219, msg_5perc: 251286, msg_95perc: 279786, stime: 13.37, utime: 16.62}
+        -   {ctime: 30.12, func: asyncio_sock, lat_50: 397us, lat_95: 425us, messages: 722665, msg_5perc: 72238, msg_95perc: 72298, stime: 2.48, utime: 27.50}
+        -   {ctime: 30.02, func: asyncio, lat_50: 262us, lat_95: 345us, messages: 1090444, msg_5perc: 103577, msg_95perc: 117690, stime: 2.51, utime: 27.49}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4852831, msg_5perc: 367761, msg_95perc: 609035, stime: 9.12, utime: 1.66}
+        -   {ctime: 30.02, func: cpp_th, lat_50: 46us, lat_95: 99us, messages: 4552991, msg_5perc: 414520, msg_95perc: 484321, stime: 12.97, utime: 1.40}
+        -   {ctime: 30.02, func: gevent, lat_50: 99us, lat_95: 161us, messages: 2624604, msg_5perc: 230163, msg_95perc: 302243, stime: 5.79, utime: 24.21}
+        -   {ctime: 30.11, func: selector, lat_50: 92us, lat_95: 99us, messages: 3742446, msg_5perc: 338336, msg_95perc: 420451, stime: 7.45, utime: 13.27}
+        -   {ctime: 30.12, func: thread, lat_50: 92us, lat_95: 99us, messages: 3856554, msg_5perc: 341513, msg_95perc: 434321, stime: 11.70, utime: 5.08}
+        -   {ctime: 30.12, func: uvloop_proto, lat_50: 92us, lat_95: 99us, messages: 3959773, msg_5perc: 323307, msg_95perc: 485343, stime: 9.13, utime: 8.06}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3128096, msg_5perc: 306396, msg_95perc: 324058, stime: 7.51, utime: 16.26}
+        -   {ctime: 30.01, func: uvloop, lat_50: 92us, lat_95: 140us, messages: 2953097, msg_5perc: 277105, msg_95perc: 306983, stime: 5.96, utime: 23.94}
+    msize: 64
+    server: "172.16.40.37:33331"
+-   workers: 10
+    server: "172.16.40.37:33331"
+    timeout: 0
+    msize: 64
+    data: 
+        -   {ctime: 30.12, func: asyncio_proto, lat_50: 99us, lat_95: 150us, messages: 2709131, msg_5perc: 241213, msg_95perc: 295625, stime: 13.32, utime: 16.67}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 425us, lat_95: 456us, messages: 698268, msg_5perc: 69798, msg_95perc: 69839, stime: 2.48, utime: 27.52}
+        -   {ctime: 30.02, func: asyncio, lat_50: 244us, lat_95: 322us, messages: 1150914, msg_5perc: 110432, msg_95perc: 119387, stime: 2.36, utime: 27.63}
+        -   {ctime: 30.12, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4729963, msg_5perc: 428959, msg_95perc: 528286, stime: 9.11, utime: 2.07}
+        -   {ctime: 30.11, func: cpp_th, lat_50: 46us, lat_95: 99us, messages: 4399470, msg_5perc: 345461, msg_95perc: 498828, stime: 12.61, utime: 1.76}
+        -   {ctime: 30.01, func: gevent, lat_50: 99us, lat_95: 161us, messages: 2611320, msg_5perc: 241560, msg_95perc: 285656, stime: 5.48, utime: 24.51}
+        -   {ctime: 30.02, func: selector, lat_50: 92us, lat_95: 99us, messages: 3692522, msg_5perc: 307792, msg_95perc: 514845, stime: 7.44, utime: 12.10}
+        -   {ctime: 30.12, func: thread, lat_50: 46us, lat_95: 99us, messages: 4412125, msg_5perc: 369014, msg_95perc: 554430, stime: 13.31, utime: 5.61}
+        -   {ctime: 30.11, func: uvloop_proto, lat_50: 92us, lat_95: 99us, messages: 4004027, msg_5perc: 317302, msg_95perc: 444190, stime: 9.07, utime: 8.42}
+        -   {ctime: 30.11, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3216708, msg_5perc: 306301, msg_95perc: 402372, stime: 7.89, utime: 17.57}
+        -   {ctime: 30.12, func: uvloop, lat_50: 92us, lat_95: 122us, messages: 2984833, msg_5perc: 284417, msg_95perc: 308708, stime: 6.50, utime: 23.41}
+    runtime: 30
+    bind_addr: "172.16.40.43:33332"
+-   workers: 10
+    runtime: 30
+    bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    server: "172.16.40.37:33331"
+    data: 
+        -   {ctime: 30.12, func: asyncio_proto, lat_50: 99us, lat_95: 150us, messages: 2609951, msg_5perc: 251824, msg_95perc: 273546, stime: 13.26, utime: 16.70}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 425us, lat_95: 489us, messages: 676511, msg_5perc: 67538, msg_95perc: 67729, stime: 2.44, utime: 27.54}
+        -   {ctime: 30.02, func: asyncio, lat_50: 262us, lat_95: 345us, messages: 1079453, msg_5perc: 106577, msg_95perc: 108980, stime: 2.29, utime: 27.70}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 49us, lat_95: 99us, messages: 4387676, msg_5perc: 393384, msg_95perc: 508927, stime: 8.75, utime: 2.29}
+        -   {ctime: 30.11, func: cpp_th, lat_50: 46us, lat_95: 99us, messages: 4797061, msg_5perc: 387481, msg_95perc: 595354, stime: 14.03, utime: 1.45}
+        -   {ctime: 30.11, func: gevent, lat_50: 99us, lat_95: 150us, messages: 2667372, msg_5perc: 253515, msg_95perc: 281341, stime: 5.54, utime: 24.45}
+        -   {ctime: 30.12, func: selector, lat_50: 92us, lat_95: 99us, messages: 3859409, msg_5perc: 337736, msg_95perc: 596616, stime: 7.31, utime: 13.04}
+        -   {ctime: 30.02, func: thread, lat_50: 46us, lat_95: 99us, messages: 4489204, msg_5perc: 375615, msg_95perc: 601283, stime: 13.31, utime: 5.78}
+        -   {ctime: 30.01, func: uvloop_proto, lat_50: 46us, lat_95: 99us, messages: 4307176, msg_5perc: 338854, msg_95perc: 610284, stime: 9.20, utime: 8.69}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3141346, msg_5perc: 309726, msg_95perc: 318476, stime: 7.30, utime: 17.60}
+        -   {ctime: 30.02, func: uvloop, lat_50: 99us, lat_95: 150us, messages: 2766947, msg_5perc: 266852, msg_95perc: 305693, stime: 5.86, utime: 23.69}
+    msize: 64
+-   workers: 10
+    timeout: 0
+    bind_addr: "172.16.40.43:33332"
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 99us, lat_95: 150us, messages: 2691200, msg_5perc: 247771, msg_95perc: 299222, stime: 13.54, utime: 16.44}
+        -   {ctime: 30.12, func: asyncio_sock, lat_50: 425us, lat_95: 425us, messages: 715538, msg_5perc: 71468, msg_95perc: 71600, stime: 2.31, utime: 27.69}
+        -   {ctime: 30.11, func: asyncio, lat_50: 262us, lat_95: 322us, messages: 1095395, msg_5perc: 105838, msg_95perc: 114471, stime: 2.42, utime: 27.57}
+        -   {ctime: 30.11, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4818519, msg_5perc: 386801, msg_95perc: 535949, stime: 9.49, utime: 1.89}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 46us, lat_95: 99us, messages: 4789262, msg_5perc: 421157, msg_95perc: 612003, stime: 13.97, utime: 1.63}
+        -   {ctime: 30.12, func: gevent, lat_50: 99us, lat_95: 161us, messages: 2631253, msg_5perc: 252388, msg_95perc: 280972, stime: 5.69, utime: 24.30}
+        -   {ctime: 30.02, func: selector, lat_50: 49us, lat_95: 99us, messages: 4162794, msg_5perc: 355014, msg_95perc: 596664, stime: 8.09, utime: 14.06}
+        -   {ctime: 30.01, func: thread, lat_50: 49us, lat_95: 99us, messages: 4149755, msg_5perc: 370170, msg_95perc: 443148, stime: 12.26, utime: 5.65}
+        -   {ctime: 30.01, func: uvloop_proto, lat_50: 49us, lat_95: 99us, messages: 4159058, msg_5perc: 338067, msg_95perc: 603313, stime: 9.25, utime: 8.14}
+        -   {ctime: 30.02, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3213508, msg_5perc: 306252, msg_95perc: 399154, stime: 7.82, utime: 19.70}
+        -   {ctime: 30.12, func: uvloop, lat_50: 99us, lat_95: 150us, messages: 2787788, msg_5perc: 260725, msg_95perc: 297014, stime: 5.61, utime: 24.07}
+    msize: 64
+    server: "172.16.40.37:33331"
+    runtime: 30
+-   server: "172.16.40.37:33331"
+    runtime: 30
+    timeout: 0
+    data: 
+        -   {ctime: 30.01, func: asyncio_proto, lat_50: 99us, lat_95: 150us, messages: 2623720, msg_5perc: 246563, msg_95perc: 276862, stime: 13.23, utime: 16.74}
+        -   {ctime: 30.11, func: asyncio_sock, lat_50: 425us, lat_95: 425us, messages: 693768, msg_5perc: 69363, msg_95perc: 69389, stime: 2.55, utime: 27.43}
+        -   {ctime: 30.02, func: asyncio, lat_50: 262us, lat_95: 322us, messages: 1106855, msg_5perc: 108300, msg_95perc: 113996, stime: 2.32, utime: 27.67}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 46us, lat_95: 99us, messages: 4900693, msg_5perc: 416463, msg_95perc: 554861, stime: 10.30, utime: 2.11}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 46us, lat_95: 99us, messages: 4611284, msg_5perc: 365595, msg_95perc: 588067, stime: 13.29, utime: 1.46}
+        -   {ctime: 30.02, func: gevent, lat_50: 99us, lat_95: 161us, messages: 2578418, msg_5perc: 235919, msg_95perc: 280748, stime: 5.59, utime: 24.40}
+        -   {ctime: 30.02, func: selector, lat_50: 46us, lat_95: 99us, messages: 4532709, msg_5perc: 392568, msg_95perc: 605230, stime: 8.31, utime: 14.08}
+        -   {ctime: 30.02, func: thread, lat_50: 92us, lat_95: 99us, messages: 3512790, msg_5perc: 322963, msg_95perc: 393141, stime: 10.64, utime: 4.98}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 49us, lat_95: 99us, messages: 4290482, msg_5perc: 340615, msg_95perc: 514296, stime: 9.42, utime: 8.19}
+        -   {ctime: 30.01, func: uvloop_sock, lat_50: 92us, lat_95: 99us, messages: 3343251, msg_5perc: 307526, msg_95perc: 434957, stime: 7.52, utime: 18.91}
+        -   {ctime: 30.11, func: uvloop, lat_50: 92us, lat_95: 172us, messages: 2691632, msg_5perc: 261690, msg_95perc: 282823, stime: 5.84, utime: 22.67}
+    msize: 64
+    workers: 10
+    bind_addr: "172.16.40.43:33332"
+-   timeout: 0
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 851us, lat_95: 1ms, messages: 3152668, msg_5perc: 25008, msg_95perc: 33939, stime: 14.86, utime: 15.13}
+        -   {ctime: 30.13, func: asyncio_sock, lat_50: 3ms, lat_95: 4ms, messages: 759052, msg_5perc: 7590, msg_95perc: 7591, stime: 2.54, utime: 27.46}
+        -   {ctime: 30.03, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1264527, msg_5perc: 12645, msg_95perc: 12646, stime: 2.57, utime: 27.43}
+        -   {ctime: 30.12, func: cpp_epoll, lat_50: 150us, lat_95: 198us, messages: 18447854, msg_5perc: 181142, msg_95perc: 188635, stime: 28.19, utime: 1.81}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 244us, lat_95: 456us, messages: 10355077, msg_5perc: 100881, msg_95perc: 108814, stime: 28.62, utime: 1.38}
+        -   {ctime: 30.02, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2576642, msg_5perc: 25761, msg_95perc: 25771, stime: 5.76, utime: 24.23}
+        -   {ctime: 30.02, func: selector, lat_50: 262us, lat_95: 524us, messages: 8957265, msg_5perc: 73956, msg_95perc: 114410, stime: 13.58, utime: 16.42}
+        -   {ctime: 30.03, func: thread, lat_50: 345us, lat_95: 602us, messages: 7574607, msg_5perc: 74161, msg_95perc: 78556, stime: 20.82, utime: 9.18}
+        -   {ctime: 30.01, func: uvloop_proto, lat_50: 280us, lat_95: 301us, messages: 10693949, msg_5perc: 103619, msg_95perc: 121654, stime: 17.59, utime: 12.41}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 561us, lat_95: 1ms, messages: 4813997, msg_5perc: 35091, msg_95perc: 51224, stime: 9.29, utime: 20.70}
+        -   {ctime: 30.02, func: uvloop, lat_50: 794us, lat_95: 851us, messages: 3677451, msg_5perc: 36766, msg_95perc: 36822, stime: 6.20, utime: 23.79}
+    msize: 64
+    runtime: 30
+    workers: 100
+    bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+-   bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    server: "172.16.40.37:33331"
+    workers: 100
+    runtime: 30
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 851us, lat_95: 1ms, messages: 3141939, msg_5perc: 21151, msg_95perc: 34139, stime: 14.90, utime: 15.10}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 3ms, lat_95: 3ms, messages: 770092, msg_5perc: 7700, msg_95perc: 7701, stime: 2.62, utime: 27.37}
+        -   {ctime: 30.03, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1273880, msg_5perc: 12737, msg_95perc: 12740, stime: 2.41, utime: 27.57}
+        -   {ctime: 30.12, func: cpp_epoll, lat_50: 150us, lat_95: 198us, messages: 18271745, msg_5perc: 179935, msg_95perc: 185753, stime: 28.04, utime: 1.95}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 244us, lat_95: 425us, messages: 10485090, msg_5perc: 102463, msg_95perc: 110463, stime: 28.61, utime: 1.38}
+        -   {ctime: 30.11, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2711960, msg_5perc: 27114, msg_95perc: 27125, stime: 5.46, utime: 24.55}
+        -   {ctime: 30.02, func: selector, lat_50: 262us, lat_95: 524us, messages: 8930888, msg_5perc: 74909, msg_95perc: 112924, stime: 14.06, utime: 15.93}
+        -   {ctime: 30.02, func: thread, lat_50: 345us, lat_95: 691us, messages: 7318481, msg_5perc: 71175, msg_95perc: 76676, stime: 21.22, utime: 8.78}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 280us, lat_95: 301us, messages: 10869479, msg_5perc: 105294, msg_95perc: 126763, stime: 18.07, utime: 11.93}
+        -   {ctime: 30.02, func: uvloop_sock, lat_50: 602us, lat_95: 1ms, messages: 4714225, msg_5perc: 38741, msg_95perc: 50643, stime: 9.48, utime: 20.52}
+        -   {ctime: 30.02, func: uvloop, lat_50: 794us, lat_95: 794us, messages: 3716253, msg_5perc: 37161, msg_95perc: 37165, stime: 5.80, utime: 24.17}
+    msize: 64
+-   msize: 64
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 912us, lat_95: 1ms, messages: 3102220, msg_5perc: 20518, msg_95perc: 33596, stime: 14.81, utime: 15.19}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 3ms, lat_95: 4ms, messages: 742826, msg_5perc: 7428, msg_95perc: 7429, stime: 2.73, utime: 27.27}
+        -   {ctime: 30.02, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1282432, msg_5perc: 12824, msg_95perc: 12825, stime: 2.59, utime: 27.40}
+        -   {ctime: 30.01, func: cpp_epoll, lat_50: 140us, lat_95: 198us, messages: 18764852, msg_5perc: 184574, msg_95perc: 190590, stime: 28.01, utime: 1.98}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 244us, lat_95: 425us, messages: 10444468, msg_5perc: 102177, msg_95perc: 110038, stime: 28.30, utime: 1.70}
+        -   {ctime: 30.12, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2715407, msg_5perc: 27149, msg_95perc: 27162, stime: 5.41, utime: 24.60}
+        -   {ctime: 30.02, func: selector, lat_50: 262us, lat_95: 489us, messages: 9250044, msg_5perc: 79068, msg_95perc: 122468, stime: 13.60, utime: 16.40}
+        -   {ctime: 30.12, func: thread, lat_50: 345us, lat_95: 602us, messages: 7664152, msg_5perc: 75426, msg_95perc: 79322, stime: 20.93, utime: 9.07}
+        -   {ctime: 30.12, func: uvloop_proto, lat_50: 280us, lat_95: 322us, messages: 11065375, msg_5perc: 107115, msg_95perc: 127320, stime: 18.02, utime: 11.98}
+        -   {ctime: 30.02, func: uvloop_sock, lat_50: 561us, lat_95: 1ms, messages: 4803267, msg_5perc: 36603, msg_95perc: 52008, stime: 9.57, utime: 20.42}
+        -   {ctime: 30.01, func: uvloop, lat_50: 794us, lat_95: 794us, messages: 3830434, msg_5perc: 38301, msg_95perc: 38315, stime: 6.35, utime: 23.62}
+    runtime: 30
+    server: "172.16.40.37:33331"
+    bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    workers: 100
+-   bind_addr: "172.16.40.43:33332"
+    runtime: 30
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 1ms, lat_95: 2ms, messages: 2640388, msg_5perc: 18589, msg_95perc: 28062, stime: 13.68, utime: 16.33}
+        -   {ctime: 30.12, func: asyncio_sock, lat_50: 3ms, lat_95: 4ms, messages: 753441, msg_5perc: 7534, msg_95perc: 7535, stime: 2.66, utime: 27.34}
+        -   {ctime: 30.02, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1265977, msg_5perc: 12659, msg_95perc: 12660, stime: 2.52, utime: 27.47}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 150us, lat_95: 198us, messages: 18084284, msg_5perc: 178062, msg_95perc: 183781, stime: 28.22, utime: 1.78}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 244us, lat_95: 489us, messages: 10188263, msg_5perc: 98373, msg_95perc: 109887, stime: 28.60, utime: 1.39}
+        -   {ctime: 30.12, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2740947, msg_5perc: 27403, msg_95perc: 27418, stime: 5.51, utime: 24.49}
+        -   {ctime: 30.12, func: selector, lat_50: 244us, lat_95: 489us, messages: 9333962, msg_5perc: 80867, msg_95perc: 115860, stime: 13.59, utime: 16.40}
+        -   {ctime: 30.02, func: thread, lat_50: 345us, lat_95: 602us, messages: 7668197, msg_5perc: 74846, msg_95perc: 79529, stime: 20.84, utime: 9.16}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 262us, lat_95: 301us, messages: 11293129, msg_5perc: 109642, msg_95perc: 128587, stime: 18.16, utime: 11.84}
+        -   {ctime: 30.01, func: uvloop_sock, lat_50: 602us, lat_95: 1ms, messages: 4776807, msg_5perc: 37896, msg_95perc: 51098, stime: 9.17, utime: 20.82}
+        -   {ctime: 30.02, func: uvloop, lat_50: 794us, lat_95: 851us, messages: 3589344, msg_5perc: 35889, msg_95perc: 35904, stime: 6.17, utime: 23.81}
+    msize: 64
+    timeout: 0
+    server: "172.16.40.37:33331"
+    workers: 100
+-   msize: 64
+    workers: 100
+    runtime: 30
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 851us, lat_95: 1ms, messages: 3179431, msg_5perc: 25846, msg_95perc: 34589, stime: 14.97, utime: 15.04}
+        -   {ctime: 30.12, func: asyncio_sock, lat_50: 3ms, lat_95: 3ms, messages: 757187, msg_5perc: 7571, msg_95perc: 7572, stime: 2.65, utime: 27.34}
+        -   {ctime: 30.02, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1291911, msg_5perc: 12919, msg_95perc: 12920, stime: 2.47, utime: 27.53}
+        -   {ctime: 30.01, func: cpp_epoll, lat_50: 140us, lat_95: 198us, messages: 18741652, msg_5perc: 183595, msg_95perc: 191644, stime: 28.17, utime: 1.83}
+        -   {ctime: 30.02, func: cpp_th, lat_50: 244us, lat_95: 456us, messages: 10392394, msg_5perc: 100777, msg_95perc: 109871, stime: 28.53, utime: 1.46}
+        -   {ctime: 30.12, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2699093, msg_5perc: 26984, msg_95perc: 26998, stime: 5.29, utime: 24.72}
+        -   {ctime: 30.12, func: selector, lat_50: 262us, lat_95: 489us, messages: 9021279, msg_5perc: 76717, msg_95perc: 113864, stime: 13.40, utime: 16.60}
+        -   {ctime: 30.02, func: thread, lat_50: 345us, lat_95: 645us, messages: 7579630, msg_5perc: 70546, msg_95perc: 79504, stime: 20.87, utime: 9.13}
+        -   {ctime: 30.12, func: uvloop_proto, lat_50: 262us, lat_95: 301us, messages: 11375044, msg_5perc: 110422, msg_95perc: 129704, stime: 18.09, utime: 11.90}
+        -   {ctime: 30.11, func: uvloop_sock, lat_50: 561us, lat_95: 1ms, messages: 4797282, msg_5perc: 33637, msg_95perc: 51598, stime: 9.66, utime: 20.33}
+        -   {ctime: 30.02, func: uvloop, lat_50: 794us, lat_95: 794us, messages: 3752201, msg_5perc: 37518, msg_95perc: 37529, stime: 6.13, utime: 23.86}
+    bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    server: "172.16.40.37:33331"
+-   timeout: 0
+    bind_addr: "172.16.40.43:33332"
+    runtime: 30
+    server: "172.16.40.37:33331"
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 851us, lat_95: 1ms, messages: 3167508, msg_5perc: 21414, msg_95perc: 34369, stime: 14.94, utime: 15.05}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 3ms, lat_95: 3ms, messages: 754500, msg_5perc: 7545, msg_95perc: 7545, stime: 2.62, utime: 27.38}
+        -   {ctime: 30.03, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1249017, msg_5perc: 12490, msg_95perc: 12491, stime: 2.37, utime: 27.63}
+        -   {ctime: 30.01, func: cpp_epoll, lat_50: 150us, lat_95: 198us, messages: 18424951, msg_5perc: 181058, msg_95perc: 187889, stime: 28.19, utime: 1.81}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 244us, lat_95: 456us, messages: 10437783, msg_5perc: 101827, msg_95perc: 109696, stime: 28.57, utime: 1.43}
+        -   {ctime: 30.02, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2691042, msg_5perc: 26905, msg_95perc: 26917, stime: 5.37, utime: 24.63}
+        -   {ctime: 30.02, func: selector, lat_50: 244us, lat_95: 489us, messages: 9290559, msg_5perc: 79463, msg_95perc: 120212, stime: 14.11, utime: 15.89}
+        -   {ctime: 30.12, func: thread, lat_50: 345us, lat_95: 602us, messages: 7592740, msg_5perc: 73986, msg_95perc: 79215, stime: 21.09, utime: 8.92}
+        -   {ctime: 30.12, func: uvloop_proto, lat_50: 244us, lat_95: 301us, messages: 11463692, msg_5perc: 111736, msg_95perc: 129123, stime: 18.46, utime: 11.54}
+        -   {ctime: 30.02, func: uvloop_sock, lat_50: 524us, lat_95: 1ms, messages: 5060584, msg_5perc: 37413, msg_95perc: 55781, stime: 9.98, utime: 20.02}
+        -   {ctime: 30.11, func: uvloop, lat_50: 794us, lat_95: 794us, messages: 3781736, msg_5perc: 37814, msg_95perc: 37826, stime: 6.38, utime: 23.61}
+    msize: 64
+    workers: 100
+-   bind_addr: "172.16.40.43:33332"
+    runtime: 30
+    msize: 64
+    server: "172.16.40.37:33331"
+    timeout: 0
+    workers: 100
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 851us, lat_95: 1ms, messages: 3160740, msg_5perc: 22771, msg_95perc: 34368, stime: 14.85, utime: 15.14}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 3ms, lat_95: 3ms, messages: 761570, msg_5perc: 7615, msg_95perc: 7616, stime: 2.60, utime: 27.39}
+        -   {ctime: 30.02, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1300422, msg_5perc: 13004, msg_95perc: 13005, stime: 2.47, utime: 27.54}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 150us, lat_95: 198us, messages: 18632249, msg_5perc: 182394, msg_95perc: 190764, stime: 28.09, utime: 1.90}
+        -   {ctime: 30.11, func: cpp_th, lat_50: 244us, lat_95: 456us, messages: 10457013, msg_5perc: 101739, msg_95perc: 110750, stime: 28.50, utime: 1.50}
+        -   {ctime: 30.12, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2656668, msg_5perc: 26561, msg_95perc: 26574, stime: 5.12, utime: 24.87}
+        -   {ctime: 30.01, func: selector, lat_50: 244us, lat_95: 489us, messages: 9312377, msg_5perc: 81482, msg_95perc: 104299, stime: 13.78, utime: 16.22}
+        -   {ctime: 30.12, func: thread, lat_50: 345us, lat_95: 602us, messages: 7767598, msg_5perc: 76049, msg_95perc: 80844, stime: 21.05, utime: 8.96}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 262us, lat_95: 301us, messages: 11305934, msg_5perc: 109368, msg_95perc: 131801, stime: 18.67, utime: 11.32}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 561us, lat_95: 1ms, messages: 4913518, msg_5perc: 38057, msg_95perc: 53112, stime: 10.16, utime: 19.84}
+        -   {ctime: 30.12, func: uvloop, lat_50: 794us, lat_95: 794us, messages: 3763179, msg_5perc: 37619, msg_95perc: 37699, stime: 6.16, utime: 23.83}
+-   timeout: 0
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 1ms, lat_95: 2ms, messages: 2579080, msg_5perc: 16956, msg_95perc: 27343, stime: 13.32, utime: 16.67}
+        -   {ctime: 30.12, func: asyncio_sock, lat_50: 3ms, lat_95: 4ms, messages: 735020, msg_5perc: 7350, msg_95perc: 7351, stime: 2.67, utime: 27.34}
+        -   {ctime: 30.02, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1230284, msg_5perc: 12302, msg_95perc: 12303, stime: 2.46, utime: 27.53}
+        -   {ctime: 30.01, func: cpp_epoll, lat_50: 150us, lat_95: 198us, messages: 18283501, msg_5perc: 179668, msg_95perc: 186184, stime: 28.17, utime: 1.83}
+        -   {ctime: 30.02, func: cpp_th, lat_50: 244us, lat_95: 456us, messages: 10375727, msg_5perc: 101559, msg_95perc: 109479, stime: 28.56, utime: 1.43}
+        -   {ctime: 30.12, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2703363, msg_5perc: 27027, msg_95perc: 27039, stime: 5.20, utime: 24.79}
+        -   {ctime: 30.12, func: selector, lat_50: 262us, lat_95: 456us, messages: 9282316, msg_5perc: 82294, msg_95perc: 111244, stime: 13.93, utime: 16.06}
+        -   {ctime: 30.02, func: thread, lat_50: 345us, lat_95: 602us, messages: 7765321, msg_5perc: 75417, msg_95perc: 80921, stime: 21.09, utime: 8.91}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 280us, lat_95: 301us, messages: 11265387, msg_5perc: 108767, msg_95perc: 133324, stime: 18.24, utime: 11.75}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 561us, lat_95: 1ms, messages: 4883333, msg_5perc: 42737, msg_95perc: 51904, stime: 9.61, utime: 20.39}
+        -   {ctime: 30.01, func: uvloop, lat_50: 794us, lat_95: 794us, messages: 3730278, msg_5perc: 37298, msg_95perc: 37318, stime: 6.19, utime: 23.79}
+    workers: 100
+    bind_addr: "172.16.40.43:33332"
+    runtime: 30
+    msize: 64
+    server: "172.16.40.37:33331"
+-   timeout: 0
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 851us, lat_95: 1ms, messages: 3176011, msg_5perc: 21932, msg_95perc: 34504, stime: 14.76, utime: 15.24}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 3ms, lat_95: 3ms, messages: 754298, msg_5perc: 7543, msg_95perc: 7543, stime: 2.71, utime: 27.28}
+        -   {ctime: 30.02, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1254048, msg_5perc: 12540, msg_95perc: 12541, stime: 2.44, utime: 27.55}
+        -   {ctime: 30.01, func: cpp_epoll, lat_50: 150us, lat_95: 198us, messages: 18000157, msg_5perc: 177716, msg_95perc: 183701, stime: 28.06, utime: 1.92}
+        -   {ctime: 30.12, func: cpp_th, lat_50: 244us, lat_95: 489us, messages: 10167733, msg_5perc: 98119, msg_95perc: 109548, stime: 28.56, utime: 1.43}
+        -   {ctime: 30.02, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2819819, msg_5perc: 28193, msg_95perc: 28204, stime: 5.65, utime: 24.35}
+        -   {ctime: 30.02, func: selector, lat_50: 262us, lat_95: 524us, messages: 9076218, msg_5perc: 79255, msg_95perc: 115636, stime: 13.62, utime: 16.38}
+        -   {ctime: 30.12, func: thread, lat_50: 345us, lat_95: 602us, messages: 7593297, msg_5perc: 74340, msg_95perc: 79021, stime: 21.06, utime: 8.93}
+        -   {ctime: 30.11, func: uvloop_proto, lat_50: 262us, lat_95: 301us, messages: 11307309, msg_5perc: 109597, msg_95perc: 130559, stime: 18.37, utime: 11.62}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 561us, lat_95: 1ms, messages: 5016659, msg_5perc: 38276, msg_95perc: 54775, stime: 9.74, utime: 20.25}
+        -   {ctime: 30.12, func: uvloop, lat_50: 794us, lat_95: 794us, messages: 3766967, msg_5perc: 37668, msg_95perc: 37676, stime: 6.44, utime: 23.55}
+    workers: 100
+    bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    msize: 64
+    runtime: 30
+-   bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 1ms, lat_95: 2ms, messages: 2701338, msg_5perc: 18601, msg_95perc: 28774, stime: 13.62, utime: 16.37}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 3ms, lat_95: 4ms, messages: 751908, msg_5perc: 7519, msg_95perc: 7520, stime: 2.58, utime: 27.42}
+        -   {ctime: 30.03, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1277410, msg_5perc: 12774, msg_95perc: 12775, stime: 2.53, utime: 27.46}
+        -   {ctime: 30.12, func: cpp_epoll, lat_50: 150us, lat_95: 198us, messages: 18043515, msg_5perc: 177952, msg_95perc: 184125, stime: 28.05, utime: 1.94}
+        -   {ctime: 30.01, func: cpp_th, lat_50: 244us, lat_95: 456us, messages: 10442740, msg_5perc: 101737, msg_95perc: 111093, stime: 28.47, utime: 1.53}
+        -   {ctime: 30.02, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2818707, msg_5perc: 28181, msg_95perc: 28193, stime: 5.55, utime: 24.46}
+        -   {ctime: 30.02, func: selector, lat_50: 262us, lat_95: 524us, messages: 8930187, msg_5perc: 73476, msg_95perc: 116331, stime: 14.05, utime: 15.95}
+        -   {ctime: 30.12, func: thread, lat_50: 345us, lat_95: 645us, messages: 7465255, msg_5perc: 72515, msg_95perc: 77655, stime: 20.96, utime: 9.03}
+        -   {ctime: 30.11, func: uvloop_proto, lat_50: 280us, lat_95: 301us, messages: 11078671, msg_5perc: 106759, msg_95perc: 129441, stime: 18.26, utime: 11.75}
+        -   {ctime: 30.02, func: uvloop_sock, lat_50: 561us, lat_95: 1ms, messages: 5012701, msg_5perc: 41908, msg_95perc: 53845, stime: 9.68, utime: 20.31}
+        -   {ctime: 30.02, func: uvloop, lat_50: 794us, lat_95: 794us, messages: 3781202, msg_5perc: 37800, msg_95perc: 37870, stime: 6.41, utime: 23.57}
+    runtime: 30
+    timeout: 0
+    msize: 64
+    workers: 100
+-   timeout: 0
+    msize: 64
+    workers: 100
+    bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    runtime: 30
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 851us, lat_95: 1ms, messages: 3138591, msg_5perc: 19961, msg_95perc: 34081, stime: 14.82, utime: 15.17}
+        -   {ctime: 30.12, func: asyncio_sock, lat_50: 3ms, lat_95: 4ms, messages: 746201, msg_5perc: 7462, msg_95perc: 7462, stime: 2.98, utime: 27.02}
+        -   {ctime: 30.02, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1295327, msg_5perc: 12953, msg_95perc: 12954, stime: 2.43, utime: 27.56}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 150us, lat_95: 198us, messages: 18512831, msg_5perc: 181916, msg_95perc: 188915, stime: 28.24, utime: 1.76}
+        -   {ctime: 30.02, func: cpp_th, lat_50: 244us, lat_95: 425us, messages: 10515177, msg_5perc: 102720, msg_95perc: 110851, stime: 28.30, utime: 1.69}
+        -   {ctime: 30.12, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2586089, msg_5perc: 25855, msg_95perc: 25866, stime: 5.46, utime: 24.54}
+        -   {ctime: 30.02, func: selector, lat_50: 244us, lat_95: 489us, messages: 9120988, msg_5perc: 81412, msg_95perc: 122091, stime: 13.40, utime: 16.59}
+        -   {ctime: 30.12, func: thread, lat_50: 345us, lat_95: 561us, messages: 7679818, msg_5perc: 75229, msg_95perc: 79861, stime: 21.08, utime: 8.93}
+        -   {ctime: 30.12, func: uvloop_proto, lat_50: 262us, lat_95: 301us, messages: 11370921, msg_5perc: 110187, msg_95perc: 128913, stime: 18.32, utime: 11.67}
+        -   {ctime: 30.11, func: uvloop_sock, lat_50: 561us, lat_95: 1ms, messages: 5038715, msg_5perc: 36343, msg_95perc: 54895, stime: 9.42, utime: 20.57}
+        -   {ctime: 30.12, func: uvloop, lat_50: 794us, lat_95: 794us, messages: 3761098, msg_5perc: 37606, msg_95perc: 37634, stime: 6.18, utime: 23.80}
+-   data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 851us, lat_95: 1ms, messages: 3191416, msg_5perc: 22181, msg_95perc: 34879, stime: 14.81, utime: 15.19}
+        -   {ctime: 30.12, func: asyncio_sock, lat_50: 3ms, lat_95: 3ms, messages: 764914, msg_5perc: 7649, msg_95perc: 7650, stime: 2.47, utime: 27.52}
+        -   {ctime: 30.02, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1292147, msg_5perc: 12921, msg_95perc: 12922, stime: 2.65, utime: 27.34}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 140us, lat_95: 185us, messages: 19393348, msg_5perc: 191101, msg_95perc: 197125, stime: 28.25, utime: 1.74}
+        -   {ctime: 30.11, func: cpp_th, lat_50: 244us, lat_95: 425us, messages: 10543390, msg_5perc: 103179, msg_95perc: 111324, stime: 28.43, utime: 1.57}
+        -   {ctime: 30.12, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2554606, msg_5perc: 25540, msg_95perc: 25551, stime: 5.74, utime: 24.27}
+        -   {ctime: 30.11, func: selector, lat_50: 244us, lat_95: 489us, messages: 9082654, msg_5perc: 78990, msg_95perc: 111292, stime: 13.23, utime: 16.77}
+        -   {ctime: 30.02, func: thread, lat_50: 345us, lat_95: 602us, messages: 7696293, msg_5perc: 74589, msg_95perc: 80429, stime: 20.97, utime: 9.03}
+        -   {ctime: 30.12, func: uvloop_proto, lat_50: 280us, lat_95: 301us, messages: 10854952, msg_5perc: 104984, msg_95perc: 124941, stime: 18.10, utime: 11.89}
+        -   {ctime: 30.01, func: uvloop_sock, lat_50: 602us, lat_95: 1ms, messages: 4609125, msg_5perc: 37006, msg_95perc: 49318, stime: 9.42, utime: 20.58}
+        -   {ctime: 30.02, func: uvloop, lat_50: 794us, lat_95: 851us, messages: 3567621, msg_5perc: 35673, msg_95perc: 35689, stime: 6.12, utime: 23.86}
+    server: "172.16.40.37:33331"
+    timeout: 0
+    msize: 64
+    bind_addr: "172.16.40.43:33332"
+    runtime: 30
+    workers: 100
+-   bind_addr: "172.16.40.43:33332"
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 912us, lat_95: 1ms, messages: 3105871, msg_5perc: 23650, msg_95perc: 33557, stime: 14.68, utime: 15.31}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 3ms, lat_95: 3ms, messages: 764754, msg_5perc: 7647, msg_95perc: 7648, stime: 2.51, utime: 27.49}
+        -   {ctime: 30.03, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1256758, msg_5perc: 12564, msg_95perc: 12568, stime: 2.55, utime: 27.43}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 140us, lat_95: 198us, messages: 18793301, msg_5perc: 184936, msg_95perc: 192369, stime: 28.18, utime: 1.82}
+        -   {ctime: 30.11, func: cpp_th, lat_50: 244us, lat_95: 456us, messages: 10273063, msg_5perc: 100347, msg_95perc: 107915, stime: 28.50, utime: 1.50}
+        -   {ctime: 30.01, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2801712, msg_5perc: 28011, msg_95perc: 28023, stime: 5.37, utime: 24.62}
+        -   {ctime: 30.02, func: selector, lat_50: 244us, lat_95: 456us, messages: 9372668, msg_5perc: 80796, msg_95perc: 126986, stime: 13.62, utime: 16.37}
+        -   {ctime: 30.12, func: thread, lat_50: 345us, lat_95: 602us, messages: 7606581, msg_5perc: 74374, msg_95perc: 79147, stime: 20.85, utime: 9.15}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 280us, lat_95: 345us, messages: 10228860, msg_5perc: 99393, msg_95perc: 114814, stime: 16.94, utime: 13.06}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 561us, lat_95: 1ms, messages: 4859097, msg_5perc: 43442, msg_95perc: 52144, stime: 9.53, utime: 20.47}
+        -   {ctime: 30.12, func: uvloop, lat_50: 794us, lat_95: 851us, messages: 3632491, msg_5perc: 36311, msg_95perc: 36396, stime: 6.08, utime: 23.90}
+    msize: 64
+    runtime: 30
+    server: "172.16.40.37:33331"
+    workers: 100
+    timeout: 0
+-   workers: 100
+    timeout: 0
+    bind_addr: "172.16.40.43:33332"
+    msize: 64
+    runtime: 30
+    data: 
+        -   {ctime: 30.12, func: asyncio_proto, lat_50: 851us, lat_95: 1ms, messages: 3219958, msg_5perc: 20845, msg_95perc: 35041, stime: 14.68, utime: 15.32}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 3ms, lat_95: 3ms, messages: 772302, msg_5perc: 7723, msg_95perc: 7723, stime: 2.53, utime: 27.46}
+        -   {ctime: 30.02, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1305350, msg_5perc: 13053, msg_95perc: 13054, stime: 2.50, utime: 27.49}
+        -   {ctime: 30.12, func: cpp_epoll, lat_50: 150us, lat_95: 198us, messages: 18674041, msg_5perc: 182598, msg_95perc: 191296, stime: 28.09, utime: 1.90}
+        -   {ctime: 30.02, func: cpp_th, lat_50: 244us, lat_95: 456us, messages: 10334806, msg_5perc: 100613, msg_95perc: 109744, stime: 28.61, utime: 1.40}
+        -   {ctime: 30.12, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2720764, msg_5perc: 27202, msg_95perc: 27214, stime: 5.25, utime: 24.75}
+        -   {ctime: 30.01, func: selector, lat_50: 244us, lat_95: 489us, messages: 9310519, msg_5perc: 79609, msg_95perc: 118829, stime: 13.70, utime: 16.29}
+        -   {ctime: 30.12, func: thread, lat_50: 345us, lat_95: 602us, messages: 7725705, msg_5perc: 75797, msg_95perc: 80304, stime: 21.03, utime: 8.96}
+        -   {ctime: 30.12, func: uvloop_proto, lat_50: 280us, lat_95: 301us, messages: 11101999, msg_5perc: 107840, msg_95perc: 127374, stime: 18.16, utime: 11.84}
+        -   {ctime: 30.11, func: uvloop_sock, lat_50: 524us, lat_95: 1ms, messages: 5051377, msg_5perc: 34121, msg_95perc: 55900, stime: 9.47, utime: 20.53}
+        -   {ctime: 30.12, func: uvloop, lat_50: 794us, lat_95: 794us, messages: 3748774, msg_5perc: 37485, msg_95perc: 37497, stime: 6.83, utime: 23.15}
+    server: "172.16.40.37:33331"
+-   runtime: 30
+    server: "172.16.40.37:33331"
+    msize: 64
+    bind_addr: "172.16.40.43:33332"
+    data: 
+        -   {ctime: 30.02, func: asyncio_proto, lat_50: 1ms, lat_95: 2ms, messages: 2632167, msg_5perc: 16637, msg_95perc: 27888, stime: 13.68, utime: 16.31}
+        -   {ctime: 30.02, func: asyncio_sock, lat_50: 3ms, lat_95: 4ms, messages: 744841, msg_5perc: 7448, msg_95perc: 7449, stime: 2.63, utime: 27.36}
+        -   {ctime: 30.02, func: asyncio, lat_50: 2ms, lat_95: 2ms, messages: 1285953, msg_5perc: 12858, msg_95perc: 12860, stime: 2.44, utime: 27.55}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 150us, lat_95: 198us, messages: 18590342, msg_5perc: 182721, msg_95perc: 189445, stime: 28.23, utime: 1.77}
+        -   {ctime: 30.02, func: cpp_th, lat_50: 244us, lat_95: 489us, messages: 10262946, msg_5perc: 99600, msg_95perc: 109614, stime: 28.54, utime: 1.46}
+        -   {ctime: 30.12, func: gevent, lat_50: 1ms, lat_95: 1ms, messages: 2714103, msg_5perc: 27135, msg_95perc: 27147, stime: 5.46, utime: 24.55}
+        -   {ctime: 30.01, func: selector, lat_50: 244us, lat_95: 489us, messages: 9104315, msg_5perc: 77082, msg_95perc: 111322, stime: 13.36, utime: 16.64}
+        -   {ctime: 30.12, func: thread, lat_50: 345us, lat_95: 602us, messages: 7617200, msg_5perc: 74548, msg_95perc: 78789, stime: 21.22, utime: 8.77}
+        -   {ctime: 30.01, func: uvloop_proto, lat_50: 280us, lat_95: 322us, messages: 10815827, msg_5perc: 103035, msg_95perc: 132625, stime: 18.23, utime: 11.77}
+        -   {ctime: 30.12, func: uvloop_sock, lat_50: 561us, lat_95: 1ms, messages: 5017879, msg_5perc: 41046, msg_95perc: 54662, stime: 9.76, utime: 20.23}
+        -   {ctime: 30.12, func: uvloop, lat_50: 794us, lat_95: 794us, messages: 3801726, msg_5perc: 38015, msg_95perc: 38023, stime: 6.52, utime: 23.46}
+    workers: 100
+    timeout: 0
+-   workers: 1000
+    msize: 64
+    data: 
+        -   {ctime: 30.05, func: asyncio_proto, lat_50: 9ms, lat_95: 9ms, messages: 3151000, msg_5perc: 3152, msg_95perc: 3154, stime: 15.03, utime: 14.98}
+        -   {ctime: 30.04, func: asyncio_sock, lat_50: 41ms, lat_95: 58ms, messages: 691003, msg_5perc: 691, msg_95perc: 691, stime: 3.32, utime: 26.69}
+        -   {ctime: 30.08, func: asyncio, lat_50: 25ms, lat_95: 25ms, messages: 1172833, msg_5perc: 1173, msg_95perc: 1173, stime: 2.83, utime: 27.22}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 17339467, msg_5perc: 17311, msg_95perc: 17388, stime: 28.31, utime: 1.69}
+        -   {ctime: 30.04, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7768113, msg_5perc: 7218, msg_95perc: 8289, stime: 27.87, utime: 2.14}
+        -   {ctime: 30.03, func: gevent, lat_50: 13ms, lat_95: 13ms, messages: 2259234, msg_5perc: 2259, msg_95perc: 2260, stime: 5.74, utime: 24.26}
+        -   {ctime: 30.03, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 9149050, msg_5perc: 8773, msg_95perc: 9199, stime: 13.69, utime: 16.31}
+        -   {ctime: 30.06, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5582749, msg_5perc: 5250, msg_95perc: 5905, stime: 20.63, utime: 9.41}
+        -   {ctime: 30.03, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10652974, msg_5perc: 10205, msg_95perc: 10823, stime: 18.72, utime: 11.27}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4559103, msg_5perc: 4559, msg_95perc: 4560, stime: 9.28, utime: 20.72}
+        -   {ctime: 30.04, func: uvloop, lat_50: 9ms, lat_95: 11ms, messages: 3105541, msg_5perc: 2876, msg_95perc: 3344, stime: 6.90, utime: 23.11}
+    server: "172.16.40.37:33331"
+    runtime: 30
+    timeout: 0
+    bind_addr: "172.16.40.43:33332"
+-   msize: 64
+    bind_addr: "172.16.40.43:33332"
+    runtime: 30
+    data: 
+        -   {ctime: 30.04, func: asyncio_proto, lat_50: 10ms, lat_95: 10ms, messages: 2962218, msg_5perc: 2963, msg_95perc: 2964, stime: 15.09, utime: 14.93}
+        -   {ctime: 30.05, func: asyncio_sock, lat_50: 44ms, lat_95: 62ms, messages: 658449, msg_5perc: 658, msg_95perc: 659, stime: 3.30, utime: 26.71}
+        -   {ctime: 30.09, func: asyncio, lat_50: 25ms, lat_95: 27ms, messages: 1131133, msg_5perc: 1131, msg_95perc: 1132, stime: 2.80, utime: 27.26}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 17505937, msg_5perc: 17483, msg_95perc: 17543, stime: 28.28, utime: 1.72}
+        -   {ctime: 30.13, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7586929, msg_5perc: 7025, msg_95perc: 8098, stime: 27.98, utime: 2.03}
+        -   {ctime: 30.05, func: gevent, lat_50: 13ms, lat_95: 14ms, messages: 2201099, msg_5perc: 2201, msg_95perc: 2202, stime: 5.65, utime: 24.37}
+        -   {ctime: 30.03, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 8874582, msg_5perc: 8573, msg_95perc: 8923, stime: 12.92, utime: 17.07}
+        -   {ctime: 30.07, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5402605, msg_5perc: 5115, msg_95perc: 5681, stime: 20.35, utime: 9.69}
+        -   {ctime: 30.03, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10798424, msg_5perc: 9801, msg_95perc: 11022, stime: 18.43, utime: 11.56}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4567759, msg_5perc: 4567, msg_95perc: 4568, stime: 9.57, utime: 20.43}
+        -   {ctime: 30.13, func: uvloop, lat_50: 10ms, lat_95: 11ms, messages: 2970676, msg_5perc: 2822, msg_95perc: 3153, stime: 6.82, utime: 23.18}
+    workers: 1000
+    server: "172.16.40.37:33331"
+    timeout: 0
+-   bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    data: 
+        -   {ctime: 30.05, func: asyncio_proto, lat_50: 9ms, lat_95: 10ms, messages: 3011477, msg_5perc: 3013, msg_95perc: 3014, stime: 14.74, utime: 15.29}
+        -   {ctime: 30.04, func: asyncio_sock, lat_50: 41ms, lat_95: 47ms, messages: 707279, msg_5perc: 707, msg_95perc: 708, stime: 3.00, utime: 27.02}
+        -   {ctime: 30.08, func: asyncio, lat_50: 25ms, lat_95: 25ms, messages: 1183192, msg_5perc: 1183, msg_95perc: 1184, stime: 2.60, utime: 27.45}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 18007160, msg_5perc: 17983, msg_95perc: 18048, stime: 28.09, utime: 1.91}
+        -   {ctime: 30.14, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7721999, msg_5perc: 7231, msg_95perc: 8233, stime: 28.03, utime: 1.98}
+        -   {ctime: 30.05, func: gevent, lat_50: 13ms, lat_95: 13ms, messages: 2279414, msg_5perc: 2279, msg_95perc: 2281, stime: 5.67, utime: 24.36}
+        -   {ctime: 30.03, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 9095449, msg_5perc: 8808, msg_95perc: 9146, stime: 13.37, utime: 16.65}
+        -   {ctime: 30.16, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5668246, msg_5perc: 5310, msg_95perc: 6014, stime: 20.52, utime: 9.52}
+        -   {ctime: 30.04, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10425565, msg_5perc: 10371, msg_95perc: 10532, stime: 18.29, utime: 11.72}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4789933, msg_5perc: 4790, msg_95perc: 4790, stime: 9.76, utime: 20.24}
+        -   {ctime: 30.03, func: uvloop, lat_50: 10ms, lat_95: 11ms, messages: 3054519, msg_5perc: 2744, msg_95perc: 3408, stime: 6.62, utime: 23.37}
+    runtime: 30
+    server: "172.16.40.37:33331"
+    msize: 64
+    workers: 1000
+-   msize: 64
+    server: "172.16.40.37:33331"
+    data: 
+        -   {ctime: 30.05, func: asyncio_proto, lat_50: 10ms, lat_95: 10ms, messages: 2955965, msg_5perc: 2958, msg_95perc: 2960, stime: 14.56, utime: 15.47}
+        -   {ctime: 30.05, func: asyncio_sock, lat_50: 41ms, lat_95: 58ms, messages: 675003, msg_5perc: 675, msg_95perc: 675, stime: 3.08, utime: 26.94}
+        -   {ctime: 30.08, func: asyncio, lat_50: 23ms, lat_95: 25ms, messages: 1222648, msg_5perc: 1222, msg_95perc: 1223, stime: 2.68, utime: 27.37}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 18220997, msg_5perc: 18173, msg_95perc: 18311, stime: 28.07, utime: 1.94}
+        -   {ctime: 30.03, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7919539, msg_5perc: 7390, msg_95perc: 8425, stime: 28.11, utime: 1.90}
+        -   {ctime: 30.05, func: gevent, lat_50: 12ms, lat_95: 13ms, messages: 2311020, msg_5perc: 2310, msg_95perc: 2312, stime: 6.11, utime: 23.92}
+        -   {ctime: 30.03, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 9060473, msg_5perc: 8681, msg_95perc: 9120, stime: 13.56, utime: 16.44}
+        -   {ctime: 30.06, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5408368, msg_5perc: 5080, msg_95perc: 5735, stime: 20.67, utime: 9.36}
+        -   {ctime: 30.03, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10283803, msg_5perc: 9985, msg_95perc: 10424, stime: 18.63, utime: 11.37}
+        -   {ctime: 30.14, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4495606, msg_5perc: 4494, msg_95perc: 4497, stime: 9.59, utime: 20.43}
+        -   {ctime: 30.03, func: uvloop, lat_50: 10ms, lat_95: 11ms, messages: 2959597, msg_5perc: 2740, msg_95perc: 3205, stime: 6.62, utime: 23.37}
+    workers: 1000
+    bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    runtime: 30
+-   bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    workers: 1000
+    timeout: 0
+    msize: 64
+    data: 
+        -   {ctime: 30.06, func: asyncio_proto, lat_50: 9ms, lat_95: 10ms, messages: 2998905, msg_5perc: 3001, msg_95perc: 3002, stime: 15.08, utime: 14.95}
+        -   {ctime: 30.04, func: asyncio_sock, lat_50: 44ms, lat_95: 62ms, messages: 661506, msg_5perc: 661, msg_95perc: 662, stime: 2.99, utime: 27.02}
+        -   {ctime: 30.10, func: asyncio, lat_50: 25ms, lat_95: 25ms, messages: 1194534, msg_5perc: 1194, msg_95perc: 1195, stime: 2.55, utime: 27.51}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 18075672, msg_5perc: 18041, msg_95perc: 18138, stime: 28.22, utime: 1.78}
+        -   {ctime: 30.13, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 8066145, msg_5perc: 7565, msg_95perc: 8571, stime: 28.08, utime: 1.94}
+        -   {ctime: 30.05, func: gevent, lat_50: 13ms, lat_95: 14ms, messages: 2192080, msg_5perc: 2191, msg_95perc: 2193, stime: 5.98, utime: 24.04}
+        -   {ctime: 30.02, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 9000058, msg_5perc: 8714, msg_95perc: 9046, stime: 13.86, utime: 16.14}
+        -   {ctime: 30.06, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5440614, msg_5perc: 5142, msg_95perc: 5749, stime: 20.49, utime: 9.55}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10268007, msg_5perc: 10206, msg_95perc: 10328, stime: 18.50, utime: 11.49}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4706545, msg_5perc: 4706, msg_95perc: 4707, stime: 9.41, utime: 20.59}
+        -   {ctime: 30.04, func: uvloop, lat_50: 10ms, lat_95: 11ms, messages: 2947228, msg_5perc: 2809, msg_95perc: 3117, stime: 6.61, utime: 23.39}
+    runtime: 30
+-   msize: 64
+    server: "172.16.40.37:33331"
+    data: 
+        -   {ctime: 30.05, func: asyncio_proto, lat_50: 11ms, lat_95: 11ms, messages: 2656539, msg_5perc: 2658, msg_95perc: 2660, stime: 13.63, utime: 16.39}
+        -   {ctime: 30.04, func: asyncio_sock, lat_50: 44ms, lat_95: 58ms, messages: 678010, msg_5perc: 678, msg_95perc: 678, stime: 3.29, utime: 26.73}
+        -   {ctime: 30.18, func: asyncio, lat_50: 25ms, lat_95: 27ms, messages: 1147903, msg_5perc: 1147, msg_95perc: 1148, stime: 2.44, utime: 27.63}
+        -   {ctime: 30.03, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 17732784, msg_5perc: 17710, msg_95perc: 17769, stime: 28.18, utime: 1.82}
+        -   {ctime: 30.14, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7802364, msg_5perc: 7324, msg_95perc: 8290, stime: 28.01, utime: 2.00}
+        -   {ctime: 30.04, func: gevent, lat_50: 13ms, lat_95: 13ms, messages: 2290956, msg_5perc: 2290, msg_95perc: 2292, stime: 5.73, utime: 24.30}
+        -   {ctime: 30.03, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 9047393, msg_5perc: 8765, msg_95perc: 9100, stime: 13.58, utime: 16.42}
+        -   {ctime: 30.06, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5651611, msg_5perc: 5334, msg_95perc: 5956, stime: 20.24, utime: 9.80}
+        -   {ctime: 30.03, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10609959, msg_5perc: 10590, msg_95perc: 10673, stime: 17.78, utime: 12.22}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 7ms, messages: 4204780, msg_5perc: 4204, msg_95perc: 4205, stime: 9.01, utime: 21.00}
+        -   {ctime: 30.03, func: uvloop, lat_50: 11ms, lat_95: 14ms, messages: 2814870, msg_5perc: 2458, msg_95perc: 3297, stime: 5.77, utime: 24.23}
+    bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    runtime: 30
+    workers: 1000
+-   timeout: 0
+    msize: 64
+    workers: 1000
+    bind_addr: "172.16.40.43:33332"
+    data: 
+        -   {ctime: 30.05, func: asyncio_proto, lat_50: 9ms, lat_95: 9ms, messages: 3152394, msg_5perc: 3154, msg_95perc: 3156, stime: 14.90, utime: 15.13}
+        -   {ctime: 30.05, func: asyncio_sock, lat_50: 41ms, lat_95: 50ms, messages: 689994, msg_5perc: 690, msg_95perc: 690, stime: 2.98, utime: 27.04}
+        -   {ctime: 30.08, func: asyncio, lat_50: 25ms, lat_95: 27ms, messages: 1129221, msg_5perc: 1129, msg_95perc: 1130, stime: 2.85, utime: 27.20}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 17684705, msg_5perc: 17659, msg_95perc: 17728, stime: 28.28, utime: 1.71}
+        -   {ctime: 30.04, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7991479, msg_5perc: 7457, msg_95perc: 8482, stime: 27.92, utime: 2.09}
+        -   {ctime: 30.05, func: gevent, lat_50: 12ms, lat_95: 13ms, messages: 2334899, msg_5perc: 2334, msg_95perc: 2336, stime: 6.08, utime: 23.94}
+        -   {ctime: 30.03, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 9127059, msg_5perc: 8769, msg_95perc: 9190, stime: 13.68, utime: 16.32}
+        -   {ctime: 30.07, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5671743, msg_5perc: 5360, msg_95perc: 5997, stime: 20.57, utime: 9.47}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10788910, msg_5perc: 10438, msg_95perc: 10961, stime: 18.47, utime: 11.53}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4762868, msg_5perc: 4762, msg_95perc: 4763, stime: 9.05, utime: 20.96}
+        -   {ctime: 30.13, func: uvloop, lat_50: 10ms, lat_95: 11ms, messages: 3027680, msg_5perc: 2781, msg_95perc: 3265, stime: 6.64, utime: 23.36}
+    server: "172.16.40.37:33331"
+    runtime: 30
+-   data: 
+        -   {ctime: 30.05, func: asyncio_proto, lat_50: 9ms, lat_95: 10ms, messages: 3000965, msg_5perc: 3003, msg_95perc: 3004, stime: 15.23, utime: 14.79}
+        -   {ctime: 30.05, func: asyncio_sock, lat_50: 44ms, lat_95: 50ms, messages: 670007, msg_5perc: 670, msg_95perc: 670, stime: 3.47, utime: 26.55}
+        -   {ctime: 30.09, func: asyncio, lat_50: 25ms, lat_95: 25ms, messages: 1200935, msg_5perc: 1201, msg_95perc: 1202, stime: 2.78, utime: 27.28}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 17316490, msg_5perc: 17290, msg_95perc: 17361, stime: 28.20, utime: 1.80}
+        -   {ctime: 30.13, func: cpp_th, lat_50: 3ms, lat_95: 6ms, messages: 7727192, msg_5perc: 7240, msg_95perc: 8171, stime: 28.03, utime: 1.99}
+        -   {ctime: 30.05, func: gevent, lat_50: 13ms, lat_95: 13ms, messages: 2275774, msg_5perc: 2275, msg_95perc: 2277, stime: 5.76, utime: 24.27}
+        -   {ctime: 30.03, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 9134588, msg_5perc: 8917, msg_95perc: 9173, stime: 13.42, utime: 16.59}
+        -   {ctime: 30.06, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5594025, msg_5perc: 5293, msg_95perc: 5916, stime: 20.23, utime: 9.81}
+        -   {ctime: 30.03, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10742341, msg_5perc: 10087, msg_95perc: 10935, stime: 17.89, utime: 12.10}
+        -   {ctime: 30.02, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4712805, msg_5perc: 4712, msg_95perc: 4713, stime: 9.21, utime: 20.79}
+        -   {ctime: 30.14, func: uvloop, lat_50: 10ms, lat_95: 11ms, messages: 2995071, msg_5perc: 2821, msg_95perc: 3164, stime: 6.62, utime: 23.38}
+    bind_addr: "172.16.40.43:33332"
+    msize: 64
+    runtime: 30
+    server: "172.16.40.37:33331"
+    timeout: 0
+    workers: 1000
+-   server: "172.16.40.37:33331"
+    timeout: 0
+    runtime: 30
+    data: 
+        -   {ctime: 30.04, func: asyncio_proto, lat_50: 9ms, lat_95: 9ms, messages: 3135992, msg_5perc: 3139, msg_95perc: 3140, stime: 14.94, utime: 15.08}
+        -   {ctime: 30.04, func: asyncio_sock, lat_50: 41ms, lat_95: 47ms, messages: 691282, msg_5perc: 691, msg_95perc: 692, stime: 3.15, utime: 26.86}
+        -   {ctime: 30.09, func: asyncio, lat_50: 25ms, lat_95: 25ms, messages: 1212497, msg_5perc: 1212, msg_95perc: 1213, stime: 2.66, utime: 27.40}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 17931585, msg_5perc: 17903, msg_95perc: 17982, stime: 27.88, utime: 2.12}
+        -   {ctime: 30.04, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7907290, msg_5perc: 7371, msg_95perc: 8418, stime: 27.86, utime: 2.16}
+        -   {ctime: 30.04, func: gevent, lat_50: 12ms, lat_95: 13ms, messages: 2307787, msg_5perc: 2307, msg_95perc: 2309, stime: 5.95, utime: 24.07}
+        -   {ctime: 30.03, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 8722531, msg_5perc: 8545, msg_95perc: 8756, stime: 14.17, utime: 15.84}
+        -   {ctime: 30.06, func: thread, lat_50: 4ms, lat_95: 7ms, messages: 5545338, msg_5perc: 5381, msg_95perc: 6130, stime: 20.48, utime: 9.55}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10672055, msg_5perc: 10060, msg_95perc: 10874, stime: 17.86, utime: 12.14}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4666621, msg_5perc: 4666, msg_95perc: 4667, stime: 9.31, utime: 20.69}
+        -   {ctime: 30.04, func: uvloop, lat_50: 9ms, lat_95: 11ms, messages: 3027353, msg_5perc: 2856, msg_95perc: 3199, stime: 6.73, utime: 23.27}
+    bind_addr: "172.16.40.43:33332"
+    workers: 1000
+    msize: 64
+-   bind_addr: "172.16.40.43:33332"
+    workers: 1000
+    data: 
+        -   {ctime: 30.05, func: asyncio_proto, lat_50: 9ms, lat_95: 9ms, messages: 3106170, msg_5perc: 3108, msg_95perc: 3110, stime: 15.20, utime: 14.84}
+        -   {ctime: 30.15, func: asyncio_sock, lat_50: 44ms, lat_95: 58ms, messages: 674800, msg_5perc: 674, msg_95perc: 675, stime: 3.03, utime: 27.05}
+        -   {ctime: 30.08, func: asyncio, lat_50: 25ms, lat_95: 27ms, messages: 1134394, msg_5perc: 1134, msg_95perc: 1135, stime: 2.67, utime: 27.39}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 17791535, msg_5perc: 17769, msg_95perc: 17826, stime: 28.09, utime: 1.92}
+        -   {ctime: 30.03, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7693119, msg_5perc: 7179, msg_95perc: 8201, stime: 28.09, utime: 1.93}
+        -   {ctime: 30.03, func: gevent, lat_50: 13ms, lat_95: 13ms, messages: 2246531, msg_5perc: 2246, msg_95perc: 2248, stime: 5.46, utime: 24.55}
+        -   {ctime: 30.03, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 8949607, msg_5perc: 8968, msg_95perc: 8987, stime: 13.72, utime: 16.29}
+        -   {ctime: 30.06, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5662928, msg_5perc: 5335, msg_95perc: 6011, stime: 20.46, utime: 9.58}
+        -   {ctime: 30.03, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10341588, msg_5perc: 10103, msg_95perc: 10455, stime: 18.64, utime: 11.35}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4578000, msg_5perc: 4578, msg_95perc: 4578, stime: 9.17, utime: 20.84}
+        -   {ctime: 30.03, func: uvloop, lat_50: 9ms, lat_95: 11ms, messages: 3076945, msg_5perc: 2801, msg_95perc: 3350, stime: 6.40, utime: 23.60}
+    runtime: 30
+    timeout: 0
+    server: "172.16.40.37:33331"
+    msize: 64
+-   msize: 64
+    timeout: 0
+    data: 
+        -   {ctime: 30.05, func: asyncio_proto, lat_50: 11ms, lat_95: 11ms, messages: 2585240, msg_5perc: 2587, msg_95perc: 2589, stime: 13.88, utime: 16.15}
+        -   {ctime: 30.04, func: asyncio_sock, lat_50: 44ms, lat_95: 58ms, messages: 666348, msg_5perc: 666, msg_95perc: 667, stime: 3.08, utime: 26.94}
+        -   {ctime: 30.08, func: asyncio, lat_50: 25ms, lat_95: 27ms, messages: 1151150, msg_5perc: 1151, msg_95perc: 1152, stime: 2.63, utime: 27.42}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 17744172, msg_5perc: 17716, msg_95perc: 17790, stime: 28.15, utime: 1.85}
+        -   {ctime: 30.14, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7963245, msg_5perc: 7407, msg_95perc: 8514, stime: 27.91, utime: 2.11}
+        -   {ctime: 30.05, func: gevent, lat_50: 12ms, lat_95: 13ms, messages: 2322120, msg_5perc: 2322, msg_95perc: 2323, stime: 5.75, utime: 24.28}
+        -   {ctime: 30.04, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 9060022, msg_5perc: 8796, msg_95perc: 9118, stime: 13.51, utime: 16.49}
+        -   {ctime: 30.06, func: thread, lat_50: 5ms, lat_95: 6ms, messages: 5723894, msg_5perc: 5398, msg_95perc: 6069, stime: 20.53, utime: 9.50}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10657859, msg_5perc: 10091, msg_95perc: 10832, stime: 17.99, utime: 12.00}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4820000, msg_5perc: 4820, msg_95perc: 4820, stime: 9.06, utime: 20.95}
+        -   {ctime: 30.04, func: uvloop, lat_50: 10ms, lat_95: 11ms, messages: 3023781, msg_5perc: 2797, msg_95perc: 3265, stime: 6.76, utime: 23.24}
+    bind_addr: "172.16.40.43:33332"
+    runtime: 30
+    workers: 1000
+    server: "172.16.40.37:33331"
+-   runtime: 30
+    msize: 64
+    data: 
+        -   {ctime: 30.05, func: asyncio_proto, lat_50: 9ms, lat_95: 9ms, messages: 3116792, msg_5perc: 3119, msg_95perc: 3119, stime: 15.08, utime: 14.95}
+        -   {ctime: 30.04, func: asyncio_sock, lat_50: 44ms, lat_95: 44ms, messages: 694002, msg_5perc: 694, msg_95perc: 694, stime: 3.26, utime: 26.75}
+        -   {ctime: 30.08, func: asyncio, lat_50: 23ms, lat_95: 25ms, messages: 1225990, msg_5perc: 1226, msg_95perc: 1226, stime: 2.70, utime: 27.36}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 17577663, msg_5perc: 17548, msg_95perc: 17626, stime: 28.31, utime: 1.68}
+        -   {ctime: 30.03, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7929345, msg_5perc: 7428, msg_95perc: 8421, stime: 27.91, utime: 2.10}
+        -   {ctime: 30.05, func: gevent, lat_50: 13ms, lat_95: 14ms, messages: 2183374, msg_5perc: 2183, msg_95perc: 2185, stime: 5.82, utime: 24.20}
+        -   {ctime: 30.02, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 8827063, msg_5perc: 8593, msg_95perc: 8869, stime: 13.82, utime: 16.19}
+        -   {ctime: 30.06, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5624151, msg_5perc: 5300, msg_95perc: 5953, stime: 20.55, utime: 9.47}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10137904, msg_5perc: 10042, msg_95perc: 10263, stime: 18.27, utime: 11.73}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4597601, msg_5perc: 4596, msg_95perc: 4598, stime: 9.26, utime: 20.75}
+        -   {ctime: 30.04, func: uvloop, lat_50: 9ms, lat_95: 10ms, messages: 3080590, msg_5perc: 2892, msg_95perc: 3291, stime: 7.00, utime: 22.99}
+    timeout: 0
+    workers: 1000
+    server: "172.16.40.37:33331"
+    bind_addr: "172.16.40.43:33332"
+-   timeout: 0
+    workers: 1000
+    bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    msize: 64
+    data: 
+        -   {ctime: 30.04, func: asyncio_proto, lat_50: 9ms, lat_95: 10ms, messages: 3064572, msg_5perc: 3066, msg_95perc: 3067, stime: 15.01, utime: 15.02}
+        -   {ctime: 30.05, func: asyncio_sock, lat_50: 44ms, lat_95: 58ms, messages: 670004, msg_5perc: 670, msg_95perc: 670, stime: 3.21, utime: 26.81}
+        -   {ctime: 30.08, func: asyncio, lat_50: 23ms, lat_95: 25ms, messages: 1225251, msg_5perc: 1225, msg_95perc: 1226, stime: 2.89, utime: 27.16}
+        -   {ctime: 30.02, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 18224717, msg_5perc: 18194, msg_95perc: 18279, stime: 28.17, utime: 1.83}
+        -   {ctime: 30.03, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7642547, msg_5perc: 7107, msg_95perc: 8183, stime: 28.05, utime: 1.96}
+        -   {ctime: 30.05, func: gevent, lat_50: 13ms, lat_95: 13ms, messages: 2226303, msg_5perc: 2226, msg_95perc: 2228, stime: 5.95, utime: 24.08}
+        -   {ctime: 30.03, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 9139305, msg_5perc: 8799, msg_95perc: 9194, stime: 13.45, utime: 16.55}
+        -   {ctime: 30.06, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5692714, msg_5perc: 5329, msg_95perc: 6046, stime: 20.60, utime: 9.43}
+        -   {ctime: 30.03, func: uvloop_proto, lat_50: 2ms, lat_95: 3ms, messages: 10158152, msg_5perc: 10100, msg_95perc: 10204, stime: 18.42, utime: 11.57}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4713761, msg_5perc: 4713, msg_95perc: 4714, stime: 9.60, utime: 20.40}
+        -   {ctime: 30.14, func: uvloop, lat_50: 10ms, lat_95: 11ms, messages: 3010104, msg_5perc: 2817, msg_95perc: 3245, stime: 6.70, utime: 23.32}
+    runtime: 30
+-   msize: 64
+    workers: 1000
+    bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    data: 
+        -   {ctime: 30.05, func: asyncio_proto, lat_50: 9ms, lat_95: 10ms, messages: 3084870, msg_5perc: 3087, msg_95perc: 3089, stime: 14.89, utime: 15.13}
+        -   {ctime: 30.04, func: asyncio_sock, lat_50: 44ms, lat_95: 50ms, messages: 676175, msg_5perc: 676, msg_95perc: 677, stime: 3.31, utime: 26.69}
+        -   {ctime: 30.08, func: asyncio, lat_50: 23ms, lat_95: 25ms, messages: 1238601, msg_5perc: 1238, msg_95perc: 1239, stime: 2.55, utime: 27.50}
+        -   {ctime: 30.03, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 17602319, msg_5perc: 17582, msg_95perc: 17638, stime: 28.14, utime: 1.86}
+        -   {ctime: 30.13, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7641051, msg_5perc: 7139, msg_95perc: 8162, stime: 28.11, utime: 1.90}
+        -   {ctime: 30.05, func: gevent, lat_50: 13ms, lat_95: 13ms, messages: 2208224, msg_5perc: 2208, msg_95perc: 2210, stime: 5.97, utime: 24.06}
+        -   {ctime: 30.03, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 8868115, msg_5perc: 8779, msg_95perc: 8889, stime: 13.84, utime: 16.16}
+        -   {ctime: 30.07, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5463220, msg_5perc: 5163, msg_95perc: 5763, stime: 20.67, utime: 9.37}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 11137913, msg_5perc: 10912, msg_95perc: 11275, stime: 18.85, utime: 11.15}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 6ms, messages: 4581793, msg_5perc: 4581, msg_95perc: 4582, stime: 9.59, utime: 20.41}
+        -   {ctime: 30.14, func: uvloop, lat_50: 10ms, lat_95: 12ms, messages: 2988185, msg_5perc: 2735, msg_95perc: 3260, stime: 6.50, utime: 23.50}
+    runtime: 30
+    server: "172.16.40.37:33331"
+-   bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    runtime: 30
+    msize: 64
+    timeout: 0
+    data: 
+        -   {ctime: 30.04, func: asyncio_proto, lat_50: 9ms, lat_95: 9ms, messages: 3053778, msg_5perc: 3055, msg_95perc: 3057, stime: 14.66, utime: 15.37}
+        -   {ctime: 30.15, func: asyncio_sock, lat_50: 44ms, lat_95: 50ms, messages: 677048, msg_5perc: 677, msg_95perc: 678, stime: 3.24, utime: 26.81}
+        -   {ctime: 30.09, func: asyncio, lat_50: 25ms, lat_95: 27ms, messages: 1151308, msg_5perc: 1151, msg_95perc: 1152, stime: 2.66, utime: 27.39}
+        -   {ctime: 30.03, func: cpp_epoll, lat_50: 1ms, lat_95: 1ms, messages: 17943890, msg_5perc: 17904, msg_95perc: 18014, stime: 28.26, utime: 1.74}
+        -   {ctime: 30.03, func: cpp_th, lat_50: 3ms, lat_95: 5ms, messages: 7973802, msg_5perc: 7411, msg_95perc: 8504, stime: 27.91, utime: 2.09}
+        -   {ctime: 30.05, func: gevent, lat_50: 12ms, lat_95: 13ms, messages: 2308152, msg_5perc: 2308, msg_95perc: 2309, stime: 6.28, utime: 23.75}
+        -   {ctime: 30.02, func: selector, lat_50: 3ms, lat_95: 3ms, messages: 8930742, msg_5perc: 8742, msg_95perc: 8973, stime: 13.56, utime: 16.44}
+        -   {ctime: 30.06, func: thread, lat_50: 5ms, lat_95: 7ms, messages: 5583553, msg_5perc: 5239, msg_95perc: 5926, stime: 20.27, utime: 9.76}
+        -   {ctime: 30.02, func: uvloop_proto, lat_50: 2ms, lat_95: 2ms, messages: 10588570, msg_5perc: 10072, msg_95perc: 10780, stime: 18.21, utime: 11.80}
+        -   {ctime: 30.03, func: uvloop_sock, lat_50: 6ms, lat_95: 7ms, messages: 4273000, msg_5perc: 4273, msg_95perc: 4273, stime: 8.95, utime: 21.05}
+        -   {ctime: 30.03, func: uvloop, lat_50: 10ms, lat_95: 11ms, messages: 3025631, msg_5perc: 2819, msg_95perc: 3253, stime: 6.66, utime: 23.33}
+    workers: 1000
+-   data: 
+        -   {ctime: 30.38, func: asyncio_proto, lat_50: 134ms, lat_95: 177ms, messages: 2042950, msg_5perc: 204, msg_95perc: 206, stime: 13.49, utime: 16.85}
+        -   {ctime: 30.29, func: asyncio_sock, lat_50: 467ms, lat_95: 467ms, messages: 672334, msg_5perc: 67, msg_95perc: 68, stime: 3.09, utime: 27.17}
+        -   {ctime: 30.89, func: asyncio, lat_50: 330ms, lat_95: 436ms, messages: 830722, msg_5perc: 83, msg_95perc: 84, stime: 2.38, utime: 28.47}
+        -   {ctime: 30.11, func: cpp_epoll, lat_50: 29ms, lat_95: 31ms, messages: 10128563, msg_5perc: 1012, msg_95perc: 1013, stime: 28.85, utime: 1.20}
+        -   {ctime: 30.29, func: cpp_th, lat_50: 47ms, lat_95: 67ms, messages: 6033461, msg_5perc: 581, msg_95perc: 625, stime: 28.62, utime: 1.55}
+        -   {ctime: 30.33, func: gevent, lat_50: 143ms, lat_95: 203ms, messages: 1954449, msg_5perc: 194, msg_95perc: 196, stime: 6.16, utime: 24.12}
+        -   {ctime: 30.18, func: selector, lat_50: 54ms, lat_95: 77ms, messages: 4985284, msg_5perc: 498, msg_95perc: 499, stime: 15.50, utime: 14.60}
+        -   {ctime: 30.52, func: thread, lat_50: 67ms, lat_95: 94ms, messages: 4308073, msg_5perc: 418, msg_95perc: 445, stime: 20.42, utime: 9.99}
+        -   {ctime: 30.14, func: uvloop_proto, lat_50: 58ms, lat_95: 71ms, messages: 4736077, msg_5perc: 473, msg_95perc: 474, stime: 19.77, utime: 10.33}
+        -   {ctime: 30.25, func: uvloop_sock, lat_50: 125ms, lat_95: 165ms, messages: 2360000, msg_5perc: 236, msg_95perc: 236, stime: 9.99, utime: 20.21}
+        -   {ctime: 30.33, func: uvloop, lat_50: 177ms, lat_95: 268ms, messages: 1520379, msg_5perc: 152, msg_95perc: 152, stime: 4.64, utime: 25.64}
+    bind_addr: "172.16.40.43:33332"
+    msize: 64
+    timeout: 0
+    server: "172.16.40.37:33331"
+    workers: 10000
+    runtime: 30
+-   timeout: 0
+    data: 
+        -   {ctime: 30.49, func: asyncio_proto, lat_50: 116ms, lat_95: 165ms, messages: 2321516, msg_5perc: 232, msg_95perc: 233, stime: 14.77, utime: 15.68}
+        -   {ctime: 30.32, func: asyncio_sock, lat_50: 467ms, lat_95: 500ms, messages: 642581, msg_5perc: 64, msg_95perc: 65, stime: 3.13, utime: 27.16}
+        -   {ctime: 30.81, func: asyncio, lat_50: 330ms, lat_95: 467ms, messages: 809942, msg_5perc: 81, msg_95perc: 81, stime: 2.64, utime: 28.15}
+        -   {ctime: 30.08, func: cpp_epoll, lat_50: 31ms, lat_95: 31ms, messages: 9807120, msg_5perc: 980, msg_95perc: 982, stime: 28.91, utime: 1.13}
+        -   {ctime: 30.21, func: cpp_th, lat_50: 47ms, lat_95: 67ms, messages: 6039020, msg_5perc: 582, msg_95perc: 626, stime: 28.36, utime: 1.76}
+        -   {ctime: 30.25, func: gevent, lat_50: 154ms, lat_95: 177ms, messages: 1985099, msg_5perc: 198, msg_95perc: 199, stime: 5.95, utime: 24.26}
+        -   {ctime: 30.18, func: selector, lat_50: 54ms, lat_95: 62ms, messages: 5519261, msg_5perc: 551, msg_95perc: 553, stime: 16.07, utime: 13.99}
+        -   {ctime: 30.47, func: thread, lat_50: 67ms, lat_95: 101ms, messages: 4184500, msg_5perc: 402, msg_95perc: 435, stime: 20.65, utime: 9.71}
+        -   {ctime: 30.16, func: uvloop_proto, lat_50: 62ms, lat_95: 77ms, messages: 4761586, msg_5perc: 475, msg_95perc: 477, stime: 19.88, utime: 10.25}
+        -   {ctime: 30.24, func: uvloop_sock, lat_50: 125ms, lat_95: 154ms, messages: 2460000, msg_5perc: 246, msg_95perc: 246, stime: 9.73, utime: 20.47}
+        -   {ctime: 30.35, func: uvloop, lat_50: 189ms, lat_95: 287ms, messages: 1510618, msg_5perc: 151, msg_95perc: 152, stime: 5.13, utime: 25.18}
+    bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    msize: 64
+    runtime: 30
+    workers: 10000
+-   bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    workers: 10000
+    data: 
+        -   {ctime: 30.39, func: asyncio_proto, lat_50: 116ms, lat_95: 143ms, messages: 2426085, msg_5perc: 242, msg_95perc: 243, stime: 14.19, utime: 16.16}
+        -   {ctime: 30.31, func: asyncio_sock, lat_50: 467ms, lat_95: 500ms, messages: 640009, msg_5perc: 64, msg_95perc: 64, stime: 3.28, utime: 27.01}
+        -   {ctime: 30.81, func: asyncio, lat_50: 354ms, lat_95: 467ms, messages: 791495, msg_5perc: 79, msg_95perc: 80, stime: 2.77, utime: 28.01}
+        -   {ctime: 30.09, func: cpp_epoll, lat_50: 31ms, lat_95: 31ms, messages: 9802403, msg_5perc: 980, msg_95perc: 981, stime: 28.83, utime: 1.22}
+        -   {ctime: 30.23, func: cpp_th, lat_50: 47ms, lat_95: 71ms, messages: 5875007, msg_5perc: 567, msg_95perc: 608, stime: 28.51, utime: 1.64}
+        -   {ctime: 30.17, func: gevent, lat_50: 143ms, lat_95: 189ms, messages: 1929470, msg_5perc: 192, msg_95perc: 195, stime: 6.39, utime: 23.76}
+        -   {ctime: 30.16, func: selector, lat_50: 54ms, lat_95: 71ms, messages: 5207371, msg_5perc: 520, msg_95perc: 521, stime: 15.42, utime: 14.68}
+        -   {ctime: 30.46, func: thread, lat_50: 62ms, lat_95: 88ms, messages: 4398231, msg_5perc: 426, msg_95perc: 454, stime: 20.44, utime: 9.92}
+        -   {ctime: 30.15, func: uvloop_proto, lat_50: 58ms, lat_95: 71ms, messages: 4752323, msg_5perc: 475, msg_95perc: 476, stime: 19.51, utime: 10.60}
+        -   {ctime: 30.23, func: uvloop_sock, lat_50: 125ms, lat_95: 154ms, messages: 2460000, msg_5perc: 246, msg_95perc: 246, stime: 9.54, utime: 20.65}
+        -   {ctime: 30.41, func: uvloop, lat_50: 177ms, lat_95: 287ms, messages: 1520347, msg_5perc: 152, msg_95perc: 152, stime: 4.93, utime: 25.46}
+    msize: 64
+    server: "172.16.40.37:33331"
+    runtime: 30
+-   workers: 10000
+    timeout: 0
+    bind_addr: "172.16.40.43:33332"
+    data: 
+        -   {ctime: 30.49, func: asyncio_proto, lat_50: 125ms, lat_95: 165ms, messages: 2328103, msg_5perc: 232, msg_95perc: 234, stime: 14.21, utime: 16.22}
+        -   {ctime: 30.27, func: asyncio_sock, lat_50: 467ms, lat_95: 467ms, messages: 650016, msg_5perc: 65, msg_95perc: 65, stime: 3.03, utime: 27.20}
+        -   {ctime: 30.84, func: asyncio, lat_50: 354ms, lat_95: 467ms, messages: 800887, msg_5perc: 80, msg_95perc: 81, stime: 2.38, utime: 28.42}
+        -   {ctime: 30.08, func: cpp_epoll, lat_50: 31ms, lat_95: 31ms, messages: 9888438, msg_5perc: 988, msg_95perc: 989, stime: 28.80, utime: 1.24}
+        -   {ctime: 30.21, func: cpp_th, lat_50: 47ms, lat_95: 67ms, messages: 6020955, msg_5perc: 580, msg_95perc: 624, stime: 28.39, utime: 1.75}
+        -   {ctime: 30.16, func: gevent, lat_50: 143ms, lat_95: 203ms, messages: 1948144, msg_5perc: 194, msg_95perc: 197, stime: 6.36, utime: 23.76}
+        -   {ctime: 30.17, func: selector, lat_50: 58ms, lat_95: 77ms, messages: 5055537, msg_5perc: 505, msg_95perc: 506, stime: 15.75, utime: 14.31}
+        -   {ctime: 30.59, func: thread, lat_50: 67ms, lat_95: 177ms, messages: 3722817, msg_5perc: 346, msg_95perc: 390, stime: 21.37, utime: 9.01}
+        -   {ctime: 30.14, func: uvloop_proto, lat_50: 58ms, lat_95: 62ms, messages: 5066519, msg_5perc: 506, msg_95perc: 508, stime: 20.04, utime: 10.06}
+        -   {ctime: 30.31, func: uvloop_sock, lat_50: 125ms, lat_95: 154ms, messages: 2510000, msg_5perc: 251, msg_95perc: 251, stime: 10.06, utime: 20.20}
+        -   {ctime: 30.27, func: uvloop, lat_50: 189ms, lat_95: 287ms, messages: 1500253, msg_5perc: 150, msg_95perc: 150, stime: 5.08, utime: 25.16}
+    server: "172.16.40.37:33331"
+    runtime: 30
+    msize: 64
+-   msize: 64
+    timeout: 0
+    data: 
+        -   {ctime: 30.40, func: asyncio_proto, lat_50: 125ms, lat_95: 165ms, messages: 2268138, msg_5perc: 226, msg_95perc: 227, stime: 14.37, utime: 15.99}
+        -   {ctime: 30.44, func: asyncio_sock, lat_50: 467ms, lat_95: 500ms, messages: 647956, msg_5perc: 64, msg_95perc: 65, stime: 3.04, utime: 27.37}
+        -   {ctime: 30.85, func: asyncio, lat_50: 354ms, lat_95: 467ms, messages: 802764, msg_5perc: 80, msg_95perc: 81, stime: 2.61, utime: 28.19}
+        -   {ctime: 30.10, func: cpp_epoll, lat_50: 31ms, lat_95: 31ms, messages: 9888744, msg_5perc: 988, msg_95perc: 989, stime: 29.02, utime: 1.03}
+        -   {ctime: 30.29, func: cpp_th, lat_50: 47ms, lat_95: 71ms, messages: 5837426, msg_5perc: 563, msg_95perc: 604, stime: 28.48, utime: 1.67}
+        -   {ctime: 30.14, func: gevent, lat_50: 143ms, lat_95: 203ms, messages: 1943716, msg_5perc: 193, msg_95perc: 196, stime: 6.34, utime: 23.78}
+        -   {ctime: 30.17, func: selector, lat_50: 54ms, lat_95: 71ms, messages: 5107493, msg_5perc: 510, msg_95perc: 512, stime: 15.47, utime: 14.62}
+        -   {ctime: 30.45, func: thread, lat_50: 62ms, lat_95: 101ms, messages: 4335164, msg_5perc: 419, msg_95perc: 449, stime: 20.70, utime: 9.66}
+        -   {ctime: 30.15, func: uvloop_proto, lat_50: 58ms, lat_95: 71ms, messages: 4921477, msg_5perc: 492, msg_95perc: 493, stime: 19.58, utime: 10.54}
+        -   {ctime: 30.22, func: uvloop_sock, lat_50: 125ms, lat_95: 154ms, messages: 2521336, msg_5perc: 252, msg_95perc: 253, stime: 10.05, utime: 20.13}
+        -   {ctime: 30.35, func: uvloop, lat_50: 177ms, lat_95: 287ms, messages: 1510303, msg_5perc: 151, msg_95perc: 152, stime: 5.10, utime: 25.19}
+    workers: 10000
+    bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    runtime: 30
+-   timeout: 0
+    server: "172.16.40.37:33331"
+    msize: 64
+    runtime: 30
+    bind_addr: "172.16.40.43:33332"
+    workers: 10000
+    data: 
+        -   {ctime: 30.50, func: asyncio_proto, lat_50: 125ms, lat_95: 165ms, messages: 2254965, msg_5perc: 224, msg_95perc: 226, stime: 14.31, utime: 16.14}
+        -   {ctime: 30.30, func: asyncio_sock, lat_50: 467ms, lat_95: 500ms, messages: 620008, msg_5perc: 62, msg_95perc: 62, stime: 3.27, utime: 27.00}
+        -   {ctime: 30.93, func: asyncio, lat_50: 330ms, lat_95: 467ms, messages: 800588, msg_5perc: 80, msg_95perc: 81, stime: 2.48, utime: 28.41}
+        -   {ctime: 30.08, func: cpp_epoll, lat_50: 29ms, lat_95: 31ms, messages: 10029920, msg_5perc: 1002, msg_95perc: 1004, stime: 28.88, utime: 1.16}
+        -   {ctime: 30.26, func: cpp_th, lat_50: 47ms, lat_95: 67ms, messages: 5979280, msg_5perc: 576, msg_95perc: 620, stime: 28.48, utime: 1.69}
+        -   {ctime: 30.18, func: gevent, lat_50: 154ms, lat_95: 203ms, messages: 1869530, msg_5perc: 186, msg_95perc: 188, stime: 6.17, utime: 23.97}
+        -   {ctime: 30.17, func: selector, lat_50: 58ms, lat_95: 77ms, messages: 5110224, msg_5perc: 510, msg_95perc: 512, stime: 15.91, utime: 14.13}
+        -   {ctime: 30.45, func: thread, lat_50: 62ms, lat_95: 88ms, messages: 4478547, msg_5perc: 433, msg_95perc: 462, stime: 20.15, utime: 10.20}
+        -   {ctime: 30.13, func: uvloop_proto, lat_50: 62ms, lat_95: 77ms, messages: 4682502, msg_5perc: 468, msg_95perc: 469, stime: 19.45, utime: 10.64}
+        -   {ctime: 30.26, func: uvloop_sock, lat_50: 125ms, lat_95: 165ms, messages: 2410000, msg_5perc: 241, msg_95perc: 241, stime: 9.49, utime: 20.73}
+        -   {ctime: 30.29, func: uvloop, lat_50: 189ms, lat_95: 287ms, messages: 1490318, msg_5perc: 149, msg_95perc: 149, stime: 4.98, utime: 25.26}
+-   bind_addr: "172.16.40.43:33332"
+    workers: 10000
+    timeout: 0
+    data: 
+        -   {ctime: 30.39, func: asyncio_proto, lat_50: 125ms, lat_95: 165ms, messages: 2318921, msg_5perc: 231, msg_95perc: 232, stime: 14.26, utime: 16.08}
+        -   {ctime: 30.30, func: asyncio_sock, lat_50: 467ms, lat_95: 500ms, messages: 631524, msg_5perc: 63, msg_95perc: 64, stime: 3.20, utime: 27.07}
+        -   {ctime: 30.83, func: asyncio, lat_50: 330ms, lat_95: 436ms, messages: 812570, msg_5perc: 81, msg_95perc: 82, stime: 2.57, utime: 28.23}
+        -   {ctime: 30.07, func: cpp_epoll, lat_50: 29ms, lat_95: 31ms, messages: 9856469, msg_5perc: 985, msg_95perc: 986, stime: 28.91, utime: 1.13}
+        -   {ctime: 30.22, func: cpp_th, lat_50: 47ms, lat_95: 71ms, messages: 5847933, msg_5perc: 564, msg_95perc: 605, stime: 28.43, utime: 1.72}
+        -   {ctime: 30.17, func: gevent, lat_50: 154ms, lat_95: 203ms, messages: 1896974, msg_5perc: 189, msg_95perc: 191, stime: 6.24, utime: 23.89}
+        -   {ctime: 30.19, func: selector, lat_50: 58ms, lat_95: 77ms, messages: 4844790, msg_5perc: 484, msg_95perc: 485, stime: 15.24, utime: 14.81}
+        -   {ctime: 30.46, func: thread, lat_50: 67ms, lat_95: 94ms, messages: 4216687, msg_5perc: 408, msg_95perc: 436, stime: 20.18, utime: 10.18}
+        -   {ctime: 30.14, func: uvloop_proto, lat_50: 62ms, lat_95: 77ms, messages: 4572740, msg_5perc: 457, msg_95perc: 458, stime: 19.88, utime: 10.20}
+        -   {ctime: 30.24, func: uvloop_sock, lat_50: 125ms, lat_95: 165ms, messages: 2420178, msg_5perc: 242, msg_95perc: 242, stime: 9.58, utime: 20.62}
+        -   {ctime: 30.33, func: uvloop, lat_50: 189ms, lat_95: 287ms, messages: 1508787, msg_5perc: 150, msg_95perc: 152, stime: 4.91, utime: 25.38}
+    server: "172.16.40.37:33331"
+    msize: 64
+    runtime: 30
+-   msize: 64
+    data: 
+        -   {ctime: 30.36, func: asyncio_proto, lat_50: 116ms, lat_95: 165ms, messages: 2352011, msg_5perc: 234, msg_95perc: 236, stime: 14.08, utime: 16.24}
+        -   {ctime: 30.38, func: asyncio_sock, lat_50: 467ms, lat_95: 467ms, messages: 654811, msg_5perc: 65, msg_95perc: 66, stime: 3.00, utime: 27.35}
+        -   {ctime: 30.83, func: asyncio, lat_50: 330ms, lat_95: 467ms, messages: 803012, msg_5perc: 80, msg_95perc: 81, stime: 2.41, utime: 28.38}
+        -   {ctime: 30.09, func: cpp_epoll, lat_50: 29ms, lat_95: 31ms, messages: 9925724, msg_5perc: 992, msg_95perc: 994, stime: 28.91, utime: 1.14}
+        -   {ctime: 30.22, func: cpp_th, lat_50: 47ms, lat_95: 71ms, messages: 5821269, msg_5perc: 561, msg_95perc: 603, stime: 28.61, utime: 1.53}
+        -   {ctime: 30.15, func: gevent, lat_50: 143ms, lat_95: 203ms, messages: 1962589, msg_5perc: 195, msg_95perc: 197, stime: 6.50, utime: 23.62}
+        -   {ctime: 30.18, func: selector, lat_50: 58ms, lat_95: 82ms, messages: 4888348, msg_5perc: 488, msg_95perc: 489, stime: 15.61, utime: 14.44}
+        -   {ctime: 30.53, func: thread, lat_50: 67ms, lat_95: 94ms, messages: 4254039, msg_5perc: 409, msg_95perc: 440, stime: 20.19, utime: 10.26}
+        -   {ctime: 30.15, func: uvloop_proto, lat_50: 58ms, lat_95: 71ms, messages: 4770000, msg_5perc: 477, msg_95perc: 477, stime: 19.87, utime: 10.26}
+        -   {ctime: 30.23, func: uvloop_sock, lat_50: 125ms, lat_95: 154ms, messages: 2470000, msg_5perc: 247, msg_95perc: 247, stime: 9.85, utime: 20.33}
+        -   {ctime: 30.32, func: uvloop, lat_50: 189ms, lat_95: 287ms, messages: 1491851, msg_5perc: 149, msg_95perc: 150, stime: 5.08, utime: 25.20}
+    server: "172.16.40.37:33331"
+    runtime: 30
+    timeout: 0
+    workers: 10000
+    bind_addr: "172.16.40.43:33332"
+-   msize: 64
+    server: "172.16.40.37:33331"
+    runtime: 30
+    bind_addr: "172.16.40.43:33332"
+    workers: 10000
+    timeout: 0
+    data: 
+        -   {ctime: 30.50, func: asyncio_proto, lat_50: 125ms, lat_95: 165ms, messages: 2343018, msg_5perc: 233, msg_95perc: 235, stime: 14.06, utime: 16.40}
+        -   {ctime: 30.36, func: asyncio_sock, lat_50: 467ms, lat_95: 500ms, messages: 645421, msg_5perc: 64, msg_95perc: 65, stime: 3.22, utime: 27.09}
+        -   {ctime: 30.85, func: asyncio, lat_50: 330ms, lat_95: 436ms, messages: 811495, msg_5perc: 81, msg_95perc: 82, stime: 2.66, utime: 28.16}
+        -   {ctime: 30.08, func: cpp_epoll, lat_50: 29ms, lat_95: 33ms, messages: 9917915, msg_5perc: 991, msg_95perc: 993, stime: 28.84, utime: 1.21}
+        -   {ctime: 30.22, func: cpp_th, lat_50: 47ms, lat_95: 67ms, messages: 6030267, msg_5perc: 581, msg_95perc: 624, stime: 28.38, utime: 1.77}
+        -   {ctime: 30.28, func: gevent, lat_50: 143ms, lat_95: 189ms, messages: 2013291, msg_5perc: 200, msg_95perc: 202, stime: 6.27, utime: 23.97}
+        -   {ctime: 30.17, func: selector, lat_50: 54ms, lat_95: 77ms, messages: 5094986, msg_5perc: 509, msg_95perc: 510, stime: 15.64, utime: 14.41}
+        -   {ctime: 30.51, func: thread, lat_50: 62ms, lat_95: 116ms, messages: 4192655, msg_5perc: 404, msg_95perc: 435, stime: 20.73, utime: 9.65}
+        -   {ctime: 30.18, func: uvloop_proto, lat_50: 58ms, lat_95: 71ms, messages: 4853271, msg_5perc: 484, msg_95perc: 486, stime: 19.86, utime: 10.27}
+        -   {ctime: 30.27, func: uvloop_sock, lat_50: 125ms, lat_95: 154ms, messages: 2480000, msg_5perc: 248, msg_95perc: 248, stime: 9.77, utime: 20.46}
+        -   {ctime: 30.31, func: uvloop, lat_50: 177ms, lat_95: 268ms, messages: 1536127, msg_5perc: 153, msg_95perc: 154, stime: 4.87, utime: 25.40}
+-   server: "172.16.40.37:33331"
+    msize: 64
+    workers: 10000
+    bind_addr: "172.16.40.43:33332"
+    runtime: 30
+    timeout: 0
+    data: 
+        -   {ctime: 30.37, func: asyncio_proto, lat_50: 125ms, lat_95: 165ms, messages: 2305236, msg_5perc: 230, msg_95perc: 231, stime: 13.99, utime: 16.34}
+        -   {ctime: 30.35, func: asyncio_sock, lat_50: 467ms, lat_95: 467ms, messages: 670009, msg_5perc: 67, msg_95perc: 67, stime: 3.13, utime: 27.18}
+        -   {ctime: 30.79, func: asyncio, lat_50: 330ms, lat_95: 436ms, messages: 821553, msg_5perc: 82, msg_95perc: 83, stime: 2.58, utime: 28.18}
+        -   {ctime: 30.08, func: cpp_epoll, lat_50: 31ms, lat_95: 33ms, messages: 9705912, msg_5perc: 970, msg_95perc: 972, stime: 28.83, utime: 1.22}
+        -   {ctime: 30.22, func: cpp_th, lat_50: 47ms, lat_95: 71ms, messages: 5806454, msg_5perc: 560, msg_95perc: 602, stime: 28.42, utime: 1.73}
+        -   {ctime: 30.33, func: gevent, lat_50: 143ms, lat_95: 189ms, messages: 1987915, msg_5perc: 198, msg_95perc: 201, stime: 6.22, utime: 24.07}
+        -   {ctime: 30.16, func: selector, lat_50: 54ms, lat_95: 71ms, messages: 5298896, msg_5perc: 529, msg_95perc: 531, stime: 15.82, utime: 14.27}
+        -   {ctime: 30.47, func: thread, lat_50: 62ms, lat_95: 165ms, messages: 3839754, msg_5perc: 368, msg_95perc: 399, stime: 21.49, utime: 8.81}
+        -   {ctime: 30.18, func: uvloop_proto, lat_50: 58ms, lat_95: 77ms, messages: 4952307, msg_5perc: 495, msg_95perc: 496, stime: 19.66, utime: 10.47}
+        -   {ctime: 30.26, func: uvloop_sock, lat_50: 125ms, lat_95: 165ms, messages: 2350000, msg_5perc: 235, msg_95perc: 235, stime: 9.65, utime: 20.55}
+        -   {ctime: 30.34, func: uvloop, lat_50: 177ms, lat_95: 268ms, messages: 1520260, msg_5perc: 152, msg_95perc: 152, stime: 5.02, utime: 25.27}
+-   workers: 10000
+    server: "172.16.40.37:33331"
+    msize: 64
+    runtime: 30
+    bind_addr: "172.16.40.43:33332"
+    data: 
+        -   {ctime: 30.37, func: asyncio_proto, lat_50: 125ms, lat_95: 165ms, messages: 2228111, msg_5perc: 222, msg_95perc: 224, stime: 14.67, utime: 15.66}
+        -   {ctime: 30.42, func: asyncio_sock, lat_50: 467ms, lat_95: 467ms, messages: 649656, msg_5perc: 65, msg_95perc: 65, stime: 3.11, utime: 27.27}
+        -   {ctime: 30.91, func: asyncio, lat_50: 330ms, lat_95: 467ms, messages: 790158, msg_5perc: 79, msg_95perc: 79, stime: 2.50, utime: 28.38}
+        -   {ctime: 30.08, func: cpp_epoll, lat_50: 29ms, lat_95: 31ms, messages: 9980597, msg_5perc: 997, msg_95perc: 999, stime: 28.78, utime: 1.26}
+        -   {ctime: 30.22, func: cpp_th, lat_50: 47ms, lat_95: 67ms, messages: 5982530, msg_5perc: 577, msg_95perc: 620, stime: 28.39, utime: 1.75}
+        -   {ctime: 30.25, func: gevent, lat_50: 143ms, lat_95: 203ms, messages: 1954459, msg_5perc: 194, msg_95perc: 196, stime: 6.40, utime: 23.80}
+        -   {ctime: 30.22, func: selector, lat_50: 54ms, lat_95: 71ms, messages: 5271225, msg_5perc: 526, msg_95perc: 528, stime: 15.98, utime: 14.08}
+        -   {ctime: 31.41, func: thread, lat_50: 67ms, lat_95: 165ms, messages: 3756821, msg_5perc: 352, msg_95perc: 394, stime: 20.56, utime: 9.73}
+        -   {ctime: 30.15, func: uvloop_proto, lat_50: 58ms, lat_95: 71ms, messages: 4720175, msg_5perc: 471, msg_95perc: 473, stime: 19.96, utime: 10.16}
+        -   {ctime: 30.30, func: uvloop_sock, lat_50: 125ms, lat_95: 154ms, messages: 2455733, msg_5perc: 245, msg_95perc: 246, stime: 9.81, utime: 20.47}
+        -   {ctime: 30.41, func: uvloop, lat_50: 189ms, lat_95: 287ms, messages: 1490614, msg_5perc: 149, msg_95perc: 150, stime: 5.24, utime: 25.13}
+    timeout: 0
+-   workers: 10000
+    runtime: 30
+    server: "172.16.40.37:33331"
+    timeout: 0
+    data: 
+        -   {ctime: 30.40, func: asyncio_proto, lat_50: 134ms, lat_95: 165ms, messages: 2194032, msg_5perc: 219, msg_95perc: 220, stime: 14.44, utime: 15.92}
+        -   {ctime: 30.38, func: asyncio_sock, lat_50: 467ms, lat_95: 467ms, messages: 646872, msg_5perc: 64, msg_95perc: 65, stime: 3.14, utime: 27.22}
+        -   {ctime: 30.78, func: asyncio, lat_50: 330ms, lat_95: 467ms, messages: 800748, msg_5perc: 80, msg_95perc: 81, stime: 2.58, utime: 28.17}
+        -   {ctime: 30.08, func: cpp_epoll, lat_50: 29ms, lat_95: 31ms, messages: 9925598, msg_5perc: 991, msg_95perc: 994, stime: 28.83, utime: 1.22}
+        -   {ctime: 30.23, func: cpp_th, lat_50: 47ms, lat_95: 71ms, messages: 5830595, msg_5perc: 562, msg_95perc: 604, stime: 28.48, utime: 1.67}
+        -   {ctime: 30.17, func: gevent, lat_50: 154ms, lat_95: 203ms, messages: 1935237, msg_5perc: 193, msg_95perc: 194, stime: 6.74, utime: 23.37}
+        -   {ctime: 30.17, func: selector, lat_50: 54ms, lat_95: 71ms, messages: 5286560, msg_5perc: 528, msg_95perc: 529, stime: 16.10, utime: 13.91}
+        -   {ctime: 31.49, func: thread, lat_50: 67ms, lat_95: 94ms, messages: 4259435, msg_5perc: 411, msg_95perc: 440, stime: 20.43, utime: 9.99}
+        -   {ctime: 30.18, func: uvloop_proto, lat_50: 62ms, lat_95: 71ms, messages: 4673523, msg_5perc: 466, msg_95perc: 468, stime: 20.04, utime: 10.08}
+        -   {ctime: 30.30, func: uvloop_sock, lat_50: 125ms, lat_95: 165ms, messages: 2390000, msg_5perc: 239, msg_95perc: 239, stime: 9.75, utime: 20.52}
+        -   {ctime: 30.44, func: uvloop, lat_50: 177ms, lat_95: 268ms, messages: 1531419, msg_5perc: 153, msg_95perc: 154, stime: 4.94, utime: 25.45}
+    msize: 64
+    bind_addr: "172.16.40.43:33332"
+-   runtime: 30
+    server: "172.16.40.37:33331"
+    workers: 10000
+    msize: 64
+    bind_addr: "172.16.40.43:33332"
+    data: 
+        -   {ctime: 30.40, func: asyncio_proto, lat_50: 125ms, lat_95: 165ms, messages: 2336729, msg_5perc: 233, msg_95perc: 234, stime: 14.57, utime: 15.78}
+        -   {ctime: 30.31, func: asyncio_sock, lat_50: 467ms, lat_95: 500ms, messages: 640008, msg_5perc: 64, msg_95perc: 64, stime: 3.24, utime: 27.03}
+        -   {ctime: 31.01, func: asyncio, lat_50: 330ms, lat_95: 467ms, messages: 803981, msg_5perc: 80, msg_95perc: 81, stime: 2.50, utime: 28.47}
+        -   {ctime: 30.13, func: cpp_epoll, lat_50: 31ms, lat_95: 31ms, messages: 9974568, msg_5perc: 997, msg_95perc: 998, stime: 28.80, utime: 1.26}
+        -   {ctime: 30.22, func: cpp_th, lat_50: 47ms, lat_95: 71ms, messages: 5827654, msg_5perc: 559, msg_95perc: 604, stime: 28.63, utime: 1.51}
+        -   {ctime: 30.16, func: gevent, lat_50: 143ms, lat_95: 203ms, messages: 1896583, msg_5perc: 189, msg_95perc: 192, stime: 6.48, utime: 23.63}
+        -   {ctime: 30.17, func: selector, lat_50: 58ms, lat_95: 77ms, messages: 4950000, msg_5perc: 495, msg_95perc: 495, stime: 15.74, utime: 14.31}
+        -   {ctime: 30.46, func: thread, lat_50: 62ms, lat_95: 101ms, messages: 4238766, msg_5perc: 409, msg_95perc: 440, stime: 20.68, utime: 9.68}
+        -   {ctime: 30.17, func: uvloop_proto, lat_50: 58ms, lat_95: 71ms, messages: 4861351, msg_5perc: 486, msg_95perc: 487, stime: 19.86, utime: 10.26}
+        -   {ctime: 30.21, func: uvloop_sock, lat_50: 125ms, lat_95: 154ms, messages: 2440000, msg_5perc: 244, msg_95perc: 244, stime: 10.23, utime: 19.94}
+        -   {ctime: 30.45, func: uvloop, lat_50: 189ms, lat_95: 268ms, messages: 1520353, msg_5perc: 152, msg_95perc: 152, stime: 4.95, utime: 25.46}
+    timeout: 0
+-   timeout: 0
+    data: 
+        -   {ctime: 30.38, func: asyncio_proto, lat_50: 116ms, lat_95: 165ms, messages: 2352397, msg_5perc: 234, msg_95perc: 236, stime: 14.25, utime: 16.09}
+        -   {ctime: 30.34, func: asyncio_sock, lat_50: 467ms, lat_95: 467ms, messages: 664426, msg_5perc: 66, msg_95perc: 67, stime: 3.13, utime: 27.18}
+        -   {ctime: 30.89, func: asyncio, lat_50: 330ms, lat_95: 467ms, messages: 801369, msg_5perc: 80, msg_95perc: 81, stime: 2.56, utime: 28.29}
+        -   {ctime: 30.12, func: cpp_epoll, lat_50: 29ms, lat_95: 31ms, messages: 10035237, msg_5perc: 1003, msg_95perc: 1004, stime: 28.91, utime: 1.14}
+        -   {ctime: 30.21, func: cpp_th, lat_50: 47ms, lat_95: 67ms, messages: 5974119, msg_5perc: 574, msg_95perc: 620, stime: 28.46, utime: 1.69}
+        -   {ctime: 30.30, func: gevent, lat_50: 143ms, lat_95: 189ms, messages: 1963244, msg_5perc: 195, msg_95perc: 198, stime: 6.25, utime: 24.01}
+        -   {ctime: 30.17, func: selector, lat_50: 54ms, lat_95: 71ms, messages: 5145730, msg_5perc: 514, msg_95perc: 515, stime: 15.63, utime: 14.48}
+        -   {ctime: 30.50, func: thread, lat_50: 62ms, lat_95: 88ms, messages: 4411412, msg_5perc: 424, msg_95perc: 457, stime: 20.69, utime: 9.71}
+        -   {ctime: 30.20, func: uvloop_proto, lat_50: 58ms, lat_95: 71ms, messages: 4803134, msg_5perc: 480, msg_95perc: 481, stime: 20.01, utime: 10.13}
+        -   {ctime: 30.28, func: uvloop_sock, lat_50: 125ms, lat_95: 165ms, messages: 2389099, msg_5perc: 238, msg_95perc: 239, stime: 9.71, utime: 20.54}
+        -   {ctime: 30.32, func: uvloop, lat_50: 189ms, lat_95: 287ms, messages: 1502363, msg_5perc: 150, msg_95perc: 151, stime: 4.95, utime: 25.33}
+    runtime: 30
+    workers: 10000
+    bind_addr: "172.16.40.43:33332"
+    msize: 64
+    server: "172.16.40.37:33331"
+-   data: 
+        -   {ctime: 30.37, func: asyncio_proto, lat_50: 125ms, lat_95: 165ms, messages: 2314116, msg_5perc: 231, msg_95perc: 233, stime: 14.29, utime: 16.04}
+        -   {ctime: 30.33, func: asyncio_sock, lat_50: 467ms, lat_95: 500ms, messages: 640008, msg_5perc: 64, msg_95perc: 64, stime: 3.12, utime: 27.18}
+        -   {ctime: 30.90, func: asyncio, lat_50: 354ms, lat_95: 467ms, messages: 798533, msg_5perc: 79, msg_95perc: 80, stime: 2.72, utime: 28.15}
+        -   {ctime: 30.09, func: cpp_epoll, lat_50: 31ms, lat_95: 33ms, messages: 9623660, msg_5perc: 962, msg_95perc: 963, stime: 28.88, utime: 1.16}
+        -   {ctime: 30.30, func: cpp_th, lat_50: 47ms, lat_95: 71ms, messages: 5853518, msg_5perc: 564, msg_95perc: 606, stime: 28.42, utime: 1.74}
+        -   {ctime: 30.35, func: gevent, lat_50: 154ms, lat_95: 203ms, messages: 1947014, msg_5perc: 194, msg_95perc: 196, stime: 6.40, utime: 23.90}
+        -   {ctime: 30.17, func: selector, lat_50: 54ms, lat_95: 77ms, messages: 5037128, msg_5perc: 503, msg_95perc: 504, stime: 15.80, utime: 14.22}
+        -   {ctime: 30.52, func: thread, lat_50: 67ms, lat_95: 94ms, messages: 4296917, msg_5perc: 416, msg_95perc: 444, stime: 20.57, utime: 9.84}
+        -   {ctime: 30.14, func: uvloop_proto, lat_50: 62ms, lat_95: 71ms, messages: 4673552, msg_5perc: 467, msg_95perc: 468, stime: 19.71, utime: 10.39}
+        -   {ctime: 30.24, func: uvloop_sock, lat_50: 125ms, lat_95: 154ms, messages: 2426515, msg_5perc: 242, msg_95perc: 243, stime: 9.56, utime: 20.64}
+        -   {ctime: 30.27, func: uvloop, lat_50: 189ms, lat_95: 287ms, messages: 1480755, msg_5perc: 148, msg_95perc: 149, stime: 4.95, utime: 25.29}
+    workers: 10000
+    bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    runtime: 30
+    msize: 64
+    timeout: 0
+-   workers: 60000
+    data: 
+        -   {ctime: 32.07, func: asyncio_proto, lat_50: 467ms, lat_95: 536ms, messages: 3715886, msg_5perc: 61, msg_95perc: 62, stime: 9.31, utime: 22.72}
+        -   {ctime: 32.12, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 600008, msg_5perc: 10, msg_95perc: 10, stime: 3.14, utime: 28.93}
+        -   {ctime: 35.61, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 662083, msg_5perc: 11, msg_95perc: 11, stime: 2.32, utime: 33.24}
+        -   {ctime: 30.40, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9500607, msg_5perc: 158, msg_95perc: 159, stime: 29.25, utime: 1.06}
+        -   {ctime: 32.16, func: gevent, lat_50: 872ms, lat_95: 934ms, messages: 2092541, msg_5perc: 33, msg_95perc: 36, stime: 6.97, utime: 25.16}
+        -   {ctime: 30.92, func: selector, lat_50: 287ms, lat_95: 308ms, messages: 5994946, msg_5perc: 99, msg_95perc: 101, stime: 14.80, utime: 16.04}
+        -   {ctime: 30.76, func: uvloop_proto, lat_50: 233ms, lat_95: 467ms, messages: 6244848, msg_5perc: 104, msg_95perc: 105, stime: 18.59, utime: 12.12}
+        -   {ctime: 31.43, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2605056, msg_5perc: 43, msg_95perc: 44, stime: 8.07, utime: 23.33}
+        -   {ctime: 32.52, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1081595, msg_5perc: 18, msg_95perc: 18, stime: 3.83, utime: 28.65}
+    bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    runtime: 30
+    msize: 64
+    server: "172.16.40.37:33331"
+-   server: "172.16.40.37:33331"
+    workers: 60000
+    data: 
+        -   {ctime: 32.03, func: asyncio_proto, lat_50: 467ms, lat_95: 575ms, messages: 3677273, msg_5perc: 61, msg_95perc: 62, stime: 8.89, utime: 23.10}
+        -   {ctime: 32.06, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 600007, msg_5perc: 10, msg_95perc: 10, stime: 3.26, utime: 28.78}
+        -   {ctime: 35.17, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 639541, msg_5perc: 10, msg_95perc: 11, stime: 2.15, utime: 32.98}
+        -   {ctime: 30.45, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9432862, msg_5perc: 157, msg_95perc: 158, stime: 29.24, utime: 1.05}
+        -   {ctime: 30.23, func: gevent, lat_50: 872ms, lat_95: 872ms, messages: 2044718, msg_5perc: 33, msg_95perc: 35, stime: 6.25, utime: 23.95}
+        -   {ctime: 31.00, func: selector, lat_50: 287ms, lat_95: 308ms, messages: 6053864, msg_5perc: 100, msg_95perc: 101, stime: 15.58, utime: 15.30}
+        -   {ctime: 30.89, func: uvloop_proto, lat_50: 250ms, lat_95: 467ms, messages: 6181921, msg_5perc: 102, msg_95perc: 105, stime: 18.68, utime: 12.16}
+        -   {ctime: 31.28, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2628582, msg_5perc: 43, msg_95perc: 44, stime: 8.36, utime: 22.88}
+        -   {ctime: 32.97, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1096796, msg_5perc: 18, msg_95perc: 19, stime: 3.63, utime: 29.28}
+    timeout: 0
+    msize: 64
+    runtime: 30
+    bind_addr: "172.16.40.43:33332"
+-   data: 
+        -   {ctime: 32.16, func: asyncio_proto, lat_50: 467ms, lat_95: 575ms, messages: 3574283, msg_5perc: 59, msg_95perc: 60, stime: 8.94, utime: 23.20}
+        -   {ctime: 32.21, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 579781, msg_5perc: 9, msg_95perc: 10, stime: 3.28, utime: 28.90}
+        -   {ctime: 35.46, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 663576, msg_5perc: 11, msg_95perc: 12, stime: 2.36, utime: 33.06}
+        -   {ctime: 30.42, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9508755, msg_5perc: 158, msg_95perc: 159, stime: 29.25, utime: 1.01}
+        -   {ctime: 32.04, func: gevent, lat_50: 813ms, lat_95: 872ms, messages: 2140566, msg_5perc: 35, msg_95perc: 36, stime: 6.58, utime: 25.42}
+        -   {ctime: 30.89, func: selector, lat_50: 308ms, lat_95: 354ms, messages: 5902545, msg_5perc: 98, msg_95perc: 99, stime: 15.44, utime: 15.34}
+        -   {ctime: 30.89, func: uvloop_proto, lat_50: 250ms, lat_95: 500ms, messages: 6098143, msg_5perc: 101, msg_95perc: 103, stime: 18.48, utime: 12.36}
+        -   {ctime: 31.28, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2654208, msg_5perc: 44, msg_95perc: 45, stime: 8.56, utime: 22.68}
+        -   {ctime: 32.39, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1082056, msg_5perc: 18, msg_95perc: 18, stime: 3.68, utime: 28.67}
+    bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    workers: 60000
+    timeout: 0
+    msize: 64
+    runtime: 30
+-   data: 
+        -   {ctime: 32.15, func: asyncio_proto, lat_50: 467ms, lat_95: 536ms, messages: 3694688, msg_5perc: 61, msg_95perc: 62, stime: 9.31, utime: 22.80}
+        -   {ctime: 32.34, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 598185, msg_5perc: 10, msg_95perc: 10, stime: 2.94, utime: 29.37}
+        -   {ctime: 35.23, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 663464, msg_5perc: 11, msg_95perc: 12, stime: 2.52, utime: 32.65}
+        -   {ctime: 30.40, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9340442, msg_5perc: 155, msg_95perc: 156, stime: 29.18, utime: 1.11}
+        -   {ctime: 32.02, func: gevent, lat_50: 813ms, lat_95: 872ms, messages: 2151643, msg_5perc: 35, msg_95perc: 36, stime: 7.29, utime: 24.69}
+        -   {ctime: 30.96, func: selector, lat_50: 287ms, lat_95: 308ms, messages: 5966628, msg_5perc: 98, msg_95perc: 100, stime: 14.88, utime: 16.01}
+        -   {ctime: 30.92, func: uvloop_proto, lat_50: 250ms, lat_95: 500ms, messages: 5982645, msg_5perc: 99, msg_95perc: 101, stime: 18.52, utime: 12.33}
+        -   {ctime: 31.29, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2605056, msg_5perc: 43, msg_95perc: 44, stime: 8.45, utime: 22.79}
+        -   {ctime: 33.17, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1130886, msg_5perc: 18, msg_95perc: 19, stime: 3.77, utime: 29.36}
+    server: "172.16.40.37:33331"
+    runtime: 30
+    bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    workers: 60000
+    msize: 64
+-   runtime: 30
+    msize: 64
+    bind_addr: "172.16.40.43:33332"
+    data: 
+        -   {ctime: 32.20, func: asyncio_proto, lat_50: 500ms, lat_95: 575ms, messages: 3520433, msg_5perc: 58, msg_95perc: 59, stime: 9.38, utime: 22.75}
+        -   {ctime: 32.00, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 567926, msg_5perc: 9, msg_95perc: 10, stime: 3.21, utime: 28.74}
+        -   {ctime: 36.05, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 661664, msg_5perc: 11, msg_95perc: 11, stime: 2.42, utime: 33.58}
+        -   {ctime: 30.41, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9369289, msg_5perc: 156, msg_95perc: 157, stime: 29.14, utime: 1.06}
+        -   {ctime: 31.24, func: gevent, lat_50: 813ms, lat_95: 872ms, messages: 2111679, msg_5perc: 34, msg_95perc: 36, stime: 6.83, utime: 24.39}
+        -   {ctime: 31.00, func: selector, lat_50: 308ms, lat_95: 330ms, messages: 5926174, msg_5perc: 98, msg_95perc: 99, stime: 15.35, utime: 15.54}
+        -   {ctime: 30.81, func: uvloop_proto, lat_50: 233ms, lat_95: 467ms, messages: 6203717, msg_5perc: 103, msg_95perc: 104, stime: 18.59, utime: 12.16}
+        -   {ctime: 31.40, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2641516, msg_5perc: 44, msg_95perc: 44, stime: 8.57, utime: 22.80}
+        -   {ctime: 33.14, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1130903, msg_5perc: 18, msg_95perc: 19, stime: 3.91, utime: 29.17}
+    timeout: 0
+    server: "172.16.40.37:33331"
+    workers: 60000
+-   data: 
+        -   {ctime: 32.14, func: asyncio_proto, lat_50: 467ms, lat_95: 575ms, messages: 3690207, msg_5perc: 61, msg_95perc: 62, stime: 9.29, utime: 22.78}
+        -   {ctime: 32.16, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 580686, msg_5perc: 9, msg_95perc: 10, stime: 3.26, utime: 28.87}
+        -   {ctime: 35.65, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 648041, msg_5perc: 10, msg_95perc: 11, stime: 2.39, utime: 33.23}
+        -   {ctime: 30.38, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9323714, msg_5perc: 155, msg_95perc: 156, stime: 29.29, utime: 0.97}
+        -   {ctime: 32.11, func: gevent, lat_50: 813ms, lat_95: 872ms, messages: 2123352, msg_5perc: 34, msg_95perc: 36, stime: 7.08, utime: 25.00}
+        -   {ctime: 30.93, func: selector, lat_50: 287ms, lat_95: 330ms, messages: 6018281, msg_5perc: 99, msg_95perc: 101, stime: 14.95, utime: 15.89}
+        -   {ctime: 30.83, func: uvloop_proto, lat_50: 233ms, lat_95: 467ms, messages: 6382836, msg_5perc: 105, msg_95perc: 107, stime: 18.90, utime: 11.88}
+        -   {ctime: 31.30, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2703360, msg_5perc: 45, msg_95perc: 46, stime: 8.57, utime: 22.69}
+        -   {ctime: 32.28, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1130788, msg_5perc: 18, msg_95perc: 19, stime: 3.72, utime: 28.51}
+    bind_addr: "172.16.40.43:33332"
+    runtime: 30
+    msize: 64
+    workers: 60000
+    timeout: 0
+    server: "172.16.40.37:33331"
+-   runtime: 30
+    data: 
+        -   {ctime: 32.15, func: asyncio_proto, lat_50: 500ms, lat_95: 575ms, messages: 3591415, msg_5perc: 59, msg_95perc: 60, stime: 9.45, utime: 22.66}
+        -   {ctime: 32.18, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 583342, msg_5perc: 9, msg_95perc: 10, stime: 3.28, utime: 28.86}
+        -   {ctime: 36.19, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 664139, msg_5perc: 11, msg_95perc: 12, stime: 2.56, utime: 33.58}
+        -   {ctime: 30.40, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9320806, msg_5perc: 155, msg_95perc: 156, stime: 29.05, utime: 1.17}
+        -   {ctime: 32.06, func: gevent, lat_50: 813ms, lat_95: 1s, messages: 2162760, msg_5perc: 35, msg_95perc: 37, stime: 6.92, utime: 25.11}
+        -   {ctime: 30.78, func: selector, lat_50: 308ms, lat_95: 330ms, messages: 6033007, msg_5perc: 100, msg_95perc: 101, stime: 14.98, utime: 15.70}
+        -   {ctime: 30.88, func: uvloop_proto, lat_50: 250ms, lat_95: 467ms, messages: 6239943, msg_5perc: 103, msg_95perc: 105, stime: 18.89, utime: 11.95}
+        -   {ctime: 31.42, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2698198, msg_5perc: 45, msg_95perc: 45, stime: 8.30, utime: 23.08}
+        -   {ctime: 32.47, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1132145, msg_5perc: 18, msg_95perc: 19, stime: 3.73, utime: 28.71}
+    bind_addr: "172.16.40.43:33332"
+    timeout: 0
+    msize: 64
+    server: "172.16.40.37:33331"
+    workers: 60000
+-   data: 
+        -   {ctime: 32.02, func: asyncio_proto, lat_50: 467ms, lat_95: 575ms, messages: 3687643, msg_5perc: 61, msg_95perc: 62, stime: 9.47, utime: 22.51}
+        -   {ctime: 32.21, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 585796, msg_5perc: 9, msg_95perc: 10, stime: 3.38, utime: 28.78}
+        -   {ctime: 36.02, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 651005, msg_5perc: 10, msg_95perc: 11, stime: 2.37, utime: 33.61}
+        -   {ctime: 30.41, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9390562, msg_5perc: 156, msg_95perc: 157, stime: 29.18, utime: 1.02}
+        -   {ctime: 32.05, func: gevent, lat_50: 813ms, lat_95: 872ms, messages: 2193034, msg_5perc: 35, msg_95perc: 38, stime: 7.34, utime: 24.69}
+        -   {ctime: 31.00, func: selector, lat_50: 308ms, lat_95: 354ms, messages: 5762497, msg_5perc: 96, msg_95perc: 96, stime: 15.30, utime: 15.60}
+        -   {ctime: 30.92, func: uvloop_proto, lat_50: 250ms, lat_95: 467ms, messages: 6245438, msg_5perc: 104, msg_95perc: 105, stime: 18.78, utime: 12.09}
+        -   {ctime: 31.26, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2605056, msg_5perc: 43, msg_95perc: 44, stime: 8.38, utime: 22.84}
+        -   {ctime: 33.37, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1082387, msg_5perc: 18, msg_95perc: 19, stime: 3.72, utime: 29.61}
+    timeout: 0
+    runtime: 30
+    workers: 60000
+    bind_addr: "172.16.40.43:33332"
+    msize: 64
+    server: "172.16.40.37:33331"
+-   data: 
+        -   {ctime: 32.04, func: asyncio_proto, lat_50: 500ms, lat_95: 575ms, messages: 3541087, msg_5perc: 58, msg_95perc: 60, stime: 9.63, utime: 22.34}
+        -   {ctime: 32.01, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 572311, msg_5perc: 9, msg_95perc: 10, stime: 3.21, utime: 28.76}
+        -   {ctime: 36.91, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 665052, msg_5perc: 11, msg_95perc: 12, stime: 2.66, utime: 34.21}
+        -   {ctime: 30.42, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9308178, msg_5perc: 155, msg_95perc: 156, stime: 29.29, utime: 0.99}
+        -   {ctime: 32.03, func: gevent, lat_50: 813ms, lat_95: 872ms, messages: 2165201, msg_5perc: 36, msg_95perc: 37, stime: 7.38, utime: 24.61}
+        -   {ctime: 30.90, func: selector, lat_50: 287ms, lat_95: 330ms, messages: 5943453, msg_5perc: 98, msg_95perc: 100, stime: 15.06, utime: 15.75}
+        -   {ctime: 30.87, func: uvloop_proto, lat_50: 250ms, lat_95: 500ms, messages: 5960655, msg_5perc: 99, msg_95perc: 100, stime: 18.86, utime: 11.96}
+        -   {ctime: 31.18, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2569944, msg_5perc: 42, msg_95perc: 43, stime: 8.13, utime: 23.02}
+        -   {ctime: 33.30, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1131662, msg_5perc: 18, msg_95perc: 19, stime: 3.95, utime: 29.30}
+    runtime: 30
+    server: "172.16.40.37:33331"
+    timeout: 0
+    workers: 60000
+    msize: 64
+    bind_addr: "172.16.40.43:33332"
+-   bind_addr: "172.16.40.43:33332"
+    runtime: 30
+    server: "172.16.40.37:33331"
+    workers: 60000
+    data: 
+        -   {ctime: 32.07, func: asyncio_proto, lat_50: 500ms, lat_95: 575ms, messages: 3601965, msg_5perc: 60, msg_95perc: 60, stime: 9.37, utime: 22.63}
+        -   {ctime: 32.08, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 571455, msg_5perc: 9, msg_95perc: 10, stime: 3.23, utime: 28.82}
+        -   {ctime: 35.89, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 661696, msg_5perc: 11, msg_95perc: 11, stime: 2.39, utime: 33.45}
+        -   {ctime: 30.38, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9281388, msg_5perc: 154, msg_95perc: 155, stime: 29.15, utime: 1.07}
+        -   {ctime: 31.52, func: gevent, lat_50: 872ms, lat_95: 934ms, messages: 2051000, msg_5perc: 34, msg_95perc: 35, stime: 6.59, utime: 24.90}
+        -   {ctime: 30.97, func: selector, lat_50: 287ms, lat_95: 308ms, messages: 6086598, msg_5perc: 100, msg_95perc: 102, stime: 15.46, utime: 15.40}
+        -   {ctime: 30.79, func: uvloop_proto, lat_50: 250ms, lat_95: 500ms, messages: 6160606, msg_5perc: 102, msg_95perc: 104, stime: 19.20, utime: 11.52}
+        -   {ctime: 31.34, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2654208, msg_5perc: 44, msg_95perc: 45, stime: 8.59, utime: 22.71}
+        -   {ctime: 33.00, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1130798, msg_5perc: 18, msg_95perc: 19, stime: 3.87, utime: 29.07}
+    msize: 64
+    timeout: 0
+-   data: 
+        -   {ctime: 32.40, func: asyncio_proto, lat_50: 467ms, lat_95: 575ms, messages: 3692562, msg_5perc: 61, msg_95perc: 62, stime: 9.47, utime: 22.90}
+        -   {ctime: 32.55, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 590162, msg_5perc: 9, msg_95perc: 10, stime: 3.01, utime: 29.51}
+        -   {ctime: 35.63, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 664024, msg_5perc: 11, msg_95perc: 12, stime: 2.25, utime: 33.33}
+        -   {ctime: 30.40, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9349199, msg_5perc: 155, msg_95perc: 156, stime: 29.32, utime: 0.94}
+        -   {ctime: 32.11, func: gevent, lat_50: 813ms, lat_95: 813ms, messages: 2208018, msg_5perc: 35, msg_95perc: 38, stime: 7.16, utime: 24.92}
+        -   {ctime: 30.98, func: selector, lat_50: 287ms, lat_95: 308ms, messages: 5915834, msg_5perc: 98, msg_95perc: 99, stime: 15.16, utime: 15.72}
+        -   {ctime: 30.85, func: uvloop_proto, lat_50: 233ms, lat_95: 467ms, messages: 6381598, msg_5perc: 105, msg_95perc: 107, stime: 19.23, utime: 11.58}
+        -   {ctime: 31.30, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2605056, msg_5perc: 43, msg_95perc: 44, stime: 8.89, utime: 22.35}
+        -   {ctime: 33.26, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1118285, msg_5perc: 18, msg_95perc: 19, stime: 3.87, utime: 29.34}
+    workers: 60000
+    msize: 64
+    runtime: 30
+    bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    timeout: 0
+-   bind_addr: "172.16.40.43:33332"
+    data: 
+        -   {ctime: 32.19, func: asyncio_proto, lat_50: 500ms, lat_95: 575ms, messages: 3603012, msg_5perc: 59, msg_95perc: 61, stime: 9.42, utime: 22.71}
+        -   {ctime: 32.40, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 599999, msg_5perc: 10, msg_95perc: 10, stime: 3.20, utime: 29.16}
+        -   {ctime: 36.22, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 660727, msg_5perc: 11, msg_95perc: 11, stime: 2.36, utime: 33.82}
+        -   {ctime: 30.40, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9285651, msg_5perc: 154, msg_95perc: 155, stime: 29.21, utime: 0.97}
+        -   {ctime: 31.04, func: gevent, lat_50: 872ms, lat_95: 872ms, messages: 2106340, msg_5perc: 34, msg_95perc: 36, stime: 7.11, utime: 23.89}
+        -   {ctime: 31.05, func: selector, lat_50: 308ms, lat_95: 308ms, messages: 5929010, msg_5perc: 98, msg_95perc: 99, stime: 15.99, utime: 14.93}
+        -   {ctime: 30.78, func: uvloop_proto, lat_50: 233ms, lat_95: 467ms, messages: 6293163, msg_5perc: 104, msg_95perc: 105, stime: 19.29, utime: 11.43}
+        -   {ctime: 31.41, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2669022, msg_5perc: 44, msg_95perc: 45, stime: 8.40, utime: 22.97}
+        -   {ctime: 32.56, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1131626, msg_5perc: 18, msg_95perc: 19, stime: 3.92, utime: 28.59}
+    msize: 64
+    server: "172.16.40.37:33331"
+    workers: 60000
+    runtime: 30
+    timeout: 0
+-   data: 
+        -   {ctime: 32.19, func: asyncio_proto, lat_50: 467ms, lat_95: 575ms, messages: 3628112, msg_5perc: 60, msg_95perc: 61, stime: 9.80, utime: 22.33}
+        -   {ctime: 32.43, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 598327, msg_5perc: 10, msg_95perc: 10, stime: 3.30, utime: 29.08}
+        -   {ctime: 36.10, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 663240, msg_5perc: 11, msg_95perc: 12, stime: 2.45, utime: 33.61}
+        -   {ctime: 30.40, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9276034, msg_5perc: 154, msg_95perc: 155, stime: 29.20, utime: 1.04}
+        -   {ctime: 32.02, func: gevent, lat_50: 813ms, lat_95: 872ms, messages: 2188377, msg_5perc: 35, msg_95perc: 38, stime: 7.08, utime: 24.92}
+        -   {ctime: 30.99, func: selector, lat_50: 308ms, lat_95: 330ms, messages: 5900585, msg_5perc: 97, msg_95perc: 99, stime: 15.17, utime: 15.72}
+        -   {ctime: 30.80, func: uvloop_proto, lat_50: 233ms, lat_95: 500ms, messages: 6263174, msg_5perc: 104, msg_95perc: 105, stime: 19.09, utime: 11.66}
+        -   {ctime: 31.31, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2604205, msg_5perc: 43, msg_95perc: 44, stime: 8.41, utime: 22.87}
+        -   {ctime: 32.70, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1131320, msg_5perc: 18, msg_95perc: 19, stime: 3.80, utime: 28.84}
+    timeout: 0
+    msize: 64
+    bind_addr: "172.16.40.43:33332"
+    workers: 60000
+    runtime: 30
+    server: "172.16.40.37:33331"
+-   workers: 60000
+    runtime: 30
+    bind_addr: "172.16.40.43:33332"
+    server: "172.16.40.37:33331"
+    msize: 64
+    data: 
+        -   {ctime: 32.10, func: asyncio_proto, lat_50: 500ms, lat_95: 575ms, messages: 3610388, msg_5perc: 60, msg_95perc: 61, stime: 9.75, utime: 22.32}
+        -   {ctime: 32.39, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 594883, msg_5perc: 9, msg_95perc: 10, stime: 3.19, utime: 29.16}
+        -   {ctime: 36.35, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 642188, msg_5perc: 10, msg_95perc: 11, stime: 2.51, utime: 33.80}
+        -   {ctime: 30.41, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9373548, msg_5perc: 156, msg_95perc: 157, stime: 29.24, utime: 1.07}
+        -   {ctime: 30.33, func: gevent, lat_50: 813ms, lat_95: 872ms, messages: 2152857, msg_5perc: 34, msg_95perc: 37, stime: 7.00, utime: 23.29}
+        -   {ctime: 30.97, func: selector, lat_50: 287ms, lat_95: 308ms, messages: 5996168, msg_5perc: 99, msg_95perc: 101, stime: 15.68, utime: 15.16}
+        -   {ctime: 30.84, func: uvloop_proto, lat_50: 250ms, lat_95: 500ms, messages: 6138225, msg_5perc: 101, msg_95perc: 104, stime: 18.38, utime: 12.42}
+        -   {ctime: 31.27, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2697640, msg_5perc: 45, msg_95perc: 45, stime: 8.36, utime: 22.88}
+        -   {ctime: 33.35, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1082294, msg_5perc: 18, msg_95perc: 19, stime: 3.70, utime: 29.59}
+    timeout: 0
+-   bind_addr: "172.16.40.43:33332"
+    runtime: 30
+    workers: 60000
+    server: "172.16.40.37:33331"
+    msize: 64
+    timeout: 0
+    data: 
+        -   {ctime: 32.20, func: asyncio_proto, lat_50: 500ms, lat_95: 575ms, messages: 3579787, msg_5perc: 59, msg_95perc: 60, stime: 9.12, utime: 23.02}
+        -   {ctime: 32.07, func: asyncio_sock, lat_50: 1s, lat_95: 1s, messages: 600009, msg_5perc: 10, msg_95perc: 10, stime: 3.27, utime: 28.77}
+        -   {ctime: 35.04, func: asyncio, lat_50: 1s, lat_95: 1s, messages: 605923, msg_5perc: 10, msg_95perc: 11, stime: 2.28, utime: 32.71}
+        -   {ctime: 30.39, func: cpp_epoll, lat_50: 189ms, lat_95: 218ms, messages: 9320754, msg_5perc: 155, msg_95perc: 156, stime: 29.24, utime: 1.03}
+        -   {ctime: 32.09, func: gevent, lat_50: 813ms, lat_95: 872ms, messages: 2171486, msg_5perc: 36, msg_95perc: 37, stime: 7.29, utime: 24.76}
+        -   {ctime: 30.99, func: selector, lat_50: 287ms, lat_95: 330ms, messages: 5922805, msg_5perc: 98, msg_95perc: 99, stime: 15.47, utime: 15.43}
+        -   {ctime: 30.88, func: uvloop_proto, lat_50: 250ms, lat_95: 500ms, messages: 6042784, msg_5perc: 100, msg_95perc: 102, stime: 18.56, utime: 12.27}
+        -   {ctime: 31.27, func: uvloop_sock, lat_50: 660ms, lat_95: 872ms, messages: 2654208, msg_5perc: 44, msg_95perc: 45, stime: 8.65, utime: 22.58}
+        -   {ctime: 32.73, func: uvloop, lat_50: 1s, lat_95: 1s, messages: 1091934, msg_5perc: 18, msg_95perc: 19, stime: 3.73, utime: 28.95}
