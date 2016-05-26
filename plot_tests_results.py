@@ -108,6 +108,7 @@ def show_plot(points, data, scale=1, with_dev=True, log_scale_y=False, ylabel=No
         plt.ylabel(ylabel)
 
     plt.legend()
+    plt.grid()
     plt.show()
 
 
@@ -177,8 +178,8 @@ def show_table(points, data, with_dev=True):
 def main(argv):
     func_names = ('uvloop', 'asyncio', 'gevent', 'thread', 'cpp_th', 'cpp_epoll', 'selector')
     # func_names = None
-    server = '172.16.40.43:33331'
-    # server = '172.16.40.37:33331'
+    # server = '172.16.40.43:33331'
+    server = '172.16.40.37:33331'
     files = sys.argv[1:]
 
     results = collections.defaultdict(list)
@@ -256,12 +257,15 @@ def main(argv):
             rel_mps_s[key1][key2] = AvgDev("{:>2d}".format(vl), None)
             rel_mps[key1][key2] = AvgDev(vl, None)
 
-    # show_plot(points, mps, 1000)
+    # show_plot(points, mps, 1000,
+    #           ylabel="Thousands message per second", xlabel="Connection count")
     # show_table(points, mps, with_dev=True)
-    # show_table(points, lat_95_s, with_dev=False)
+    show_table(points, lat_95_s, with_dev=False)
     # show_table(points, lat_50_s, with_dev=False)
-    show_plot(points, lat_95, with_dev=False,
-              log_scale_y=True, ylabel="lat, ms", xlabel="conn. count")
+    # show_plot(points, lat_95, with_dev=False, log_scale_y=True,
+    #           ylabel="Latency 95 percentile ms", xlabel="Connection count")
+    # show_plot(points, lat_50, with_dev=False, log_scale_y=True,
+    #           ylabel="Latency mediana ms", xlabel="Connection count")
 
     # show_table(points, utime, with_dev=False)
 
