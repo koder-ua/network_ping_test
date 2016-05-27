@@ -1,8 +1,11 @@
+from __future__ import print_function
+
 import sys
 import math
 import yaml
 import argparse
 import collections
+
 
 
 def ns_to_readable(val):
@@ -82,10 +85,19 @@ def show_plot(points, data, scale=1, with_dev=True, log_scale_y=False, ylabel=No
                 if with_dev:
                     y_dev.append(dev / scale)
                 x.append(pt2coord[pt])
-        if with_dev:
-            plt.errorbar(x, y, y_dev, label=test_label(params))
+
+        if params.func.startswith('asyncio'):
+            ls = 'dashed'
+        elif params.func.startswith('uvloop'):
+            ls = 'dotted'
         else:
-            plt.plot(x, y, label=test_label(params))
+            ls = 'solid'
+
+        lw = 2
+        if with_dev:
+            plt.errorbar(x, y, y_dev, label=test_label(params), ls=ls, lw=lw)
+        else:
+            plt.plot(x, y, label=test_label(params), ls=ls, lw=lw)
 
     ticks = []
     for i in points:
@@ -174,16 +186,16 @@ def show_table(points, data, with_dev=True):
             else:
                 row.append("---")
         table.add_row(row)
-    print table.draw()
+    print(table.draw())
 
 
 def main(argv):
     parser = argparse.ArgumentParser()
-
     parser.add_argument('--server', '-s')
     parser.add_argument('--funcs', '-f')
     parser.add_argument('--table', '-t', action="store_true", default=False)
-    parser.add_argument('value')
+    parser.add_argument('metrix_type',
+                        choices=['mps', 'lat50', 'lat95', 'stime', 'utime', 'info'])
     parser.add_argument('files', nargs='*', default=[])
 
     opts = parser.parse_args(argv[1:])
@@ -205,6 +217,21 @@ def main(argv):
             for run in block['data']:
                 test_run_params['func'] = run.pop('func')
                 results[TestRun(**test_run_params)].append(RunData(**run))
+
+    if opts.metrix_type == 'info':
+        servers = set()
+        funcs = set()
+        workers = set()
+
+        for test_run in results:
+            servers.add(test_run.server)
+            workers.add(test_run.workers)
+            funcs.add(test_run.func)
+        print("Servers =", ",".join(sorted(servers)))
+        print("Workers =", ",".join(map(str, sorted(workers))))
+        print("Funcs =", ",".join(sorted(funcs)))
+        print("Num items =", sum(len(vals) for vals in results.values()))
+        return 0
 
     for_plot = {}
     for key, val in results.items():
@@ -266,25 +293,25 @@ def main(argv):
             rel_mps_s[key1][key2] = AvgDev("{:>2d}".format(vl), None)
             rel_mps[key1][key2] = AvgDev(vl, None)
 
-    if opts.value == 'mps':
+    if opts.metrix_type == 'mps':
         if opts.table:
             show_table(points, mps, with_dev=True)
         else:
             show_plot(points, mps, 1000,
-                      ylabel="Thousands message per second", xlabel="Connection count")
-    elif opts.value == 'lat95':
+                      ylabel="Thousands of messages per second", xlabel="Connections count")
+    elif opts.metrix_type == 'lat95':
         if opts.table:
             show_table(points, lat_95_s, with_dev=False)
         else:
             show_plot(points, lat_95, with_dev=False, log_scale_y=True,
-                      ylabel="Latency 95 percentile ms", xlabel="Connection count")
-    elif opts.value == 'lat50':
+                      ylabel="Latency 95 percentile ms", xlabel="Connections count")
+    elif opts.metrix_type == 'lat50':
         if opts.table:
             show_table(points, lat_50_s, with_dev=False)
         else:
             show_plot(points, lat_50, with_dev=False, log_scale_y=True,
-                      ylabel="Latency 50% percentile ms", xlabel="Connection count")
-    elif opts.value == 'utime':
+                      ylabel="Latency 50% percentile ms", xlabel="Connections count")
+    elif opts.metrix_type == 'utime':
         assert not opts.table
         show_table(points, utime, with_dev=False)
 

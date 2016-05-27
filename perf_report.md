@@ -181,11 +181,11 @@ Python ведет себя нестабильно при 10k+ потоков.
 
 #### Отличия от реальных систем
 
-Основным отличием от реальных систем является почти полное отсутвие задержек в
+* Основным отличием от реальных систем является почти полное отсутвие задержек в
 протоколе. Сервер поддерживает таймауты на сокетах, но эти тесты я еще не довел
 до конца. 
-
-Также можно было потюнить TCP стек.
+* Можно было потюнить TCP стек
+* ???
 
 
 ### Тесты скорости:
@@ -194,9 +194,12 @@ Python ведет себя нестабильно при 10k+ потоков.
 172.16.40.43 - локальный.
 
 Сообщений_в_секунду ~ 2.5 * stddev (== 95% интервал). Удаленный сервер.
-Графики показывают только самые интересные данные.
 
 ![](/images/remote_mps.png)
+
+
+То-же, без cpp_epoll:
+![](/images/remote_mps_no_cpp_epoll.png)
 
 <pre>
 +---------------+-------------+-------------+-------------+-------------+-------------+
@@ -238,6 +241,7 @@ Python ведет себя нестабильно при 10k+ потоков.
 </pre>
 
 Сообщений_в_секунду ~ 2.5 * stddev (== 95% интервал). Локальный сервер.
+asyncio_sock для >10 сокетов исключены, см. раздел "Особенности".
 
 ![](/images/local_mps.png)
 
@@ -285,13 +289,14 @@ Python ведет себя нестабильно при 10k+ потоков.
 
 Общее распределение по убыванию скоростей примерно такое:
 
-1. cpp_epoll
-2. uvloop_proto, selector
-3. cpp_th
+1. cpp\_epoll
+2. uvloop\_proto, selector
+3. cpp\_th
 4. thread
-5. uvloop, asyncio_proto
+5. uvloop, uvloop\_sock, asyncio\_proto
 6. gevent
-7. asyncio, asyncio_sock
+7. asyncio
+8. asyncio_sock
 
 
 Выводы по скорости:
@@ -305,7 +310,7 @@ Python ведет себя нестабильно при 10k+ потоков.
   избавления от практически всех накладных расходов. Но его API копирует "старый"
   twisted, т.е. хорошо подходит только для очень ограниченного количества простых
   протоколов общения с одним клиентом. Фактически оно бесполезно для подавляющего
-  большинства программ, и в любом случае лишено все преймуществ yield-based API.
+  большинства программ и в любом случае лишено всех преймуществ yield-based API.
 * По мере роста количества соединений скорости у всех более-менее быстрых вариантов проседают
 * Скорости вариантов на потоках и asyncio/uvloop падают быстрее всего
 * Даже на 20k соединений потоки все еще в разы быстрее и asyncio/uvloop
@@ -329,17 +334,21 @@ Python ведет себя нестабильно при 10k+ потоков.
 ![](/images/remote_lat95.png)
 
 <pre>
-+-----------+--------+--------+-------+--------+--------+
-|   Test    |   10   |  100   |  1k   |  10k   |  60k   |
-+===========+========+========+=======+========+========+
-|  asyncio  | 333 us |  2 ms  | 25 ms | 458 ms |  >1s   |
-| cpp_epoll | 98 us  | 197 us | 1 ms  | 31 ms  | 218 ms |
-|  cpp_th   | 99 us  | 454 us | 5 ms  | 69 ms  |  ---   |
-|  gevent   | 157 us |  1 ms  | 13 ms | 197 ms | 884 ms |
-| selector  | 99 us  | 493 us | 3 ms  | 73 ms  | 322 ms |
-|  thread   | 99 us  | 610 us | 6 ms  | 110 ms |  ---   |
-|  uvloop   | 128 us | 809 us | 11 ms | 280 ms |  >1s   |
-+-----------+--------+--------+-------+--------+--------+
++---------------+--------+--------+-------+--------+--------+
+|     Test      |   10   |  100   |  1k   |  10k   |  60k   |
++===============+========+========+=======+========+========+
+|    asyncio    | 333 us |  2 ms  | 25 ms | 458 ms |  >1s   |
+| asyncio_proto | 149 us |  1 ms  |  9 ms | 164 ms | 569 ms |
+| asyncio_sock  | 450 us |  3 ms  | 54 ms | 484 ms |  >1s   |
+|   cpp_epoll   |  98 us | 197 us |  1 ms |  31 ms | 218 ms |
+|    cpp_th     |  99 us | 454 us |  5 ms |  69 ms |  ---   |
+|    gevent     | 157 us |  1 ms  | 13 ms | 197 ms | 884 ms |
+|   selector    |  99 us | 493 us |  3 ms |  73 ms | 322 ms |
+|    thread     |  99 us | 610 us |  6 ms | 110 ms |  ---   |
+|    uvloop     | 128 us | 809 us | 11 ms | 280 ms |  >1s   |
+| uvloop_proto  |  98 us | 306 us |  2 ms |  72 ms | 482 ms |
+|  uvloop_sock  |  99 us |  1 ms  |  6 ms | 158 ms | 872 ms |
++---------------+--------+--------+-------+--------+--------+
 </pre>
 
 
@@ -394,9 +403,11 @@ asyncio = sendto + recvfrom + mremap + munmap + mmap + 0.02 * epoll_wait
 asyncio_proto = sendto + recvfrom + mremap + munmap + mmap + 0.01 * epoll_wait
     Те же странные mXXmap, что и в asyncio
 
-asyncio_sock = sendto + recvfrom + 0.04 * epoll_ctl
-    По идее asyncio_sock должна делать 2 вызова epoll_ctl на каждый
+asyncio_sock(local) = sendto + recvfrom + 0.04 * epoll_ctl
+    asyncio_sock должна делать 2 вызова epoll_ctl на каждый
     recvfrom, но из-за описанной выше опитимизации этого не происходит.
+
+asyncio_sock(remote) = 2 * epoll_ctl + sendto + recvfrom + 0.01 * epoll_wait
 
 uvloop = read + write + 0.01 * epoll_wait
 uvloop_sock = 2 * epoll_ctl + sendto + recvfrom + 0.01 * epoll_wait
@@ -430,6 +441,18 @@ gevent = 2 * recvfrom + sendto + 0.01 * epoll_wait
 +---------------+----+
 </pre>
 
+
+### Общие выводы
+
+* asyncio _очень медленный_. uvloop делает его просто _медленным_
+* asyncio разрабатывался с целью быть единым API для обработки различных асинхронных источников данных,
+и с этой задачей он справляется хорошо
+* uvloop\_proto весьма быстрый, но его API это классические функции обратного вызова и оно
+не подходит для мультиплексирования разных источников
+* потоки быстрее, но имеют свои проблемы
+* до с++/java/go еще очень далеко.
+
+
 #### Полезные ссылки
 
 * Asyncio build in 45m - https://www.youtube.com/watch?v=MCs5OvhV9S
@@ -441,7 +464,7 @@ gevent = 2 * recvfrom + sendto + 0.01 * epoll_wait
 * Акторы в скале - [9], [10], [11]
 * Кусок эппопеи с шедулерами в Go - https://morsmachine.dk/go-scheduler
 * Twisted & asyncio - https://glyph.twistedmatrix.com/2014/05/the-report-of-our-death.html
-
+* Curio библиотека для асинхронного IO от David Beazley - https://github.com/dabeaz/curio
 
 [1]: https://docs.python.org/3/library/asyncio-stream.html#tcp-echo-client-using-streams
 [2]: https://docs.python.org/3/library/asyncio-protocol.html#tcp-echo-client-protocol
