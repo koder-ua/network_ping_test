@@ -1,6 +1,7 @@
 import sys
 import math
 import yaml
+import argparse
 import collections
 
 
@@ -58,6 +59,7 @@ def show_plot(points, data, scale=1, with_dev=True, log_scale_y=False, ylabel=No
 
     if 10000 not in points:
         points = list(points) + [10000]
+
     points = sorted(list(points))
     x_coords_all = list([math.log10(i) - 0.8 for i in points])
     pt2coord = {pt: x for pt, x in zip(points, x_coords_all)}
@@ -176,14 +178,21 @@ def show_table(points, data, with_dev=True):
 
 
 def main(argv):
-    func_names = ('uvloop', 'asyncio', 'gevent', 'thread', 'cpp_th', 'cpp_epoll', 'selector')
-    # func_names = None
-    # server = '172.16.40.43:33331'
-    server = '172.16.40.37:33331'
-    files = sys.argv[1:]
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--server', '-s')
+    parser.add_argument('--funcs', '-f')
+    parser.add_argument('--table', '-t', action="store_true", default=False)
+    parser.add_argument('value')
+    parser.add_argument('files', nargs='*', default=[])
+
+    opts = parser.parse_args(argv[1:])
+
+    if opts.funcs is not None:
+        opts.funcs = opts.funcs.split(',')
 
     results = collections.defaultdict(list)
-    for fname in files:
+    for fname in opts.files:
         for block in yaml.load(open(fname)):
             test_run_params = dict(
                 workers=block['workers'],
@@ -199,9 +208,9 @@ def main(argv):
 
     for_plot = {}
     for key, val in results.items():
-        if func_names is not None and key.func not in func_names:
+        if opts.funcs is not None and key.func not in opts.funcs:
             continue
-        if server is not None and key.server != server:
+        if opts.server is not None and key.server != opts.server:
             continue
         for_plot[key] = val
 
@@ -257,17 +266,27 @@ def main(argv):
             rel_mps_s[key1][key2] = AvgDev("{:>2d}".format(vl), None)
             rel_mps[key1][key2] = AvgDev(vl, None)
 
-    # show_plot(points, mps, 1000,
-    #           ylabel="Thousands message per second", xlabel="Connection count")
-    # show_table(points, mps, with_dev=True)
-    show_table(points, lat_95_s, with_dev=False)
-    # show_table(points, lat_50_s, with_dev=False)
-    # show_plot(points, lat_95, with_dev=False, log_scale_y=True,
-    #           ylabel="Latency 95 percentile ms", xlabel="Connection count")
-    # show_plot(points, lat_50, with_dev=False, log_scale_y=True,
-    #           ylabel="Latency mediana ms", xlabel="Connection count")
-
-    # show_table(points, utime, with_dev=False)
+    if opts.value == 'mps':
+        if opts.table:
+            show_table(points, mps, with_dev=True)
+        else:
+            show_plot(points, mps, 1000,
+                      ylabel="Thousands message per second", xlabel="Connection count")
+    elif opts.value == 'lat95':
+        if opts.table:
+            show_table(points, lat_95_s, with_dev=False)
+        else:
+            show_plot(points, lat_95, with_dev=False, log_scale_y=True,
+                      ylabel="Latency 95 percentile ms", xlabel="Connection count")
+    elif opts.value == 'lat50':
+        if opts.table:
+            show_table(points, lat_50_s, with_dev=False)
+        else:
+            show_plot(points, lat_50, with_dev=False, log_scale_y=True,
+                      ylabel="Latency 50% percentile ms", xlabel="Connection count")
+    elif opts.value == 'utime':
+        assert not opts.table
+        show_table(points, utime, with_dev=False)
 
 
 if __name__ == "__main__":
