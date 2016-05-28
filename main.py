@@ -397,12 +397,13 @@ def get_run_stats(func, params):
     lat_distribution_and_percentiles = list(map(int, lat_distribution_and_percentiles_s))
 
     lats_size = lat_distribution_and_percentiles[0]
-    lat_distribution = lat_distribution_and_percentiles[1: 1 + lats_size]
-    lat_distribution_and_percentiles = lat_distribution_and_percentiles[1 + lats_size:]
+    lat_distribution_raw = lat_distribution_and_percentiles[1: 1 + lats_size * 2]
+    raw_msg_percentiles = lat_distribution_and_percentiles[1 + lats_size * 2:]
 
-    perc_size = lat_distribution_and_percentiles[0]
-    assert len(lat_distribution_and_percentiles) == perc_size + 1
-    percentiles = lat_distribution_and_percentiles[1:]
+    lat_distribution = dict(zip(lat_distribution_raw[::2], lat_distribution_raw[1::2]))
+    perc_size = raw_msg_percentiles[0]
+    assert len(raw_msg_percentiles) == perc_size + 1
+    percentiles = raw_msg_percentiles[1:]
 
     return utime, stime, ctime, int(msg_processed), float(lat_base), lat_distribution, percentiles
 
@@ -424,7 +425,7 @@ def get_lats(lats, log_base, percs=(0.5, 0.75, 0.95)):
     res = [None] * len(percs)
     assert list(sorted(percs)) == list(percs)
 
-    for idx, val in enumerate(lats):
+    for idx, val in sorted(lats.items()):
         curr += val
         for res_idx, perc in enumerate(percs):
             if curr >= all_mess * perc and res[res_idx] is None:

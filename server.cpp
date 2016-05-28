@@ -82,7 +82,7 @@ struct TestResult{
     unsigned long mcount;
     unsigned long avg_lat_ns;
     std::array<unsigned long, 19> percentiles;
-    std::array<unsigned long, LAT_ARR_SIZE> lat_ns_log2;
+    std::unordered_map<unsigned long, unsigned long> lat_map;
     std::unordered_map<int, unsigned long> mess_count_for_sock;
 };
 
@@ -119,9 +119,9 @@ std::string serialize_to_str(const TestResult & res) {
     serialized << " " << std::setprecision(12) << std::pow(2L, 0.1L);
     #endif
 
-    serialized << " " << res.lat_ns_log2.size();
-    for(auto val: res.lat_ns_log2)
-        serialized << " " << val;
+    serialized << " " << res.lat_map.size();
+    for(const auto & val: res.lat_map)
+        serialized << " " << val.first << " " << val.second;
 
     serialized << " " << res.percentiles.size();
     for(auto val: res.percentiles)
@@ -514,11 +514,7 @@ void worker_thread(int epollfd,
                 int tout_l2 = std::lround(std::log2((float)(curr_time - ltime)) * 10);
                 #endif
 
-                if (tout_l2 >= (int)result->lat_ns_log2.size())
-                    tout_l2 = result->lat_ns_log2.size() - 1;
-
-                // increment array of log2-scale counters
-                ++(result->lat_ns_log2[tout_l2]);
+                result->lat_map.emplace(tout_l2, 0).first->second++;
             }
 
             // if has timeout
@@ -647,11 +643,11 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
         worker.join();
 
     res.mcount = 0;
-    res.lat_ns_log2.fill(0);
+
     for(const auto & ires: tresults) {
         res.mcount += ires.mcount;
-        for(int pos = 0; pos < (int)res.lat_ns_log2.size(); ++pos)
-            res.lat_ns_log2[pos] += ires.lat_ns_log2[pos];
+        for(const auto & lat_ref: ires.lat_map)
+            res.lat_map.emplace(lat_ref.first, 0).first->second += lat_ref.second;
     }
 
     std::vector<unsigned long> mps;
@@ -678,22 +674,35 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
     long count = 0;
     double lat_ns_sum = 0;
 
-    for(int pos = 0; pos < (int)res.lat_ns_log2.size(); ++pos) {
-        lat_ns_sum += res.lat_ns_log2[pos] * std::pow(base, pos);
-        count += res.lat_ns_log2[pos];
+    for(const auto & lat_ref: res.lat_map) {
+        lat_ns_sum += lat_ref.second * std::pow(base, lat_ref.first);
+        count += lat_ref.second;
     }
-    res.avg_lat_ns = (long) (lat_ns_sum / count);
 
+    res.avg_lat_ns = (long) (lat_ns_sum / count);
     return not failed;
 }
 
-void process_client(int sock) {
+void process_client(int sock, int max_wait_time_seconds=5) {
     FDCloser fdc{sock};
     char buff[MAX_CLIENT_MESSAGE + 1];
-    int data_len = recv(sock, buff, sizeof(buff), 0);
+    int data_len = 0;
 
-    if (data_len < 0){
-        perror("recv failed");
+    usleep(100 * 1000); // 100ms sleep
+    for(int i = 0 ; i <= max_wait_time_seconds * 10; ++i) {
+        data_len = recv(sock, buff, sizeof(buff), MSG_DONTWAIT);
+        if (data_len < 0 and not (errno == EAGAIN or errno == EWOULDBLOCK)) {
+            perror("recv failed");
+            return;
+        }
+
+        if (data_len > 0)
+            break;
+        usleep(100 * 1000); // 100ms sleep
+    }
+
+    if (data_len <= 0) {
+        std::cerr << "Client communication timeout\n";
         return;
     }
 

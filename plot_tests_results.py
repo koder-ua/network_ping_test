@@ -40,9 +40,10 @@ def average_and_dev(vals):
     return AvgDev(avg, dev)
 
 
-def test_label(params):
+def test_label(params, with_server=False):
+    if with_server:
+        return params.func + " " + params.server
     return params.func
-    # return "{} {}".format(params.func, "local" if params.server == '172.16.40.43:33331' else "remote")
 
 
 def stime_to_ns(data):
@@ -57,7 +58,8 @@ def stime_to_ns(data):
     raise ValueError("Can't parse {0!r} as time".format(data))
 
 
-def show_plot(points, data, scale=1, with_dev=True, log_scale_y=False, ylabel=None, xlabel=None):
+def show_plot(points, data, scale=1, with_dev=True, log_scale_y=False, ylabel=None,
+              xlabel=None, label_with_server=False):
     import matplotlib.pyplot as plt
 
     if 10000 not in points:
@@ -94,10 +96,11 @@ def show_plot(points, data, scale=1, with_dev=True, log_scale_y=False, ylabel=No
             ls = 'solid'
 
         lw = 2
+        lb = test_label(params, label_with_server)
         if with_dev:
-            plt.errorbar(x, y, y_dev, label=test_label(params), ls=ls, lw=lw)
+            plt.errorbar(x, y, y_dev, label=lb, ls=ls, lw=lw)
         else:
-            plt.plot(x, y, label=test_label(params), ls=ls, lw=lw)
+            plt.plot(x, y, label=lb, ls=ls, lw=lw)
 
     ticks = []
     for i in points:
@@ -204,29 +207,44 @@ def main(argv):
         opts.funcs = opts.funcs.split(',')
 
     results = collections.defaultdict(list)
+    servers = set()
+    funcs = set()
+    workers = set()
+
     for fname in opts.files:
         for block in yaml.load(open(fname)):
             test_run_params = dict(
                 workers=block['workers'],
                 msize=block['msize'],
                 timeout=block['timeout'],
-                server=block['server'],
+                server=block['server'].split(":")[0],
                 runtime=block['runtime']
             )
 
+            servers.add(block['server'].split(":")[0])
+            workers.add(block['workers'])
+
             for run in block['data']:
+                funcs.add(run['func'])
                 test_run_params['func'] = run.pop('func')
                 results[TestRun(**test_run_params)].append(RunData(**run))
 
-    if opts.metrix_type == 'info':
-        servers = set()
-        funcs = set()
-        workers = set()
+    label_with_server = len(servers) > 1
 
-        for test_run in results:
-            servers.add(test_run.server)
-            workers.add(test_run.workers)
-            funcs.add(test_run.func)
+    if opts.server is not None:
+        label_with_server = False
+        if opts.server not in servers:
+            print("No such server {} in avalilable. Only {} found".format(opts.server, ",".join(servers)))
+            return 1
+
+    if opts.funcs is not None:
+        not_found = set(opts.funcs) - set(funcs)
+        if len(not_found) != 0:
+            print("Funtion(s) {} not found in data file. Only {} found".format(
+                ",".join(not_found), ",".join(funcs)))
+            return 1
+
+    if opts.metrix_type == 'info':
         print("Servers =", ",".join(sorted(servers)))
         print("Workers =", ",".join(map(str, sorted(workers))))
         print("Funcs =", ",".join(sorted(funcs)))
@@ -240,6 +258,10 @@ def main(argv):
         if opts.server is not None and key.server != opts.server:
             continue
         for_plot[key] = val
+
+    if len(for_plot) == 0:
+        print("No data much given criterial")
+        return 1
 
     # all_tests = set(key[1] for key in agg.keys() if key[0])
     mps = collections.defaultdict(dict)
@@ -298,19 +320,24 @@ def main(argv):
             show_table(points, mps, with_dev=True)
         else:
             show_plot(points, mps, 1000,
-                      ylabel="Thousands of messages per second", xlabel="Connections count")
+                      ylabel="Thousands of messages per second", xlabel="Connections count",
+                      label_with_server=label_with_server)
     elif opts.metrix_type == 'lat95':
         if opts.table:
             show_table(points, lat_95_s, with_dev=False)
         else:
-            show_plot(points, lat_95, with_dev=False, log_scale_y=True,
-                      ylabel="Latency 95 percentile ms", xlabel="Connections count")
+            show_plot(points, lat_95,
+                      with_dev=False, log_scale_y=True,
+                      ylabel="Latency 95 percentile ms", xlabel="Connections count",
+                      label_with_server=label_with_server)
     elif opts.metrix_type == 'lat50':
         if opts.table:
             show_table(points, lat_50_s, with_dev=False)
         else:
-            show_plot(points, lat_50, with_dev=False, log_scale_y=True,
-                      ylabel="Latency 50% percentile ms", xlabel="Connections count")
+            show_plot(points, lat_50,
+                      with_dev=False, log_scale_y=True,
+                      ylabel="Latency 50% percentile ms", xlabel="Connections count",
+                      label_with_server=label_with_server)
     elif opts.metrix_type == 'utime':
         assert not opts.table
         show_table(points, utime, with_dev=False)
