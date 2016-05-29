@@ -6,7 +6,7 @@ SIZE=64
 ROUNDS=55
 RUNTIME=30
 BIND_IP=172.16.40.43
-RESULT_FILE=unified_test_results2.txt
+RESULT_FILE=unified_test_results2.yaml
 
 READY_10k=asyncio,asyncio_proto,asyncio_sock,uvloop,uvloop_sock,uvloop_proto,gevent,cpp_epoll,selector,thread,cpp_th
 READY_30k=asyncio,asyncio_proto,asyncio_sock,uvloop,uvloop_sock,uvloop_proto,gevent,cpp_epoll,selector,cpp_th
