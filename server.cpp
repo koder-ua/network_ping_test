@@ -237,7 +237,8 @@ int log2_64(uint64_t value) {
 bool connect_all(int sock_count,
                  std::vector<int> & sockets,
                  const char * ip,
-                 const int port)
+                 const int port,
+                 const std::vector<sockaddr_in> & client_ip_addrs)
 {
     const struct hostent * host = gethostbyname(ip);
     if (NULL == host) {
@@ -255,6 +256,10 @@ bool connect_all(int sock_count,
     serv_addr.sin_port = htons(port);
     sockets.clear();
 
+    auto curr_it = client_ip_addrs.begin();
+    auto end_it = client_ip_addrs.end();
+    bool need_bind = (curr_it != end_it);
+
     for(int i = 0; i < sock_count ; ++i) {
         int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -268,6 +273,16 @@ bool connect_all(int sock_count,
         const int enable{1};
         if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0)
             perror("setsockopt(SO_REUSEADDR) failed");
+
+        if (need_bind) {
+            if (curr_it == end_it)
+                curr_it = client_ip_addrs.begin();
+            if ( 0 > bind(sockfd, (struct sockaddr *)&*curr_it, sizeof(*curr_it))) {
+                std::perror("Client bind:");
+                return false;
+            }
+            ++curr_it;
+        }
 
         if (0 > connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))) {
             std::perror("Connecting:");
@@ -535,6 +550,8 @@ void worker_thread(int epollfd,
             }
 
             ready_fds.push_back(fd);
+            if (sync->done.load())
+                return;
         }
 
         for(auto fd: ready_fds) {
@@ -552,11 +569,22 @@ void worker_thread(int epollfd,
     }
 }
 
-bool run_test(const TestParams & params, TestResult & res, int worker_threads)
+bool run_test(const TestParams & params, TestResult & res, int worker_threads,
+              const char ** first_ip, const char ** last_ip)
 {
     FDList sockets;
+    std::vector<sockaddr_in> client_ip_addrs;
 
-    if (not connect_all(params.num_conn, sockets.fds, params.ip, params.port))
+    struct sockaddr_in localaddr;
+    localaddr.sin_family = AF_INET;
+    localaddr.sin_port = 0;
+
+    for(; first_ip != last_ip; ++first_ip) {
+        localaddr.sin_addr.s_addr = inet_addr(*first_ip);
+        client_ip_addrs.push_back(localaddr);
+    }
+
+    if (not connect_all(params.num_conn, sockets.fds, params.ip, params.port, client_ip_addrs))
         return false;
 
     // 1s sleep, allow client to actually accept all connections
@@ -683,7 +711,7 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads)
     return not failed;
 }
 
-void process_client(int sock, int max_wait_time_seconds=5) {
+void process_client(int sock, const char ** first_ip, const char ** last_ip, int max_wait_time_seconds=5) {
     FDCloser fdc{sock};
     char buff[MAX_CLIENT_MESSAGE + 1];
     int data_len = 0;
@@ -722,7 +750,7 @@ void process_client(int sock, int max_wait_time_seconds=5) {
 
     const int worker_thread = 3;
     TestResult res;
-    if (not run_test(params, res, worker_thread))
+    if (not run_test(params, res, worker_thread, first_ip, last_ip))
         return;
 
     std::cout << "Test finished. Results : " << "\n";
@@ -746,7 +774,7 @@ void *get_in_addr(struct sockaddr *sa) {
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int main_loop_thread(int port, bool single_shot=false) {
+int main_loop_thread(int port, bool single_shot, const char ** first_ip, const char ** last_ip) {
     sockaddr_in server, client;
 
     // this requires in order to fir write issue
@@ -794,7 +822,7 @@ int main_loop_thread(int port, bool single_shot=false) {
         epoll_wait_calls = 0;
         #endif
 
-        process_client(client_sock);
+        process_client(client_sock, first_ip, last_ip);
 
         #ifdef EPOLL_CALL_STATS
         if ( 0 != epoll_wait_calls.load()) {
@@ -811,9 +839,14 @@ int main_loop_thread(int port, bool single_shot=false) {
 
 int main(int argc, const char **argv) {
     bool single_shot = false;
+
+    const char ** first_ip = argv + 1;
+    const char ** last_ip = argv + argc;
+
     if (argc > 1) {
         if (argv[1] == std::string("-s")) {
             single_shot = true;
+            ++first_ip;
         }
     }
 
@@ -822,5 +855,5 @@ int main(int argc, const char **argv) {
         return 1;
 #endif
 
-    return main_loop_thread(DEFAULT_PORT, single_shot);
+    return main_loop_thread(DEFAULT_PORT, single_shot, first_ip, last_ip);
 }

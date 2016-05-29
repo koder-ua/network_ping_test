@@ -36,7 +36,12 @@ AvgDev = collections.namedtuple("AvgDev", ['avg', 'dev'])
 
 def average_and_dev(vals):
     avg = sum(vals) / len(vals)
-    dev = (sum((val - avg) ** 2.0 for val in vals) / (len(vals) - 1)) ** 0.5
+    if len(vals) == 1:
+        dev = 0
+    else:
+        dev = (sum((val - avg) ** 2.0 for val in vals) /
+               (len(vals) - 1)) ** 0.5
+
     return AvgDev(avg, dev)
 
 
@@ -61,9 +66,6 @@ def stime_to_ns(data):
 def show_plot(points, data, scale=1, with_dev=True, log_scale_y=False, ylabel=None,
               xlabel=None, label_with_server=False):
     import matplotlib.pyplot as plt
-
-    if 10000 not in points:
-        points = list(points) + [10000]
 
     points = sorted(list(points))
     x_coords_all = list([math.log10(i) - 0.8 for i in points])
@@ -107,8 +109,8 @@ def show_plot(points, data, scale=1, with_dev=True, log_scale_y=False, ylabel=No
         if i < 1000:
             ticks.append(str(i))
         else:
-            assert i % 1000 == 0
-            ticks.append(str(i / 1000) + 'k')
+            # assert i % 1000 == 0
+            ticks.append(str((i + 500) / 1000) + 'k')
 
     if log_scale_y:
         plt.yscale('log')
@@ -192,13 +194,30 @@ def show_table(points, data, with_dev=True):
     print(table.draw())
 
 
+def prepare_amorthized_lat(lat):
+    all_lats = []
+    for func_data in lat.values():
+        for val in func_data.values():
+            all_lats.append(val.avg)
+
+    min_lat = sorted(all_lats)[0]
+    amorthized_lat = collections.defaultdict(dict)
+
+    for params, func_data in lat.items():
+        for workers, val in func_data.items():
+            amorthized_lat[params][workers] = AvgDev((val.avg - min_lat) / workers * 1000, None)
+
+    return amorthized_lat
+
+
 def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('--server', '-s')
     parser.add_argument('--funcs', '-f')
     parser.add_argument('--table', '-t', action="store_true", default=False)
+    parser.add_argument('--workers', '-w')
     parser.add_argument('metrix_type',
-                        choices=['mps', 'lat50', 'lat95', 'stime', 'utime', 'info'])
+                        choices=['mps', 'lat50', 'lat95', 'stime', 'utime', 'info', 'amlat50', 'amlat95'])
     parser.add_argument('files', nargs='*', default=[])
 
     opts = parser.parse_args(argv[1:])
@@ -206,26 +225,35 @@ def main(argv):
     if opts.funcs is not None:
         opts.funcs = opts.funcs.split(',')
 
+    if opts.workers is not None:
+        opts.workers = map(int, opts.workers.split(','))
+
     results = collections.defaultdict(list)
     servers = set()
     funcs = set()
     workers = set()
+    run_stats = collections.Counter()
+    run_stats_func = collections.Counter()
 
     for fname in opts.files:
         for block in yaml.load(open(fname)):
+            server = block['server'].split(":")[0]
+
             test_run_params = dict(
                 workers=block['workers'],
                 msize=block['msize'],
                 timeout=block['timeout'],
-                server=block['server'].split(":")[0],
+                server=server,
                 runtime=block['runtime']
             )
 
-            servers.add(block['server'].split(":")[0])
+            servers.add(server)
             workers.add(block['workers'])
+            run_stats[(server, block['workers'])] += 1
 
             for run in block['data']:
                 funcs.add(run['func'])
+                run_stats_func[(server, block['workers'])] += 1
                 test_run_params['func'] = run.pop('func')
                 results[TestRun(**test_run_params)].append(RunData(**run))
 
@@ -249,6 +277,13 @@ def main(argv):
         print("Workers =", ",".join(map(str, sorted(workers))))
         print("Funcs =", ",".join(sorted(funcs)))
         print("Num items =", sum(len(vals) for vals in results.values()))
+        print("Stat info:")
+
+        print("    {:>16s} {:>8s} {:^12s} {:^12s}".format("Server", "workers", "cycle count", "test count"))
+        for (server, workers), val in sorted(run_stats.items()):
+            print("    {:>16s} {:>8d}     {:>4d}{:}     {:>4d}".format(
+                server, workers, val, " " * 4, run_stats_func[(server, workers)]))
+
         return 0
 
     for_plot = {}
@@ -256,6 +291,8 @@ def main(argv):
         if opts.funcs is not None and key.func not in opts.funcs:
             continue
         if opts.server is not None and key.server != opts.server:
+            continue
+        if opts.workers is not None and key.workers not in opts.workers:
             continue
         for_plot[key] = val
 
@@ -280,9 +317,6 @@ def main(argv):
 
         mps[TestRun(**dparams)][workers] = average_and_dev([i.messages / i.ctime for i in data])
 
-        if len(data) == 1:
-            raise ValueError("Test {} has only one results. Can't calculate stats".format(dparams))
-
         avg, dev = average_and_dev([stime_to_ns(i.lat_95) for i in data])
         if avg >= 1E9 - 1000:
             avg_s = ">1s"
@@ -303,6 +337,9 @@ def main(argv):
         utime[TestRun(**dparams)][workers] = average_and_dev([int(i.utime * 100 / params.runtime + 0.5) for i in data])
 
         points.add(workers)
+
+    lat_50_amth = prepare_amorthized_lat(lat_50)
+    lat_95_amth = prepare_amorthized_lat(lat_95)
 
     min_mps = min(min(i.avg for i in per_worker_map.values())
                   for per_worker_map in mps.values())
@@ -338,10 +375,23 @@ def main(argv):
                       with_dev=False, log_scale_y=True,
                       ylabel="Latency 50% percentile ms", xlabel="Connections count",
                       label_with_server=label_with_server)
+
+    elif opts.metrix_type == 'amlat50':
+        assert not opts.table
+        show_plot(points, lat_50_amth,
+                  with_dev=False, log_scale_y=False,
+                  ylabel="extra us per message", xlabel="Connections count",
+                  label_with_server=label_with_server)
+    elif opts.metrix_type == 'amlat95':
+        assert not opts.table
+        show_plot(points, lat_95_amth,
+                  with_dev=False, log_scale_y=False,
+                  ylabel="extra us per message", xlabel="Connections count",
+                  label_with_server=label_with_server)
     elif opts.metrix_type == 'utime':
         assert not opts.table
         show_table(points, utime, with_dev=False)
-
+    return 0
 
 if __name__ == "__main__":
     exit(main(sys.argv))

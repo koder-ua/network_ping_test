@@ -211,10 +211,12 @@ def asyncio_proto_test(params, ready_to_connect, before_test, after_test,
             if not started:
                 before_test()
                 started = True
-            if len(data) != params.msize:
+            if len(data) == params_msize:
+                self.transport.write(data)
+            elif not data:
                 self.transport.close()
             else:
-                self.transport.write(data)
+                raise RuntimeError("Partial message")
 
     loop = loop_cls()
     loop.set_debug(False)
