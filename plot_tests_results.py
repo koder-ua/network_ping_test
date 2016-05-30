@@ -7,7 +7,6 @@ import argparse
 import collections
 
 
-
 def ns_to_readable(val):
     for limit, ext in ((1E9, ''), (1E6, 'm'), (1E3, 'u'), (1, 'n')):
         if val >= limit:
@@ -63,14 +62,23 @@ def stime_to_ns(data):
     raise ValueError("Can't parse {0!r} as time".format(data))
 
 
-def show_plot(points, data, scale=1, with_dev=True, log_scale_y=False, ylabel=None,
-              xlabel=None, label_with_server=False):
+def show_plot(points, data, scale=1, with_dev=True,
+              log_scale_y=False, ylabel=None,
+              xlabel=None, label_with_server=False,
+              log_scale_x=True, ymin=0, loc='best'):
     import matplotlib.pyplot as plt
 
     points = sorted(list(points))
-    x_coords_all = list([math.log10(i) - 0.8 for i in points])
+
+    if log_scale_x:
+        x_coords_all = [math.log10(i) - 0.8 for i in points]
+    else:
+        x_coords_all = [i for i in points]
+
     pt2coord = {pt: x for pt, x in zip(points, x_coords_all)}
-    x_coords_all.append(x_coords_all[-1] + 1)
+
+    if log_scale_x:
+        x_coords_all.append(x_coords_all[-1] + 1)
 
     all_params = data.keys()
     all_params.sort(key=lambda x: x.func)
@@ -117,8 +125,17 @@ def show_plot(points, data, scale=1, with_dev=True, log_scale_y=False, ylabel=No
 
     plt.xticks(x_coords_all, ticks + [""])
 
-    plt.xlim([0, x_coords_all[-1]])
-    plt.ylim(ymin=0)
+    if log_scale_x:
+        plt.xlim([0, x_coords_all[-1]])
+    else:
+        xsz = x_coords_all[-1] - x_coords_all[0]
+        plt.xlim([
+            x_coords_all[0] - xsz / 10.,
+            x_coords_all[-1] + xsz / 10.
+        ])
+
+    if ymin is not None:
+        plt.ylim(ymin=0)
 
     if xlabel is not None:
         plt.xlabel(xlabel)
@@ -126,7 +143,7 @@ def show_plot(points, data, scale=1, with_dev=True, log_scale_y=False, ylabel=No
     if ylabel is not None:
         plt.ylabel(ylabel)
 
-    plt.legend()
+    plt.legend(loc=loc)
     plt.grid()
     plt.show()
 
@@ -167,7 +184,7 @@ def avg_dev_to_str(avg_dev):
 
 def show_table(points, data, with_dev=True):
     import texttable as TT
-    table = TT.Texttable(max_width=120)
+    table = TT.Texttable(max_width=160)
     table.set_deco(TT.Texttable.VLINES | TT.Texttable.HEADER | TT.Texttable.BORDER)
 
     points = sorted(points)
@@ -217,7 +234,9 @@ def main(argv):
     parser.add_argument('--table', '-t', action="store_true", default=False)
     parser.add_argument('--workers', '-w')
     parser.add_argument('metrix_type',
-                        choices=['mps', 'lat50', 'lat95', 'stime', 'utime', 'info', 'amlat50', 'amlat95'])
+                        choices=['mps', 'lat50', 'lat95', 'stime', 'utime',
+                                 'info', 'amlat50', 'amlat95', 'mps_linear',
+                                 'rel_mps'])
     parser.add_argument('files', nargs='*', default=[])
 
     opts = parser.parse_args(argv[1:])
@@ -379,18 +398,29 @@ def main(argv):
     elif opts.metrix_type == 'amlat50':
         assert not opts.table
         show_plot(points, lat_50_amth,
-                  with_dev=False, log_scale_y=False,
+                  with_dev=False,
                   ylabel="extra us per message", xlabel="Connections count",
                   label_with_server=label_with_server)
     elif opts.metrix_type == 'amlat95':
         assert not opts.table
         show_plot(points, lat_95_amth,
-                  with_dev=False, log_scale_y=False,
+                  with_dev=False,
                   ylabel="extra us per message", xlabel="Connections count",
                   label_with_server=label_with_server)
     elif opts.metrix_type == 'utime':
-        assert not opts.table
+        assert opts.table
         show_table(points, utime, with_dev=False)
+    elif opts.metrix_type == 'mps_linear':
+        show_plot(points, mps, 1000,
+                  log_scale_x=False,
+                  ylabel="Thousands of messages per second",
+                  xlabel="Connections count",
+                  label_with_server=label_with_server,
+                  ymin=None,
+                  loc='upper center')
+    elif opts.metrix_type == 'rel_mps':
+        assert opts.table
+        show_table(points, rel_mps_s, with_dev=False)
     return 0
 
 if __name__ == "__main__":

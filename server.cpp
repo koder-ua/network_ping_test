@@ -234,6 +234,59 @@ int log2_64(uint64_t value) {
     return tab64[((uint64_t)((value - (value >> 1))*0x07EDD5E59A4E28C2)) >> 58];
 }
 
+
+bool wait_sock_connected(int sockfd, int poll_timeout=1000) {
+    epoll_event event;
+    event.events = EPOLLIN | EPOLLET;
+
+    std::vector<epoll_event> events;
+    events.resize(1);
+
+    int efd = epoll_create1(0);
+    FDCloser efd_{efd};
+
+    if (-1 == efd) {
+        perror("epoll_create1");
+        return false;
+    }
+
+    event.data.fd = sockfd;
+    if (-1 == epoll_ctl(efd, EPOLL_CTL_ADD, sockfd, &event)) {
+        perror("epoll_ctl(EPOLL_CTL_ADD)");
+        return false;
+    }
+
+    int num_ready = epoll_wait(efd,
+                               &(events[0]),
+                               events.size(),
+                               poll_timeout);
+    if (num_ready < 0) {
+        perror("epoll_wait(CONNECT)");
+        return false;
+    }
+
+    if (num_ready == 0) {
+        std::cerr << "Socket failed to connect NR\n";
+        return false;
+    }
+
+    int error = 0;
+    socklen_t len = sizeof(error);
+    int retval = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len);
+    if (0 > retval) {
+        perror("getsockopt(...):");
+        return false;
+    }
+
+    if (error != 0) {
+        std::cerr << "Socket failed to connect ERROR\n";
+        return false;
+    }
+
+    return true;
+}
+
+
 bool connect_all(int sock_count,
                  std::vector<int> & sockets,
                  const char * ip,
@@ -261,8 +314,7 @@ bool connect_all(int sock_count,
     bool need_bind = (curr_it != end_it);
 
     for(int i = 0; i < sock_count ; ++i) {
-        int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
+        int sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
         if (sockfd < 0) {
             std::perror("Socket creation:");
             return false;
@@ -285,20 +337,26 @@ bool connect_all(int sock_count,
         }
 
         if (0 > connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))) {
-            std::perror("Connecting:");
-            return false;
+            if (errno != EINPROGRESS) {
+                std::perror("Connecting:");
+                return false;
+            }
+
+            if (not wait_sock_connected(sockfd)) {
+                return false;
+            }
         }
 
-        int flags = fcntl(sockfd, F_GETFL, 0);
-        if (flags < 0) { 
-            std::perror("fcntl(sockfd, F_GETFL, 0)");
-            return false;
-        } 
-
-        if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) < 0) { 
-            std::perror("fcntl(sockfd, F_SETFL, flags | O_NONBLOCK)");
-            return false;
-        }
+        // int flags = fcntl(sockfd, F_GETFL, 0);
+        // if (flags < 0) {
+        //     std::perror("fcntl(sockfd, F_GETFL, 0)");
+        //     return false;
+        // }
+        //
+        // if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) < 0) {
+        //     std::perror("fcntl(sockfd, F_SETFL, flags | O_NONBLOCK)");
+        //     return false;
+        // }
     }
 
     return true;
@@ -403,7 +461,7 @@ void worker_thread_fast(int epollfd,
 {
     if (0 != timeout_ns_min or 0 != timeout_ns_max) {
         std::cerr << "worker_thread_fast doesn't support timeouts\n";
-        return;   
+        return;
     }
 
     DecOnExit exitor(&sync->active_count);
@@ -782,7 +840,7 @@ int main_loop_thread(int port, bool single_shot, const char ** first_ip, const c
         perror("signal(SIGPIPE, SIG_IGN) failed");
         return 1;
     }
-     
+
     int control_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (-1 == control_sock){
         perror("Could not create socket");
@@ -801,10 +859,10 @@ int main_loop_thread(int port, bool single_shot, const char ** first_ip, const c
         perror("bind failed. Error");
         return 1;
     }
-     
+
     listen(control_sock, 3);
     socklen_t sock_data_len = sizeof(client);
-    
+
     for(;;){
         int client_sock = accept(control_sock, (sockaddr *)&client, &sock_data_len);
         if (client_sock < 0) {
