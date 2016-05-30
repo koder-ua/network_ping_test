@@ -20,13 +20,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-class RSelector {
-public:
-    virtual bool add_fd(int sockfd) = 0;
-    virtual void remove_current_ready() = 0;
-    virtual bool wait() = 0;
-    virtual bool next(int & sockfd, uint32_t & flags) = 0;
-};
+#include "common.h"
 
 class FDList {
 public:
@@ -69,7 +63,7 @@ public:
         return true;
     }
 
-    bool wait() {
+    bool wait(long int=-1) {
         int rv = poll(&fds[0], current_free - fds.begin(), -1);
         if (-1 == rv) {
             std::perror("poll(fds, ..., -1) fails");
@@ -93,86 +87,6 @@ public:
 
     void remove_current_ready() {
         (current_ready - 1)->fd = -1;
-    }
-};
-
-class EPollRSelector: public RSelector {
-protected:
-    int efd;
-    std::vector<epoll_event> events;
-    std::vector<epoll_event>::iterator current_ready;
-    std::vector<epoll_event>::iterator end_of_ready;
-
-#ifdef EPOLL_CALL_STATS
-    unsigned long int sock_activation_count;
-    unsigned int wait_count;
-#endif
-
-public:
-    EPollRSelector(int sock_count) {
-#ifdef EPOLL_CALL_STATS
-        sock_activation_count = 0;
-        wait_count = 0;
-#endif
-        efd = epoll_create1(0);
-        if (-1 == efd) {
-            perror("epoll_create");
-        }
-        events.resize(sock_count);
-    }
-
-    ~EPollRSelector() {
-#ifdef EPOLL_CALL_STATS
-        if (0 != wait_count) {
-            std::cout << "Avg socket per wait = ";
-            std::cout << sock_activation_count / wait_count << "\n";
-        }
-#endif
-        close(efd);
-    }
-    bool ok() const {return efd != -1;}
-
-    bool add_fd(int sockfd) {
-        epoll_event event;
-
-        event.data.fd = sockfd;
-        event.events = EPOLLIN | EPOLLET;
-        if (-1 == epoll_ctl(efd, EPOLL_CTL_ADD, sockfd, &event)) {
-            perror("epoll_ctl");
-            return false;
-        }
-        return true;
-    }
-    
-    bool wait() {
-        int n = epoll_wait(efd, &events[0], events.size(), -1);
-
-        if (-1 == n) {
-            std::perror("epoll_wait fails");
-            return false;
-        }
-        current_ready = events.begin();
-        end_of_ready = current_ready + n;
-
-#ifdef EPOLL_CALL_STATS
-        wait_count += 1;
-        sock_activation_count += n;
-#endif
-        return true;
-    }
-
-    void remove_current_ready() {
-        epoll_ctl(efd, EPOLL_CTL_DEL, (current_ready - 1)->data.fd, nullptr);
-    }
-
-    bool next(int & sockfd, uint32_t & flags) {
-        if(end_of_ready == current_ready)
-            return false;
-
-        sockfd = current_ready->data.fd;
-        flags = current_ready->events;
-        ++current_ready;
-        return true;
     }
 };
 
@@ -215,10 +129,10 @@ bool wait_for_conn(int sock_count,
         perror("bind failed. Error");
         return 1;
     }
-     
+
     listen(master_sock, listen_queue);
     socklen_t sock_data_len = sizeof(client);
-    
+
     if (nullptr != ready_for_connect)
         ready_for_connect();
 
@@ -231,12 +145,12 @@ bool wait_for_conn(int sock_count,
 
         if(async) {
             int flags = fcntl(client_sock, F_GETFL, 0);
-            if (flags < 0) { 
+            if (flags < 0) {
                 std::perror("fcntl(client_sock, F_GETFL, 0)");
                 return false;
-            } 
+            }
 
-            if (fcntl(client_sock, F_SETFL, flags | O_NONBLOCK) < 0) { 
+            if (fcntl(client_sock, F_SETFL, flags | O_NONBLOCK) < 0) {
                 std::perror("fcntl(client_sock, F_SETFL, flags | O_NONBLOCK)");
                 return false;
             }
@@ -265,7 +179,7 @@ bool process_message(int sockfd, const char * message, int message_len) {
 
     if (message_len != write(sockfd, message, message_len)) {
         std::perror("write(sockfd, message, std::strlen(message))");
-        return false;   
+        return false;
     }
 
     return true;

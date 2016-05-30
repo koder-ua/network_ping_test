@@ -19,11 +19,11 @@ COMPILER=g++
 
 all: $(BINARIES)
 
-$(BIN_FOLDER)/server_cpp: server.cpp Makefile	
-		$(COMPILER) $(CPP_OPTS) $< -o $@
+$(BIN_FOLDER)/server_cpp: server.cpp common.cpp common.h Makefile
+		$(COMPILER) $(CPP_OPTS) server.cpp common.cpp -o $@
 
-$(BIN_FOLDER)/libclient.so: client.cpp Makefile
-		$(COMPILER) $(CPP_OPTS) $(CPP_SHARED) -DBUILDSHARED $< -o $@ 
+$(BIN_FOLDER)/libclient.so: client.cpp common.cpp common.h Makefile
+		$(COMPILER) $(CPP_OPTS) $(CPP_SHARED) -DBUILDSHARED client.cpp common.cpp -o $@
 
 clean:
 		rm -f $(BINARIES)

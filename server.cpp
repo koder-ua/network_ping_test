@@ -28,12 +28,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include "common.h"
 
 const int DEFAULT_PORT = 33331;
 const int MAX_CLIENT_MESSAGE = 1024;
-const int MICRO = 1000 * 1000;
-const unsigned long BILLION = 1000 * 1000 * 1000;
-
 
 struct TestParams {
     int port, num_conn, runtime, message_len;
@@ -56,12 +54,6 @@ public:
     ~FDCloser() {
         close(fd);
     }
-};
-
-struct EventsList {
-    std::vector<epoll_event> events;
-    int num_ready;
-    unsigned long recv_time;
 };
 
 std::vector<epoll_event>::iterator begin(EventsList & elist) {
@@ -158,61 +150,6 @@ bool load_from_str(const char * data, TestParams & params) {
     return true;
 }
 
-#ifdef USERDTSC
-inline unsigned long gettime_helper() {
-#else
-inline unsigned long get_fast_time() {
-#endif
-
-    timespec curr_time;
-    if( -1 == clock_gettime( CLOCK_REALTIME, &curr_time)) {
-      perror( "clock gettime" );
-      return 0;
-    }
-
-    return curr_time.tv_nsec + ((unsigned long)curr_time.tv_sec) * BILLION;
-
-    // using namespace std::chrono;
-    // auto curr_time = high_resolution_clock::now().time_since_epoch();
-    // return (unsigned long) duration_cast<nanoseconds>(curr_time).count();
-}
-
-#ifdef USERDTSC
-// this coefficient updated after prifiling RDTSC in profile_RDTSC from main
-double tick_to_nsec_coef = 1.0;
-
-inline unsigned long get_fast_time() {
-    uint32_t low, high;
-    asm volatile ("rdtsc" : "=a" (low), "=d" (high));
-    return (unsigned long)(tick_to_nsec_coef * (((unsigned long)high << 32) | low));
-}
-
-bool profile_RDTSC() {
-    std::cout << "Profiling timer....\n";
-
-    auto ctime1 = gettime_helper();
-    auto rdtsc1 = get_fast_time();
-
-    const int RDTSC_PRIFILE_SECONDS = 3;
-    timespec stime{RDTSC_PRIFILE_SECONDS, 0};
-    if (0 > nanosleep(&stime, nullptr)) {
-        if (errno != EINTR) {
-            perror("nanosleep failed");
-            return false;
-        }
-    }
-
-    auto ctime2 = gettime_helper();
-    auto rdtsc2 = get_fast_time();
-
-    tick_to_nsec_coef = (double)(ctime2 - ctime1) / (double)(rdtsc2 - rdtsc1);
-
-    std::cout << "Tick to ns coefficient = " << tick_to_nsec_coef << "\n";
-    return true;
-}
-
-#endif
-
 int log2_64(uint64_t value) {
     const int tab64[64] = {
         63,  0, 58,  1, 59, 47, 53,  2,
@@ -235,41 +172,7 @@ int log2_64(uint64_t value) {
 }
 
 
-bool wait_sock_connected(int sockfd, int poll_timeout=1000) {
-    epoll_event event;
-    event.events = EPOLLIN | EPOLLET;
-
-    std::vector<epoll_event> events;
-    events.resize(1);
-
-    int efd = epoll_create1(0);
-    FDCloser efd_{efd};
-
-    if (-1 == efd) {
-        perror("epoll_create1");
-        return false;
-    }
-
-    event.data.fd = sockfd;
-    if (-1 == epoll_ctl(efd, EPOLL_CTL_ADD, sockfd, &event)) {
-        perror("epoll_ctl(EPOLL_CTL_ADD)");
-        return false;
-    }
-
-    int num_ready = epoll_wait(efd,
-                               &(events[0]),
-                               events.size(),
-                               poll_timeout);
-    if (num_ready < 0) {
-        perror("epoll_wait(CONNECT)");
-        return false;
-    }
-
-    if (num_ready == 0) {
-        std::cerr << "Socket failed to connect NR\n";
-        return false;
-    }
-
+bool check_socket_ready(int sockfd) {
     int error = 0;
     socklen_t len = sizeof(error);
     int retval = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len);
@@ -286,12 +189,13 @@ bool wait_sock_connected(int sockfd, int poll_timeout=1000) {
     return true;
 }
 
-
 bool connect_all(int sock_count,
                  std::vector<int> & sockets,
                  const char * ip,
                  const int port,
-                 const std::vector<sockaddr_in> & client_ip_addrs)
+                 const std::vector<sockaddr_in> & client_ip_addrs,
+                 int conn_q_size=32,
+                 int conn_timeout_ms=1000)
 {
     const struct hostent * host = gethostbyname(ip);
     if (NULL == host) {
@@ -312,53 +216,73 @@ bool connect_all(int sock_count,
     auto curr_it = client_ip_addrs.begin();
     auto end_it = client_ip_addrs.end();
     bool need_bind = (curr_it != end_it);
+    int waiting_to_connect = 0;
+    EPollRSelector sel(conn_q_size);
 
-    for(int i = 0; i < sock_count ; ++i) {
-        int sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
-        if (sockfd < 0) {
-            std::perror("Socket creation:");
+    if (not sel.ok())
+        return false;
+
+    while(sock_count - sockets.size() != 0 or waiting_to_connect != 0) {
+        int max_connect = std::min(sock_count - (int)sockets.size(),
+                                   conn_q_size - waiting_to_connect);
+
+        for(int i = 0; i < max_connect ; ++i) {
+            int sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+            if (sockfd < 0) {
+                std::perror("Socket creation:");
+                return false;
+            }
+
+            sockets.push_back(sockfd); // external code would close all ports from sockets
+
+            const int enable{1};
+            if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0)
+                perror("setsockopt(SO_REUSEADDR) failed");
+
+            if (need_bind) {
+                if (curr_it == end_it)
+                    curr_it = client_ip_addrs.begin();
+                if ( 0 > bind(sockfd, (struct sockaddr *)&*curr_it, sizeof(*curr_it))) {
+                    std::perror("Client bind:");
+                    return false;
+                }
+                ++curr_it;
+            }
+
+            if (0 > connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))) {
+                if (errno != EINPROGRESS) {
+                    std::perror("Connecting:");
+                    return false;
+                }
+            }
+
+            if (not sel.add_fd(sockfd, EPOLLOUT | EPOLLET))
+                return false;
+
+            ++waiting_to_connect;
+        }
+
+        if (not sel.wait(conn_timeout_ms))
+            return false;
+
+        if (0 == sel.ready_count()) {
+            std::cerr << sock_count << " " << sockets.size() << " " << waiting_to_connect << "\n";
+            std::cerr << "Socket failed to connect\n";
             return false;
         }
 
-        sockets.push_back(sockfd); // external code would close all ports from sockets
+        int fd;
+        uint32_t flags;
 
-        const int enable{1};
-        if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0)
-            perror("setsockopt(SO_REUSEADDR) failed");
-
-        if (need_bind) {
-            if (curr_it == end_it)
-                curr_it = client_ip_addrs.begin();
-            if ( 0 > bind(sockfd, (struct sockaddr *)&*curr_it, sizeof(*curr_it))) {
-                std::perror("Client bind:");
+        while(sel.next(fd, flags)) {
+            if (not check_socket_ready(fd)) {
+                std::cerr << "Socket failed to connect\n";
                 return false;
             }
-            ++curr_it;
+            --waiting_to_connect;
+            sel.remove_current_ready();
         }
-
-        if (0 > connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))) {
-            if (errno != EINPROGRESS) {
-                std::perror("Connecting:");
-                return false;
-            }
-
-            if (not wait_sock_connected(sockfd)) {
-                return false;
-            }
-        }
-
-        // int flags = fcntl(sockfd, F_GETFL, 0);
-        // if (flags < 0) {
-        //     std::perror("fcntl(sockfd, F_GETFL, 0)");
-        //     return false;
-        // }
-        //
-        // if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) < 0) {
-        //     std::perror("fcntl(sockfd, F_SETFL, flags | O_NONBLOCK)");
-        //     return false;
-        // }
     }
-
     return true;
 }
 
@@ -366,68 +290,6 @@ bool connect_all(int sock_count,
 std::atomic<unsigned long int> socket_count_from_wait;
 std::atomic<unsigned int> epoll_wait_calls;
 #endif
-
-bool epoll_wait_ex(int epollfd,
-                   EventsList & ready,
-                   long int timeout_ns)
-{
-    bool already_polled = false;
-
-    ready.num_ready = 0;
-
-    if (timeout_ns < 0) {
-        std::cerr << "timeout_ns for epoll_wait_ex should be >0\n";
-        return false;
-    }
-
-    auto curr_time = get_fast_time();
-    auto return_time = curr_time + timeout_ns;
-
-    for(;;) {
-        auto time_left = (long int)return_time - (long int)curr_time;
-
-        if (time_left <= 0) {
-            if (already_polled)
-                return true;
-            else
-                time_left = 0;
-        }
-
-        auto poll_timeout = time_left / 1000000;
-
-        ready.num_ready = epoll_wait(epollfd,
-                                     &(ready.events[0]),
-                                     ready.events.size(),
-                                     poll_timeout);
-        already_polled = true;
-
-        curr_time = get_fast_time();
-
-        if (ready.num_ready == 0) {
-            if (curr_time >= return_time)
-                return true;
-            continue;
-        } else if ( 0 > ready.num_ready ) {
-            if (errno == EINTR) {
-                ready.num_ready = 0;
-                continue;
-            } else {
-                perror("epoll_wait failed");
-                return false;
-            }
-        }
-
-        #ifdef EPOLL_CALL_STATS
-        if (0 != ready.num_ready) {
-            socket_count_from_wait += ready.num_ready;
-            epoll_wait_calls += 1;
-        }
-        #endif
-
-        ready.recv_time = curr_time;
-        return true;
-    }
-}
 
 bool ping(int fd, char * buff, int buff_sz) {
     int bc = recv(fd, buff, buff_sz, 0);
@@ -451,9 +313,9 @@ bool ping(int fd, char * buff, int buff_sz) {
     return true;
 }
 
-void worker_thread_fast(int epollfd,
+void worker_thread_fast(EPollRSelector * sel,
                         int message_len,
-                        int sock_count,
+                        int,
                         unsigned long int timeout_ns_min,
                         unsigned long int timeout_ns_max,
                         Sync * sync,
@@ -467,38 +329,32 @@ void worker_thread_fast(int epollfd,
     DecOnExit exitor(&sync->active_count);
     result->mcount = 0;
 
-    EventsList elist;
-    elist.events.resize(sock_count);
-
     std::vector<char> buffer;
     buffer.resize(message_len);
 
     sync->active_count++;
+
+    // inhouse barrier implementation
     sync->run_lola_run.lock();
     sync->run_lola_run.unlock();
 
     for(;;) {
-        elist.num_ready = epoll_wait(epollfd,
-                                     &(elist.events[0]),
-                                     elist.events.size(),
-                                     100);
-        if (elist.num_ready < 0 ) {
-            perror("epoll_wait");
+        if (not sel->wait(100 * 1000 * 1000))
             return;
-        }
 
         if (sync->done.load())
             return;
 
-        for (const auto & event: elist) {
-            if (not ping(event.data.fd, &buffer[0], message_len))
+        int fd;
+        result->mcount += sel->ready_count();
+        while(sel->next(fd)) {
+            if (not ping(fd, &buffer[0], message_len))
                 return;
         }
-        result->mcount += elist.num_ready;
     }
 }
 
-void worker_thread(int epollfd,
+void worker_thread(EPollRSelector * sel,
                    int message_len,
                    int sock_count,
                    unsigned long timeout_ns_min,
@@ -513,8 +369,6 @@ void worker_thread(int epollfd,
     std::uniform_int_distribution<unsigned long> rand_timeout(timeout_ns_min, timeout_ns_max);
 
     bool has_timeout = (0 != timeout_ns_min) or (0 != timeout_ns_max);
-    EventsList elist;
-    elist.events.resize(sock_count);
 
     std::vector<char> buffer;
     buffer.resize(message_len);
@@ -526,6 +380,8 @@ void worker_thread(int epollfd,
 
     sync->active_count++;
     DecOnExit exitor(&sync->active_count);
+
+    // inhouse barrier implementation
     sync->run_lola_run.lock();
     sync->run_lola_run.unlock();
 
@@ -542,7 +398,7 @@ void worker_thread(int epollfd,
             if (poll_timeout < 0)
                 poll_timeout = 0;
 
-            if (not epoll_wait_ex(epollfd, elist, poll_timeout))
+            if (not sel->wait(poll_timeout))
                 return;
 
             // fill ready_fds with sockets
@@ -559,7 +415,7 @@ void worker_thread(int epollfd,
                     break;
             }
         } else {
-            if (not epoll_wait_ex(epollfd, elist, 100 * 1000 * 1000))
+            if (not sel->wait(100 * 1000 * 1000))
                 return;
             curr_time = get_fast_time();
         }
@@ -570,9 +426,11 @@ void worker_thread(int epollfd,
 
         // go throught all polled fds, calculated latency
         // and move some to wait_queue
-        for (const auto & event: elist) {
-            auto fd = event.data.fd;
 
+        result->mcount += sel->ready_count();
+
+        int fd;
+        while(sel->next(fd)) {
             auto item = last_time_for_socket.emplace(fd, 0);
 
             // previous write time for curr socket
@@ -622,8 +480,6 @@ void worker_thread(int epollfd,
             last_time_for_socket[fd] = get_fast_time();
             result->mess_count_for_sock.emplace(fd, 0).first->second++;
         }
-
-        result->mcount += elist.num_ready;
     }
 }
 
@@ -645,35 +501,23 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads,
     if (not connect_all(params.num_conn, sockets.fds, params.ip, params.port, client_ip_addrs))
         return false;
 
-    // 1s sleep, allow client to actually accept all connections
-    // as some of already connected sockets may be in listen buffer, and not processed
-    // by client yet
-    usleep(1000 * 1000);
-
-    FDList efd_list;
-
-    epoll_event event;
-    event.events = EPOLLIN | EPOLLET;
+    std::vector<EPollRSelector> selectors;
+    selectors.reserve(worker_threads); // avoid move, as EPollRSelector would close fd
 
     worker_threads = std::min(params.num_conn, worker_threads);
+    int max_sock_count_per_worker = params.num_conn / worker_threads + 1;
 
     for(int i = 0; i < worker_threads ; ++i) {
-        int efd = epoll_create1(0);
-        if (-1 == efd) {
-            perror("epoll_create");
+        selectors.emplace_back(max_sock_count_per_worker);
+        if (not selectors.rbegin()->ok())
             return false;
-        }
-        efd_list.fds.push_back(efd);
     }
 
     int idx = 0;
     for(auto fd: sockets.fds) {
-        event.data.fd = fd;
-        int efd = efd_list.fds[idx % worker_threads];
-        if (-1 == epoll_ctl(efd, EPOLL_CTL_ADD, fd, &event)) {
-            perror("epoll_ctl");
+        auto & sel = selectors[idx % worker_threads];
+        if (not sel.add_fd(fd))
             return false;
-        }
         ++idx;
     }
 
@@ -687,10 +531,9 @@ bool run_test(const TestParams & params, TestResult & res, int worker_threads,
     sync.active_count = 0;
     sync.run_lola_run.lock();
 
-    int max_sock_count_per_worker = params.num_conn / worker_threads + 1;
     for(int i = 0; i < worker_threads ; ++i)
         workers.emplace_back(worker_thread,
-                             efd_list.fds[i],
+                             &selectors[i],
                              params.message_len,
                              max_sock_count_per_worker,
                              params.min_timeout,
