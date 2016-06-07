@@ -43,6 +43,8 @@ func NewSettings(sendTimeout, connectionTime, memorySize int) Settings {
 
 func handleRequest(conn *net.TCPConn, settings Settings, message []byte) {
 	defer conn.Close()
+	// TODO: Use sync.Pool instead of allocating buffer all the time.
+
 	buf := make([]byte, settings.MemorySize)
 	etime := int64(0)
 
