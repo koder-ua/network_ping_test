@@ -6,6 +6,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -15,6 +16,8 @@ const (
 	CONTROL_PORT = 33332
 	CONN_TYPE    = "tcp"
 )
+
+var pool sync.Pool
 
 type Settings struct {
 	SendTimeout    int
@@ -43,9 +46,10 @@ func NewSettings(sendTimeout, connectionTime, memorySize int) Settings {
 
 func handleRequest(conn *net.TCPConn, settings Settings, message []byte) {
 	defer conn.Close()
-	// TODO: Use sync.Pool instead of allocating buffer all the time.
+	// Get byte slice from pool. And release it to pool in defer .
+	buf := pool.Get().([]byte)
+	defer pool.Put(buf)
 
-	buf := make([]byte, settings.MemorySize)
 	etime := int64(0)
 
 	for etime == 0 || time.Now().UnixNano()/1000000 < etime {
@@ -65,7 +69,7 @@ func handleRequest(conn *net.TCPConn, settings Settings, message []byte) {
 
 func controlProc(settings chan Settings, statsChannel chan Stat) {
 	log.Printf("Resolve UDP address on port %d", CONTROL_PORT)
-	addr, _ := net.ResolveUDPAddr("udp", ":" + strconv.Itoa(CONTROL_PORT))
+	addr, _ := net.ResolveUDPAddr("udp", ":"+strconv.Itoa(CONTROL_PORT))
 	log.Printf("Connecting to UDP on addr %v", *addr)
 	conn, err := net.ListenUDP("udp", addr)
 	defer conn.Close()
@@ -133,6 +137,13 @@ func mainLoop(timeout int, connectionTime int, msize int) {
 	statsChannel := make(chan Stat)
 	connectionChannel := make(chan net.TCPConn)
 	currentSettings := NewSettings(timeout, connectionTime, msize)
+
+	// Creating Pool object for storing byte slices.
+	pool = sync.Pool{
+		New: func() interface{} {
+			return make([]byte, currentSettings.MemorySize)
+		},
+	}
 
 	go controlProc(settingChannel, statsChannel)
 	go masterProc(connectionChannel)
