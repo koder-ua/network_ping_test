@@ -17,8 +17,6 @@ const (
 	CONN_TYPE    = "tcp"
 )
 
-var pool sync.Pool
-
 type Settings struct {
 	SendTimeout    int
 	ConnectionTime int
@@ -36,11 +34,30 @@ type Stat struct {
 	Count        int64
 }
 
+var (
+	pool            sync.Pool
+	currentSettings Settings
+	message         []byte
+)
+
 func NewSettings(sendTimeout, connectionTime, memorySize int) Settings {
 	return Settings{
 		SendTimeout:    sendTimeout,
 		ConnectionTime: connectionTime,
 		MemorySize:     memorySize,
+	}
+}
+
+func acceptorProc(connectionChannel chan net.TCPConn, done chan bool) {
+	for {
+		select {
+		case conn := <-connectionChannel:
+			log.Printf("Process connection %v", conn)
+			go handleRequest(&conn, currentSettings, message)
+		case <-done:
+			// TODO: do final things.
+			return
+		}
 	}
 }
 
@@ -67,7 +84,7 @@ func handleRequest(conn *net.TCPConn, settings Settings, message []byte) {
 	}
 }
 
-func controlProc(settings chan Settings, statsChannel chan Stat) {
+func controlProc(settings chan Settings, statsChannel chan Stat, done, termination chan bool) {
 	log.Printf("Resolve UDP address on port %d", CONTROL_PORT)
 	addr, _ := net.ResolveUDPAddr("udp", ":"+strconv.Itoa(CONTROL_PORT))
 	log.Printf("Connecting to UDP on addr %v", *addr)
@@ -132,11 +149,27 @@ func masterProc(connectionChannel chan net.TCPConn) {
 	}
 }
 
+func processStats(statsChannel chan Stat, done chan bool) {
+	for {
+		select {
+		case stat := <- statsChannel:
+			log.Printf("Receive stats %v", stat)
+		case <-done:
+			// TODO: do final thing before exit.
+			return
+		}
+	}
+}
+
 func mainLoop(timeout int, connectionTime int, msize int) {
 	settingChannel := make(chan Settings)
 	statsChannel := make(chan Stat)
+	done := make(chan bool)
+	termination := make(chan bool)
+
 	connectionChannel := make(chan net.TCPConn)
-	currentSettings := NewSettings(timeout, connectionTime, msize)
+	currentSettings = NewSettings(timeout, connectionTime, msize)
+	message = []byte(strings.Repeat("X", msize))
 
 	// Creating Pool object for storing byte slices.
 	pool = sync.Pool{
@@ -145,26 +178,12 @@ func mainLoop(timeout int, connectionTime int, msize int) {
 		},
 	}
 
-	go controlProc(settingChannel, statsChannel)
+	go controlProc(settingChannel, statsChannel, done, termination)
 	go masterProc(connectionChannel)
+	go processStats(statsChannel, done)
+	go acceptorProc(connectionChannel, done)
 
-	message := []byte(strings.Repeat("X", msize))
-
-	for {
-		select {
-		case conn := <-connectionChannel:
-			log.Printf("Process connection %v", conn)
-			go handleRequest(&conn, currentSettings, message)
-		case newStat := <-statsChannel:
-			// TODO: process statics.
-			log.Printf("Gathered new statistic %v", newStat)
-		case newSettings := <-settingChannel:
-			log.Printf("Change settings to %v", newSettings)
-			currentSettings = newSettings
-		default:
-			log.Println("No value ready, moving on.")
-		}
-	}
+	<-termination
 }
 
 func main() {
