@@ -336,6 +336,30 @@ def gevent_test(params, ready_to_connect, before_test, after_test):
 TIME_CB = ctypes.CFUNCTYPE(None)
 
 
+@im_test
+def go_test(params, ready_to_connect, before_test, after_test):
+    so = ctypes.cdll.LoadLibrary("./bin/libclient.go.so")
+    func = getattr(so, "RunTest")
+    func.restype = ctypes.c_int
+    func.argtypes = [ctypes.POINTER(ctypes.c_char),  # local ip
+                     ctypes.c_int,                   # local port
+                     ctypes.c_int,                   # params.count
+                     ctypes.c_int,                   # msize
+                     ctypes.c_int,                   # listen value
+                     TIME_CB,
+                     TIME_CB,
+                     TIME_CB]
+
+    func(params.local_addr[0].encode(),
+         params.local_addr[1],
+         params.count,
+         params.msize,
+         get_listen_param(params.count),
+         TIME_CB(ready_to_connect),
+         TIME_CB(before_test),
+         TIME_CB(after_test))
+
+
 def run_c_test(fname, params, ready_to_connect, before_test, after_test):
     so = ctypes.cdll.LoadLibrary("./bin/libclient.so")
     func = getattr(so, fname)

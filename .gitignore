@@ -64,3 +64,4 @@ target/
 #Binaries
 client_cpp
 srv
+.idea/
