@@ -11,7 +11,7 @@ RESULT_FILE=10k_60k.yaml
 # READY_10k=asyncio,asyncio_proto,asyncio_sock,uvloop,uvloop_sock,uvloop_proto,gevent,cpp_epoll,selector,thread,cpp_th
 # READY_30k=asyncio,asyncio_proto,asyncio_sock,uvloop,uvloop_sock,uvloop_proto,gevent,cpp_epoll,selector,cpp_th
 # READY_60k=asyncio,asyncio_proto,asyncio_sock,uvloop,uvloop_sock,uvloop_proto,gevent,cpp_epoll,selector
-FUNCS=selector,cpp_epoll,uvloop_proto
+FUNCS=selector,cpp_epoll,uvloop_proto,go
 
 SERVER_IP=172.16.40.37
 for i in $(seq 1 $ROUNDS); do
