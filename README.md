@@ -8,6 +8,7 @@ Install:
  * python3.5, python3.5-dev
  * python3.5-gevent
  * uvloop
+ * golang 1.7+
 
 For ubuntu 14.04:
 
@@ -17,6 +18,8 @@ For ubuntu 14.04:
     $ wget https://bootstrap.pypa.io/get-pip.py
     $ sudo python3.5 get-pip.py
     $ sudo python3.5 -m pip install uvloop gevent
+
+[install golang](https://golang.org/dl/)
 
 Disable CPU throttling:
 
