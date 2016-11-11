@@ -19,6 +19,8 @@ COMPILER=g++
 
 all: $(BINARIES)
 
+	go build -buildmode=c-shared -o $(BIN_FOLDER)/libclient.go.so client.go
+
 $(BIN_FOLDER)/server_cpp: server.cpp common.cpp common.h Makefile
 		$(COMPILER) $(CPP_OPTS) server.cpp common.cpp -o $@
 
