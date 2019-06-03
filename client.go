@@ -24,10 +24,13 @@ import "C"
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
+	"strings"
 	"sync"
+	"syscall"
 	"unsafe"
 )
 
@@ -156,11 +159,15 @@ func worker(conn net.Conn) {
 
 	for {
 		count, err := conn.Read(buffer)
-
+		operr, is_op_err := err.(*net.OpError).Err.(*os.SyscallError)
 		// Usually used for stopping worker by tcp reset
 		if err != nil {
-			Err.Printf("Error while reading from socket %s",
-				err.Error())
+			if err != io.EOF && (!is_op_err || operr.Err != syscall.ECONNRESET) {
+				// very dirty hack, but I can't make it other way
+				if !strings.Contains(err.Error(), "connection reset by peer") {
+					Err.Printf("Error while reading from socket %s", err.Error())
+				}
+			}
 			break
 		}
 

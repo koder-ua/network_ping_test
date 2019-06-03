@@ -1,7 +1,5 @@
 import os
 import sys
-import time
-import queue
 import ctypes
 import socket
 import asyncio
@@ -9,7 +7,6 @@ import argparse
 import traceback
 import selectors
 import threading
-from concurrent.futures import ThreadPoolExecutor, wait
 
 import gevent
 from gevent import socket as gevent_socket
@@ -34,7 +31,7 @@ def prepare_socket(sock, set_no_block=True):
         sock.setblocking(False)
 
     try:
-        sock.setsockopt(IPPROTO_TCP, TCP_NODELAY, 1)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
     except (OSError, NameError):
         pass
 
@@ -236,17 +233,17 @@ def asyncio_proto_test(params, ready_to_connect, before_test, after_test,
 
 @im_test
 def uvloop_test(*params):
-    return asyncio_test(*params, uvloop.new_event_loop)
+    return asyncio_test(*params, loop_cls=uvloop.new_event_loop)
 
 
 @im_test
 def uvloop_sock_test(*params):
-    return asyncio_sock_test(*params, uvloop.new_event_loop)
+    return asyncio_sock_test(*params, loop_cls=uvloop.new_event_loop)
 
 
 @im_test
 def uvloop_proto_test(*params):
-    return asyncio_proto_test(*params, uvloop.new_event_loop)
+    return asyncio_proto_test(*params, loop_cls=uvloop.new_event_loop)
 
 
 @im_test
@@ -404,8 +401,8 @@ def get_run_stats(func, params):
     s.connect(params.loader_addr)
 
     def ready_func():
-        s.send(("{0.local_addr[0]} {0.local_addr[1]} {0.count} " +
-                "{0.runtime} {0.timeout[0]} {0.timeout[1]} {0.msize}").format(params).encode('ascii'))
+        s.send((f"{params.local_addr[0]} {params.local_addr[1]} {params.count} " +
+                f"{params.runtime} {params.timeout[0]} {params.timeout[1]} {params.msize}").encode('ascii'))
 
     def stamp():
         times.append(os.times())
@@ -438,7 +435,7 @@ def print_lat_stats(lats, log_base):
     print("Lats:")
     for pos, i in enumerate(lats):
         if i > 100:
-            print("    {:<8s}: {}".format(ns_to_readable(log_base ** pos), i))
+            print(f"    {ns_to_readable(log_base ** pos):<8s}: {i}")
 
 
 def get_lats(lats, log_base, percs=(0.5, 0.75, 0.95)):
@@ -463,7 +460,7 @@ def get_lats(lats, log_base, percs=(0.5, 0.75, 0.95)):
 def ns_to_readable(val):
     for limit, ext in ((1E9, ''), (1E6, 'm'), (1E3, 'u'), (1, 'n')):
         if val >= limit:
-            return "{}{}s".format(int(val / limit), ext)
+            return f"{int(val / limit)}{ext}s"
 
 
 def main(argv):
@@ -523,7 +520,7 @@ def main(argv):
         run_tests = []
         for test_name in test_names:
             if test_name not in ALL_TESTS:
-                print("Can't found test {!r}.".format(test_name))
+                print(f"Can't found test {test_name!r}.")
                 return 1
             run_tests.append(ALL_TESTS[test_name])
 
@@ -531,15 +528,15 @@ def main(argv):
 
     results_struct = dict(
         workers=opts.count,
-        server="{0.loader_ip}:{0.loader_port}".format(opts),
-        bind_addr="{0.bind_ip}:{0.bind_port}".format(opts),
+        server=f"{opts.loader_ip}:{opts.loader_port}",
+        bind_addr=f"{opts.bind_ip}:{opts.bind_port}",
         msize=opts.msize,
         runtime=opts.runtime,
         timeout=opts.timeout,
         data=[],
     )
 
-    if opts.meta != []:
+    if opts.meta:
         results_struct['meta'] = {}
         for data in opts.meta:
             key, val = data.split('=', 1)
@@ -565,9 +562,9 @@ def main(argv):
 
                 curr_res = dict(
                     func=func.__name__.replace("_test", ''),
-                    utime="{:.2f}".format(utime),
-                    stime="{:.2f}".format(stime),
-                    ctime="{:.2f}".format(ctime),
+                    utime=f"{utime:.2f}",
+                    stime=f"{stime:.2f}",
+                    ctime=f"{ctime:.2f}",
                     lat_50=ns_to_readable(lat_50),
                     lat_95=ns_to_readable(lat_95),
                     msg_5perc=msg_percentiles[0],

@@ -38,9 +38,9 @@ def dumpv(data, tab_sz=4, width=160, min_width=40):
     if isinstance(data, (list, tuple)):
         if all(map(is_simple, data)):
             if all_nums(data):
-                one_line = "[{0}]".format(", ".join(map(dumps_simple, data)))
+                one_line = f"[{', '.join(map(dumps_simple, data))}]"
             else:
-                one_line = "[{0}]".format(",".join(map(dumps_simple, data)))
+                one_line = f"[{','.join(map(dumps_simple, data))}]"
         elif len(data) == 0:
             one_line = "[]"
         else:
@@ -64,9 +64,7 @@ def dumpv(data, tab_sz=4, width=160, min_width=40):
 
             one_line = None
             if all(map(is_simple, data.values())):
-                one_line = ", ".join(
-                    "{0}: {1}".format(dumps_simple(k), dumps_simple(v))
-                    for k, v in sorted(data.items()))
+                one_line = ", ".join(f"{dumps_simple(k)}: {dumps_simple(v)}" for k, v in sorted(data.items()))
                 one_line = "{" + one_line + "}"
                 if len(one_line) > width:
                     one_line = None
@@ -90,7 +88,7 @@ def dumpv(data, tab_sz=4, width=160, min_width=40):
         try:
             get_yamable = data.get_yamable
         except AttributeError:
-            raise ValueError("Can't pack {0!r}".format(data))
+            raise ValueError(f"Can't pack {data!r}")
         res = dumpv(get_yamable(), tab_sz, width, min_width)
 
     return res

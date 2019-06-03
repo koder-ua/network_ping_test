@@ -678,21 +678,21 @@ void *get_in_addr(struct sockaddr *sa) {
 int main_loop_thread(int port, bool single_shot, const char ** first_ip, const char ** last_ip) {
     sockaddr_in server, client;
 
-    // this requires in order to fir write issue
+    // this requires in order to fix write issue
     if (SIG_ERR  == signal(SIGPIPE, SIG_IGN)) {
-        perror("signal(SIGPIPE, SIG_IGN) failed");
+        std::perror("signal(SIGPIPE, SIG_IGN) failed");
         return 1;
     }
 
     int control_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (-1 == control_sock){
-        perror("Could not create socket");
+        std::perror("Could not create socket");
         return 1;
     }
 
     int enable = 1;
     if (setsockopt(control_sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0)
-        perror("setsockopt(SO_REUSEADDR) failed");
+        std::perror("setsockopt(SO_REUSEADDR) failed");
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
@@ -702,6 +702,8 @@ int main_loop_thread(int port, bool single_shot, const char ** first_ip, const c
         perror("bind failed. Error");
         return 1;
     }
+
+    std::cout << "Waiting for client on 0.0.0.0:" << port << std::endl;
 
     listen(control_sock, 3);
     socklen_t sock_data_len = sizeof(client);
